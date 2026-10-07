@@ -1,0 +1,110 @@
+package com.nrdhvnstd.halgventmod.client;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.item.Gender;
+import com.nrdhvnstd.halgventmod.item.ModLore;
+import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
+import com.nrdhvnstd.halgventmod.registry.ModItems;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+
+/**
+ * Подсказка предметов:
+ *   Название
+ *   [Признак] [Признак] [Признак]   — у каждого признака свой цвет
+ *   Описание обычным шрифтом        — у любого предмета, для которого оно задано;
+ *                                     **жирный** и *курсив* внутри текста
+ *   Слот: Шлем                      — у брони
+ *   (позже для оружия и брони: типы урона, урон или защита)
+ */
+@EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
+public final class ItemTooltipHandler {
+    private static final int LORE_WIDTH = 200; // ширина описания в пикселях, дальше перенос строки
+
+    private ItemTooltipHandler() {}
+
+    @SubscribeEvent
+    public static void onTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        Item item = stack.getItem();
+        List<String> traits = stack.get(ModComponents.TRAITS.get());
+        ModLore.Entry lore = ModLore.get(item);
+        ArmorSlot armorSlot = ModArmor.slotOf(stack);
+
+        boolean hasTraits = traits != null && !traits.isEmpty();
+        if (!hasTraits && lore == null && armorSlot == null) {
+            return;
+        }
+
+        // Строка 0 — название, всё наше идёт сразу под ним
+        List<Component> tooltip = event.getToolTip();
+        int index = Math.min(1, tooltip.size());
+
+        if (hasTraits) {
+            ModItems.Definition def = ModItems.definition(item);
+            Gender gender = def != null ? def.gender() : Gender.M;
+            tooltip.add(index++, traitsLine(traits, gender));
+        }
+        if (lore != null) {
+            for (Component line : loreLines(ModLore.langKey(item), lore.color())) {
+                tooltip.add(index++, line);
+            }
+        }
+        if (armorSlot != null) {
+            tooltip.add(index++, Component.translatable("tooltip.halgventmod.armor_slot",
+                    Component.translatable(armorSlot.langKey())).withStyle(ChatFormatting.GRAY));
+        }
+    }
+
+    private static Component traitsLine(List<String> traits, Gender gender) {
+        MutableComponent line = Component.empty();
+        for (int i = 0; i < traits.size(); i++) {
+            if (i > 0) {
+                line.append(" ");
+            }
+            String id = traits.get(i);
+            ModTraits.Trait trait = ModTraits.byId(id);
+            int color = trait != null ? trait.color() : ModTraits.DEFAULT_COLOR;
+            line.append(Component.literal("[")
+                    .append(Component.translatable(ModTraits.langKey(id, gender)))
+                    .append("]")
+                    .withStyle(Style.EMPTY.withColor(color)));
+        }
+        return line;
+    }
+
+    // Описание переносится по ширине автоматически; \n в тексте — принудительный перенос.
+    // Жирный и курсив внутри текста сохраняются и при переносе строки.
+    private static List<Component> loreLines(String key, int color) {
+        Style style = Style.EMPTY.withColor(color);
+        List<Component> lines = new ArrayList<>();
+        var splitter = Minecraft.getInstance().font.getSplitter();
+        for (FormattedText part : splitter.splitLines(Component.translatable(key), LORE_WIDTH, style)) {
+            MutableComponent line = Component.empty();
+            part.<Void>visit((partStyle, text) -> {
+                line.append(Component.literal(text).withStyle(partStyle));
+                return Optional.empty();
+            }, style);
+            lines.add(line);
+        }
+        return lines;
+    }
+}
