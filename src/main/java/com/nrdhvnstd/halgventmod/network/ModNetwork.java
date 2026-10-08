@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2"; // 2: голод, жажда и выносливость 0–100
 
     private ModNetwork() {}
 

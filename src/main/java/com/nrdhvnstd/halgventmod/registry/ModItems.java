@@ -16,6 +16,7 @@ import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.CloakType;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.food.DrinkItem;
+import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
@@ -49,9 +50,9 @@ public final class ModItems {
     //     .stacksTo(n)                               — размер стака 1–99, по умолчанию 64
     //     .grams(n) или .kg(n)                       — вес одной штуки
     //   Еда и питьё:
-    //     .food(сытость, насыщение)                  — съедобно: 1 сытости = пол-окорочка
+    //     .food(сытость, насыщение)                  — съедобно, в единицах шкалы голода 0–100
     //     .drink()                                   — пьётся, а не ешется
-    //     .thirst(n)                                 — жажда: + утоляет, − усиливает (1 = полкапли)
+    //     .thirst(n)                                 — жажда: + утоляет, − усиливает (шкала 0–100)
     //     .shelfLife(суток)                          — срок годности, без него не портится
     //     .returns(Items.BOWL)                       — что остаётся в руке (миска, бутылка)
     //   Броня:
@@ -168,7 +169,7 @@ public final class ModItems {
             .stacksTo(4)
             .category(Category.FOOD)
             .grams(400)
-            .food(4, 2.0F)
+            .food(20, 10.0F)
             .shelfLife(8)
             .register();
     public static final DeferredItem<Item> RYE_BREAD = item("rye_bread", "Хлеб", "Bread", Gender.M)
@@ -178,7 +179,7 @@ public final class ModItems {
             .stacksTo(4)
             .category(Category.FOOD)
             .grams(400)
-            .food(4, 2.0F)
+            .food(20, 10.0F)
             .shelfLife(8)
             .register();
 
@@ -189,7 +190,7 @@ public final class ModItems {
             .stacksTo(4)
             .category(Category.FOOD)
             .grams(300)
-            .food(4, 2.0F)
+            .food(20, 10.0F)
             .shelfLife(2)
             .register();
 
@@ -200,7 +201,7 @@ public final class ModItems {
             .stacksTo(4)
             .category(Category.FOOD)
             .kg(1)
-            .food(8, 4.0F)
+            .food(40, 20.0F)
             .shelfLife(32)
             .register();
 
@@ -211,7 +212,7 @@ public final class ModItems {
             .stacksTo(24)
             .category(Category.FOOD)
             .grams(100)
-            .food(2, 1.0F)
+            .food(10, 5.0F)
             .shelfLife(2)
             .register();
     public static final DeferredItem<Item> CHANTERELLE = item("chanterelle", "Лисичка", "Chanterelle", Gender.M)
@@ -221,7 +222,7 @@ public final class ModItems {
             .stacksTo(24)
             .category(Category.FOOD)
             .grams(100)
-            .food(2, 1.0F)
+            .food(10, 5.0F)
             .shelfLife(2)
             .register();
 
@@ -386,7 +387,7 @@ public final class ModItems {
             return this;
         }
 
-        /** Сытость (1 = пол-окорочка, максимум у игрока 20) и насыщение (запас, который тратится первым). */
+        /** Сытость (шкала голода 0–100) и насыщение (запас, который тратится первым, не больше сытости игрока). */
         public Builder food(int nutrition, float saturation) {
             if (nutrition < 0 || saturation < 0) {
                 throw new IllegalArgumentException(id + ": сытость и насыщение не могут быть отрицательными");
@@ -406,7 +407,7 @@ public final class ModItems {
             return this;
         }
 
-        /** Жажда: + утоляет, − усиливает (1 = полкапли, максимум у игрока 20). */
+        /** Жажда: + утоляет, − усиливает (шкала жажды 0–100). */
         public Builder thirst(int thirst) {
             this.thirst = thirst;
             return this;
@@ -488,10 +489,12 @@ public final class ModItems {
         }
 
         private FoodProperties foodProperties() {
-            FoodProperties.Builder food = new FoodProperties.Builder().nutrition(nutrition);
-            if (nutrition > 0) {
+            // Настоящие значения — в ModFoods (их читает Hunger). Здесь ванильные, ÷5, для чужих подсказок
+            int vanillaNutrition = nutrition > 0 ? Math.max(1, Math.round((float) nutrition / Hunger.VANILLA_SCALE)) : 0;
+            FoodProperties.Builder food = new FoodProperties.Builder().nutrition(vanillaNutrition);
+            if (vanillaNutrition > 0) {
                 // В Minecraft насыщение = сытость × множитель × 2; пересчитываем, чтобы задавать его напрямую
-                food.saturationModifier(saturation / (nutrition * 2.0F));
+                food.saturationModifier(saturation / Hunger.VANILLA_SCALE / (vanillaNutrition * 2.0F));
             }
             if (drink) {
                 food.alwaysEdible(); // когда пить можно, решает DrinkItem
@@ -512,8 +515,8 @@ public final class ModItems {
             if (weightGrams >= 0) {
                 ModWeights.put(item.getId(), weightGrams);
             }
-            if (thirst != 0 || shelfLifeDays > 0) {
-                ModFoods.put(item.getId(), new ModFoods.FoodInfo(thirst, shelfLifeDays));
+            if (edible || thirst != 0 || shelfLifeDays > 0) {
+                ModFoods.put(item.getId(), new ModFoods.FoodInfo(nutrition, saturation, thirst, shelfLifeDays));
             }
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());

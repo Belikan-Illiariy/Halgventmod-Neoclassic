@@ -1,11 +1,13 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.needs.Health;
 import com.nrdhvnstd.halgventmod.weight.Encumbrance;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
@@ -31,5 +33,6 @@ public final class ModAttributes {
 
     private static void addToPlayer(EntityAttributeModificationEvent event) {
         event.add(EntityType.PLAYER, CARRY_CAPACITY);
+        event.add(EntityType.PLAYER, Attributes.MAX_HEALTH, Health.MAX); // здоровье 100 вместо 20
     }
 }

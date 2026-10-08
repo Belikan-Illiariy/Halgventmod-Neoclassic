@@ -21,26 +21,28 @@ public final class ModFoods {
     // Для предметов своего мода — .thirst(...) и .shelfLife(...) в ModItems.
     //
     // food(Items.<ПРЕДМЕТ>, жажда, срок годности в сутках)
-    //   жажда: + утоляет, − усиливает, 0 — не влияет (1 = полкапли)
+    //   жажда: + утоляет, − усиливает, 0 — не влияет (шкала жажды 0–100)
     //   срок: 0 — не портится
     // food("othermod:item", жажда, срок)
+    // Сытость такой еды — ванильная ×5 (Hunger.VANILLA_SCALE): хлеб 5 → 25 из 100.
     static {
         // Примеры:
-        // food(Items.MELON_SLICE, 2, 3);  // утоляет жажду, портится через 3 суток
-        // food(Items.DRIED_KELP, -1, 0);  // солёное, сушит, не портится
-        // food(Items.BREAD, 0, 7);        // портится через 7 суток
+        // food(Items.MELON_SLICE, 10, 3);  // утоляет жажду, портится через 3 суток
+        // food(Items.DRIED_KELP, -5, 0);   // солёное, сушит, не портится
+        // food(Items.BREAD, 0, 7);         // портится через 7 суток
     }
 
     private ModFoods() {}
 
-    public record FoodInfo(int thirst, int shelfLifeDays) {}
+    /** nutrition < 0 — сытость и насыщение берутся из ванильных свойств еды ×5. */
+    public record FoodInfo(int nutrition, float saturation, int thirst, int shelfLifeDays) {}
 
     public static void food(ItemLike item, int thirst, int shelfLifeDays) {
-        put(BuiltInRegistries.ITEM.getKey(item.asItem()), new FoodInfo(thirst, shelfLifeDays));
+        put(BuiltInRegistries.ITEM.getKey(item.asItem()), new FoodInfo(-1, 0, thirst, shelfLifeDays));
     }
 
     public static void food(String itemId, int thirst, int shelfLifeDays) {
-        put(ResourceLocation.parse(itemId), new FoodInfo(thirst, shelfLifeDays));
+        put(ResourceLocation.parse(itemId), new FoodInfo(-1, 0, thirst, shelfLifeDays));
     }
 
     /** Используется и билдером ModItems. */

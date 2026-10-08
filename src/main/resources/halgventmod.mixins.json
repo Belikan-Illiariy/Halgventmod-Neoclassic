@@ -4,6 +4,7 @@
   "package": "com.nrdhvnstd.halgventmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "FoodDataMixin",
     "PaintingMixin",
     "PlayerMixin"
   ],

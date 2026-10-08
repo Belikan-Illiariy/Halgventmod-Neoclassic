@@ -43,7 +43,7 @@ public class DrinkItem extends Item {
         FoodProperties food = stack.get(DataComponents.FOOD);
 
         boolean quenches = info != null && info.thirst() > 0 && Thirst.needs(player);
-        boolean feeds = food != null && food.nutrition() > 0 && player.getFoodData().needsFood();
+        boolean feeds = food != null && food.nutrition() > 0 && Hunger.needs(player);
         if (quenches || feeds || player.isCreative()) {
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);

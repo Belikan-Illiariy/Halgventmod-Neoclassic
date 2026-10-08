@@ -26,12 +26,12 @@ import net.minecraft.world.item.ItemStack;
  */
 public class PlayerArmorMenu extends AbstractContainerMenu {
     // ===== Раскладка окна (в пикселях от левого верхнего угла) =====
+    // Совпадает с текстурой textures/gui/inventory.png
     public static final int WIDTH = 202;
     public static final int HEIGHT = 166;
     public static final int SLOT_STEP = 18;
-    // Вторая рука — левее хотбара, отделена перегородкой
+    // Вторая рука — левее хотбара
     public static final int OFFHAND_X = 8;
-    public static final int SEPARATOR_X = 29;    // перегородка между второй рукой и хотбаром
     public static final int INVENTORY_X = 34;    // левый край рюкзака, хотбара и сетки брони
     // Броня — сетка 4×3: голова, туловище, ноги (по строке на часть тела, порядок как в ArmorSlot)
     public static final int ARMOR_COLUMNS = 4;
@@ -40,10 +40,10 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
     public static final int BACKPACK_Y = 84;
     public static final int HOTBAR_Y = 142;
     public static final int OFFHAND_Y = HOTBAR_Y;
-    public static final int FIGURE_LEFT = 107;   // фигурка — справа от сетки, снизу упирается в рюкзак
-    public static final int FIGURE_RIGHT = 157;
-    public static final int FIGURE_TOP = 7;
-    public static final int FIGURE_BOTTOM = 83;
+    public static final int FIGURE_LEFT = 107;   // фигурка в рамке справа от сетки
+    public static final int FIGURE_RIGHT = 155;
+    public static final int FIGURE_TOP = 8;
+    public static final int FIGURE_BOTTOM = 78;
     // Правее фигурки окно пустое
 
     // ===== Номера ячеек в меню =====
