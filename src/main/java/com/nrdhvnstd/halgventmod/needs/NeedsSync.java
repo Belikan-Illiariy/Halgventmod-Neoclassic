@@ -25,7 +25,12 @@ public final class NeedsSync {
         int thirst = -1;
         int stamina = -1;     // ×2: шаг полединицы, шкала двигается плавно
         boolean exhausted;
+        int staminaTick = Integer.MIN_VALUE / 2; // когда выносливость уходила последний раз
     }
+
+    // Выносливость меняется почти каждый тик (бег, восстановление) — одну её шлём не чаще раза в столько тиков.
+    // Голод, жажда, изнеможение, пустая и полная шкала — сразу
+    private static final int STAMINA_INTERVAL = 4;
 
     // LOWEST — после того, как голод, жажда и выносливость посчитали этот тик
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -41,10 +46,18 @@ public final class NeedsSync {
         int saturation = Math.round(hunger.saturation() * 10);
         int staminaSteps = Math.round(stamina.level() * 2);
         boolean exhausted = stamina.exhaustedTicks() > 0;
-        if (hunger.level() == sent.hunger && saturation == sent.saturation && thirst == sent.thirst
-                && staminaSteps == sent.stamina && exhausted == sent.exhausted) {
-            return;
+        boolean others = hunger.level() != sent.hunger || saturation != sent.saturation || thirst != sent.thirst
+                || exhausted != sent.exhausted;
+        if (!others) {
+            if (staminaSteps == sent.stamina) {
+                return;
+            }
+            boolean edge = stamina.level() <= 0 || stamina.level() >= StaminaData.MAX;
+            if (!edge && player.tickCount - sent.staminaTick < STAMINA_INTERVAL) {
+                return;
+            }
         }
+        sent.staminaTick = player.tickCount;
         sent.hunger = hunger.level();
         sent.saturation = saturation;
         sent.thirst = thirst;

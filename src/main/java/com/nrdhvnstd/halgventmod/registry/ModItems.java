@@ -106,18 +106,44 @@ public final class ModItems {
 
 
     // ----- Доспехи -----
-    // Проверочные шлемы: вес временный, описаний пока нет
-    public static final DeferredItem<Item> BASCINET = item("bascinet", "Бацинет", "Bascinet", Gender.M)
-            .category(Category.ARMOR)
-            .armor(ArmorSlot.HELMET)
-            .kg(2.5)
-            .register();
+    // Шлемы, которые надеваются под капюшон
     public static final DeferredItem<Item> CERVELLIERE = item("cervelliere", "Цервельер", "Cervelliere", Gender.M)
+            .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
+            .lore("Простая железная шапка по форме головы. Лёгкая и неприметная: прячется под капюшоном.",
+                    "A plain iron skullcap shaped to the head. Light and unobtrusive, it hides under a hood.")
             .armor(ArmorSlot.HELMET)
             .hoodCompatible()
-            .kg(1.5)
+            .kg(1.2)
             .register();
+    public static final DeferredItem<Item> CERVELLIERE_SCALED = item("cervelliere_scaled", "Чешуйчатый цервельер", "Scaled cervelliere", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .lore("Цервельер, набранный из железных чешуек на кожаной основе. Сидит плотнее кованого и держится ремешком под подбородком.",
+                    "A cervelliere of iron scales riveted to a leather cap. It fits closer than a forged one and is held by a chin strap.")
+            .armor(ArmorSlot.HELMET)
+            .hoodCompatible()
+            .kg(1.4)
+            .register();
+    public static final DeferredItem<Item> BASCINET_HALF = item("bascinet_half", "Полубацинет", "Open bascinet", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .lore("Невысокий бацинет с открытым лицом. Прикрывает темя и затылок, но не виски.",
+                    "A low bascinet with an open face. It guards the crown and the back of the head, but not the temples.")
+            .armor(ArmorSlot.HELMET)
+            .hoodCompatible()
+            .kg(1.8)
+            .register();
+    public static final DeferredItem<Item> BASCINET = item("bascinet", "Бацинет", "Bascinet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .lore("Остроконечный шлем, опущенный на виски и затылок. Оставляет открытым только лицо.",
+                    "A pointed helmet drawn down over the temples and the nape. Only the face is left bare.")
+            .armor(ArmorSlot.HELMET)
+            .hoodCompatible()
+            .kg(2.2)
+            .register();
+    // Проверочные шлемы: вес временный, описаний пока нет
     public static final DeferredItem<Item> KETTLE_HAT = item("kettle_hat", "Капеллина", "Kettle hat", Gender.F)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
@@ -137,8 +163,11 @@ public final class ModItems {
             .dyeable()
             .kg(1.8)
             .register();
-    public static final DeferredItem<Item> QUILTED_AKETON =item("quilted_aketon", "Акетон", "Aketon", Gender.M)
+    public static final DeferredItem<Item> QUILTED_AKETON = item("quilted_aketon", "Акетон", "Aketon", Gender.M)
+            .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
+            .lore("Стёганая куртка, набитая паклей или хлопком. Смягчает удары и не даёт кольчуге натирать тело.",
+                    "A quilted jacket stuffed with tow or cotton. It softens blows and keeps mail from chafing.")
             .armor(ArmorSlot.PADDING)
             .dyeable()
             .kg(2.5)

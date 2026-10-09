@@ -116,8 +116,12 @@ public final class Locks {
             changed.add(chunk);
         }
         for (LevelChunk chunk : changed) {
-            PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(),
-                    new LocksChunkPayload(chunk.getPos(), chunk.getData(ModAttachments.CHUNK_LOCKS).entries()));
+            ChunkLocks data = chunk.getData(ModAttachments.CHUNK_LOCKS);
+            List<ChunkLocks.Entry> entries = data.entries();
+            if (data.isEmpty()) {
+                chunk.removeData(ModAttachments.CHUNK_LOCKS); // последний замок снят — пустые данные чанку не нужны
+            }
+            PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(), new LocksChunkPayload(chunk.getPos(), entries));
         }
     }
 

@@ -8,8 +8,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /**
- * Счётчик номеров для секретов замков и групп: 1, 2, 3…
- * Общий для всего мира, поэтому два замка или две группы случайно не совпадут.
+ * Счётчик номеров для секретов замков: 1, 2, 3…
+ * Общий для всего мира, поэтому секреты двух замков случайно не совпадут.
  */
 public class LockIds extends SavedData {
     private static final String NAME = HalgventMod.MODID + "_lock_ids";

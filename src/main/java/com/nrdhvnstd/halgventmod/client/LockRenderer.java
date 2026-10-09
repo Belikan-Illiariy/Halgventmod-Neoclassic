@@ -16,6 +16,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -74,6 +76,7 @@ public final class LockRenderer {
         }
         Vec3 camera = event.getCamera().getPosition();
         double maxDistanceSqr = RENDER_DISTANCE * RENDER_DISTANCE;
+        Frustum frustum = event.getFrustum();
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
 
@@ -82,8 +85,9 @@ public final class LockRenderer {
         for (Map<BlockPos, LockData> chunk : LockSync.clientAll().values()) {
             for (Map.Entry<BlockPos, LockData> entry : chunk.entrySet()) {
                 BlockPos pos = entry.getKey();
-                if (pos.distToCenterSqr(camera) > maxDistanceSqr) {
-                    continue;
+                if (pos.distToCenterSqr(camera) > maxDistanceSqr
+                        || !frustum.isVisible(new AABB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1))) {
+                    continue; // далеко или вне поля зрения
                 }
                 BlockState state = level.getBlockState(pos);
                 if (state.getBlock() instanceof DoorBlock) {

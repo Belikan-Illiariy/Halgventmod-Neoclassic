@@ -70,10 +70,19 @@ public final class ArmorCompositor {
         private final ResourceLocation texture;
         private final int covers;
         private long lastUsed;
+        private boolean released; // текстура освобождена, склейку надо взять из кэша заново
 
         private Composite(ResourceLocation texture, int covers) {
             this.texture = texture;
             this.covers = covers;
+        }
+
+        boolean released() {
+            return released;
+        }
+
+        void touch() {
+            lastUsed = Util.getMillis();
         }
 
         public ResourceLocation texture() {
@@ -95,22 +104,22 @@ public final class ArmorCompositor {
     /** Склейка плоскости для надетой брони или null, если на плоскости ничего нет. */
     @Nullable
     public static Composite get(ArmorInventory armor, ArmorSlot.Plane plane) {
-        Recipe recipe = recipe(armor, plane);
-        if (recipe == null) {
-            return null;
-        }
+        return ArmorLook.of(armor).composite(plane);
+    }
+
+    static Composite get(Recipe recipe) {
         Composite composite = CACHE.get(recipe);
         if (composite == null) {
             composite = build(recipe);
             CACHE.put(recipe, composite);
         }
-        composite.lastUsed = Util.getMillis();
+        composite.touch();
         return composite;
     }
 
-    // Надетые вещи плоскости, от внутренней к внешней
+    // Надетые вещи плоскости, от внутренней к внешней. Считается только при смене брони (ArmorLook)
     @Nullable
-    private static Recipe recipe(ArmorInventory armor, ArmorSlot.Plane plane) {
+    static Recipe recipe(ArmorInventory armor, ArmorSlot.Plane plane) {
         List<ArmorSlot> worn = new ArrayList<>(ArmorSlot.COUNT);
         for (ArmorSlot slot : ArmorSlot.values()) {
             if (slot.plane() == plane && !armor.get(slot).isEmpty()) {
@@ -247,6 +256,7 @@ public final class ArmorCompositor {
             Composite composite = it.next();
             if (now - composite.lastUsed > RELEASE_AFTER_MS) {
                 Minecraft.getInstance().getTextureManager().release(composite.texture);
+                composite.released = true;
                 it.remove();
             }
         }
@@ -256,6 +266,7 @@ public final class ArmorCompositor {
     public static void clear() {
         for (Composite composite : CACHE.values()) {
             Minecraft.getInstance().getTextureManager().release(composite.texture);
+            composite.released = true;
         }
         CACHE.clear();
         SOURCES.values().forEach(source -> source.ifPresent(NativeImage::close));

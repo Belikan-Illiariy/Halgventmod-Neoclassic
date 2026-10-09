@@ -19,6 +19,11 @@ public final class WeightText {
         return Component.translatable("weight.halgventmod.kilograms", number(round(kg)));
     }
 
+    /** Число с одним знаком после запятой: 4.317 → «4,3», 5.0 → «5». Не только для веса. */
+    public static String decimal(double value) {
+        return number(round(value));
+    }
+
     private static double round(double value) {
         return Math.round(value * 10.0) / 10.0;
     }

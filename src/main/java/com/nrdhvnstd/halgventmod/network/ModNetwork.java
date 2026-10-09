@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "2"; // 2: голод, жажда и выносливость 0–100
+    private static final String VERSION = "3"; // 3: телепортация по карте
 
     private ModNetwork() {}
 
@@ -23,5 +23,6 @@ public final class ModNetwork {
         registrar.playToServer(DrinkWaterPayload.TYPE, DrinkWaterPayload.STREAM_CODEC, DrinkWaterPayload::handle);
         registrar.playToServer(OpenInventoryPayload.TYPE, OpenInventoryPayload.STREAM_CODEC, OpenInventoryPayload::handle);
         registrar.playToServer(RenameKeyPayload.TYPE, RenameKeyPayload.STREAM_CODEC, RenameKeyPayload::handle);
+        registrar.playToServer(MapTeleportPayload.TYPE, MapTeleportPayload.STREAM_CODEC, MapTeleportPayload::handle);
     }
 }

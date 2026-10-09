@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -93,8 +94,20 @@ public final class ModWeights {
 
     // ----- Подсчёт -----
 
+    // Итоговый вес по предмету: инвентари пересчитываются постоянно, а id и теги каждый раз искать дорого.
+    // Сбрасывается, когда меняются теги (вход в мир, /reload). Читается и сервером, и клиентом — поэтому Concurrent
+    private static final Map<Item, Double> RESOLVED = new ConcurrentHashMap<>();
+
+    public static void clearCache() {
+        RESOLVED.clear();
+    }
+
     /** Вес одного предмета. */
     public static double unitGrams(ItemStack stack) {
+        return RESOLVED.computeIfAbsent(stack.getItem(), item -> resolve(new ItemStack(item)));
+    }
+
+    private static double resolve(ItemStack stack) {
         Double exact = BY_ID.get(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         if (exact != null) {
             return exact;

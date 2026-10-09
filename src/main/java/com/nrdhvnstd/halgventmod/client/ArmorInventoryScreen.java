@@ -14,10 +14,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 /**
  * Окно инвентаря: фигурка в рамке, 12 ячеек брони слева от неё, рюкзак, хотбар и вторая рука левее хотбара.
- * В творческом режиме — кнопка «Каталог» (ванильный творческий инвентарь с вкладками предметов).
+ * Вкладки (MenuTabs) — у верхнего края экрана; над окном — календарь и, в творческом режиме, кнопка «Каталог»
+ * (ванильный творческий инвентарь с вкладками предметов).
  * Фон — textures/gui/inventory.png, собран из концепта docs/concept_gui/inventory.png.
  */
-public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerArmorMenu> {
+public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerArmorMenu> implements MenuTabScreen {
     // Текстура 512×512 с рисунком в двойном разрешении — рисуется как ванильная 256×256
     private static final ResourceLocation BACKGROUND =
             ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "textures/gui/inventory.png");
@@ -38,8 +39,16 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     }
 
     @Override
+    public MenuTab tab() {
+        return MenuTab.INVENTORY;
+    }
+
+    @Override
     protected void init() {
         super.init();
+        for (MenuTabButton button : MenuTabs.createButtons(font, leftPos, imageWidth, MenuTab.INVENTORY)) {
+            addRenderableWidget(button);
+        }
         if (minecraft.gameMode != null && minecraft.gameMode.hasInfiniteItems()) {
             addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.catalog"),
                             button -> InventoryOverride.openCatalog())

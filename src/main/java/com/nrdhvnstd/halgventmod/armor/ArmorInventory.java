@@ -31,11 +31,14 @@ public class ArmorInventory extends ItemStackHandler {
             for (int i = 0; i < ArmorSlot.COUNT; i++) {
                 armor.stacks.set(i, ItemStack.OPTIONAL_STREAM_CODEC.decode(buf));
             }
+            armor.version++;
             return armor;
         }
     };
 
     private boolean dirty; // изменилось с прошлой синхронизации
+    private int version;   // растёт при каждом изменении: по нему клиент пересобирает вид брони
+    private Object renderCache; // только на клиенте: собранный вид брони (ArmorLook)
 
     public ArmorInventory() {
         super(ArmorSlot.COUNT);
@@ -56,6 +59,18 @@ public class ArmorInventory extends ItemStackHandler {
         return was;
     }
 
+    public int version() {
+        return version;
+    }
+
+    public Object renderCache() {
+        return renderCache;
+    }
+
+    public void setRenderCache(Object renderCache) {
+        this.renderCache = renderCache;
+    }
+
     @Override
     public int getSlotLimit(int slot) {
         return 1;
@@ -69,6 +84,7 @@ public class ArmorInventory extends ItemStackHandler {
     @Override
     protected void onContentsChanged(int slot) {
         dirty = true;
+        version++;
     }
 
     @Override
@@ -91,5 +107,6 @@ public class ArmorInventory extends ItemStackHandler {
                     : ItemStack.EMPTY;
             stacks.set(slot.ordinal(), stack);
         }
+        version++;
     }
 }

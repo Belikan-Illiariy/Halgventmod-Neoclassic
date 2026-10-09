@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -93,6 +94,12 @@ public final class Encumbrance {
         setEffect(player, ModEffects.BURDEN, tier == Tier.BURDEN);
         setEffect(player, ModEffects.ENCUMBERED, tier == Tier.ENCUMBERED);
         setEffect(player, ModEffects.OVERLOADED, tier == Tier.OVERLOADED);
+    }
+
+    // Теги сменились (вход в мир, /reload) — веса по тегам могли стать другими
+    @SubscribeEvent
+    public static void onTagsUpdated(TagsUpdatedEvent event) {
+        ModWeights.clearCache();
     }
 
     // Урон игрока — и в ближнем бою, и стрелами — уменьшается на штраф

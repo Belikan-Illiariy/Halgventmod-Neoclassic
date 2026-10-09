@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
-import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.client.armor.geo.GeoModel;
 import com.nrdhvnstd.halgventmod.client.armor.geo.GeoModelLoader;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -22,11 +21,9 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import com.mojang.math.Axis;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.item.ItemStack;
 
 /**
  * Броня на игроке: две оболочки с геометрией ванильной брони — плоскость ног (как поножи)
@@ -34,7 +31,6 @@ import net.minecraft.world.item.ItemStack;
  * Поверх — выступающие детали (модели .geo.json), прикреплённые к частям тела.
  */
 public class ArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-    private static final String CAPE_SUFFIX = "_cape";
     private static final float CROUCH_CAPE_Z = 1.4F;
     private static final float CROUCH_CAPE_Y = 1.85F;
 
@@ -70,27 +66,18 @@ public class ArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
     /** Надет ли плащ (накидка с плащом) — тогда ванильный плащ из скина не рисуется. */
     public static boolean wearsCape(AbstractClientPlayer player) {
         ArmorInventory armor = armorOf(player);
-        return armor != null && capeInfo(armor.get(ArmorSlot.CLOAK)) != null;
+        return armor != null && ArmorLook.of(armor).capeTexture != null;
     }
 
-    @Nullable
-    private static ModArmor.ArmorInfo capeInfo(ItemStack stack) {
-        ModArmor.ArmorInfo info = ModArmor.get(stack);
-        return info != null && info.cloak() != null && info.cloak().hasCape() ? info : null;
-    }
-
-    // Плащ: геометрия и физика ванильного плаща (CapeLayer), текстура textures/armor/cloak/<id>_cape.png,
-    // цвет — как у окрашенной накидки
+    // Плащ: геометрия и физика ванильного плаща (CapeLayer), текстура и цвет — из ArmorLook
     private void renderCape(PoseStack poseStack, MultiBufferSource buffer, int packedLight,
                             AbstractClientPlayer player, ArmorInventory armor, float partialTick) {
-        ItemStack stack = armor.get(ArmorSlot.CLOAK);
-        ModArmor.ArmorInfo info = capeInfo(stack);
-        if (info == null) {
+        ArmorLook look = ArmorLook.of(armor);
+        ResourceLocation texture = look.capeTexture;
+        if (texture == null) {
             return;
         }
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        ResourceLocation texture = detailPath(itemId, ArmorSlot.CLOAK, "textures/armor/", ".png", itemId.getPath() + CAPE_SUFFIX);
-        int color = info.dyeable() ? ArmorCompositor.color(stack) : ArmorCompositor.Layer.NO_COLOR;
+        int color = look.capeColor;
 
         poseStack.pushPose();
         poseStack.translate(0.0F, 0.0F, 0.125F);
@@ -124,37 +111,23 @@ public class ArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
     // Выступающие детали поверх склейки; onlyAttachment — только одна часть тела (рука от первого лица)
     private void renderDetails(PoseStack poseStack, MultiBufferSource buffer, int packedLight,
                                ArmorInventory armor, @Nullable GeoModel.Attachment onlyAttachment) {
-        for (ArmorSlot slot : ArmorSlot.values()) {
-            ItemStack stack = armor.get(slot);
-            ModArmor.ArmorInfo info = ModArmor.get(stack);
-            if (info == null || info.models().isEmpty()) {
+        for (ArmorLook.Detail detail : ArmorLook.of(armor).details) {
+            GeoModel model = GeoModelLoader.get(detail.model());
+            if (model == null) {
                 continue;
             }
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-            for (String name : info.models()) {
-                GeoModel model = GeoModelLoader.get(detailPath(itemId, slot, "models/armor/", ".geo.json", name));
-                if (model == null) {
+            VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(detail.texture()));
+            for (GeoModel.Attachment attachment : model.attachments()) {
+                if (onlyAttachment != null && attachment != onlyAttachment) {
                     continue;
                 }
-                VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(
-                        detailPath(itemId, slot, "textures/armor/", ".png", name)));
-                for (GeoModel.Attachment attachment : model.attachments()) {
-                    if (onlyAttachment != null && attachment != onlyAttachment) {
-                        continue;
-                    }
-                    // Деталь движется вместе со своей частью тела
-                    poseStack.pushPose();
-                    attachment.part(getParentModel()).translateAndRotate(poseStack);
-                    model.render(attachment, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
-                    poseStack.popPose();
-                }
+                // Деталь движется вместе со своей частью тела
+                poseStack.pushPose();
+                attachment.part(getParentModel()).translateAndRotate(poseStack);
+                model.render(attachment, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
+                poseStack.popPose();
             }
         }
-    }
-
-    // models/armor/<папка слота>/<имя>.geo.json и textures/armor/<папка слота>/<имя>.png
-    private static ResourceLocation detailPath(ResourceLocation itemId, ArmorSlot slot, String folder, String extension, String name) {
-        return ResourceLocation.fromNamespaceAndPath(itemId.getNamespace(), folder + slot.folder() + "/" + name + extension);
     }
 
     private void renderPlane(PoseStack poseStack, MultiBufferSource buffer, int packedLight,
