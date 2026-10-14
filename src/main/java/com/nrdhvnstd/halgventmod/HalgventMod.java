@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 import com.nrdhvnstd.halgventmod.datagen.DataGenerators;
+import com.nrdhvnstd.halgventmod.farming.FarmingEvents;
 import com.nrdhvnstd.halgventmod.network.ModNetwork;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModAttributes;
@@ -34,6 +35,7 @@ public class HalgventMod {
         ModPaintings.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModNetwork.register(modEventBus);
+        FarmingEvents.register(modEventBus);
 
         // Генерация JSON-файлов (задача runData)
         modEventBus.addListener(DataGenerators::gatherData);

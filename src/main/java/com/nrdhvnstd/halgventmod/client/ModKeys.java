@@ -25,6 +25,8 @@ public final class ModKeys {
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, CATEGORY);
     public static final KeyMapping MAP = new KeyMapping("key.halgventmod.map",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, CATEGORY);
+    public static final KeyMapping SQUAD = new KeyMapping("key.halgventmod.squad",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY);
     public static final KeyMapping CODEX = new KeyMapping("key.halgventmod.codex",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, CATEGORY);
 
@@ -39,6 +41,7 @@ public final class ModKeys {
         event.register(CALENDAR);
         event.register(CHARACTER);
         event.register(MAP);
+        event.register(SQUAD);
         event.register(CODEX);
         event.register(WAYPOINT);
     }

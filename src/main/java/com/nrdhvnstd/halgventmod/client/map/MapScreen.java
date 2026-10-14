@@ -12,6 +12,8 @@ import com.nrdhvnstd.halgventmod.client.MenuTabButton;
 import com.nrdhvnstd.halgventmod.client.MenuTabScreen;
 import com.nrdhvnstd.halgventmod.client.MenuTabs;
 import com.nrdhvnstd.halgventmod.network.MapTeleportPayload;
+import com.nrdhvnstd.halgventmod.network.SquadMembersPayload;
+import com.nrdhvnstd.halgventmod.squad.SquadMarkers;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -50,6 +52,11 @@ public class MapScreen extends Screen implements MenuTabScreen {
     private static final float ZOOM_STEP = 1.25F;
     private static final float MIN_TEXT_PIXELS = 3; // надписи ниже стольких пикселей не рисуются
     private static final int ICON_SIZE = 16;
+    // Товарищи по отряду: курсор, окрашенный в зелёный, и имя тем же цветом
+    private static final float SQUAD_TINT_R = 0.45F;
+    private static final float SQUAD_TINT_G = 1.0F;
+    private static final float SQUAD_TINT_B = 0.5F;
+    private static final int COLOR_SQUAD = 0xFF7CFC8C;
 
     private static final int MARGIN = 4;
     private static final int TOOL_SIZE = 20;
@@ -321,6 +328,7 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
         renderTexts(graphics);
         renderWaypoints(graphics);
+        renderSquad(graphics);
         renderPlayer(graphics, partialTick);
         if (textEditor.selected() != null && !MapTexts.all().contains(textEditor.selected())) {
             textEditor.select(null); // надпись удалили (меню, окно правки)
@@ -492,6 +500,26 @@ public class MapScreen extends Screen implements MenuTabScreen {
         graphics.fill(left, bottom - 1, right, bottom, COLOR_BRUSH);
         graphics.fill(left, top + 1, left + 1, bottom - 1, COLOR_BRUSH);
         graphics.fill(right - 1, top + 1, right, bottom - 1, COLOR_BRUSH);
+    }
+
+    // Товарищи по отряду в этом измерении: зелёный курсор (остриё — куда смотрит) и имя под ним.
+    // Позиции присылает сервер дважды в секунду — видны на любом расстоянии
+    private void renderSquad(GuiGraphics graphics) {
+        for (SquadMembersPayload.Member member : SquadMarkers.clientMembers) {
+            float x = screenX(member.x());
+            float y = screenY(member.z());
+            graphics.pose().pushPose();
+            graphics.pose().translate(x, y, 0);
+            graphics.pose().mulPose(Axis.ZP.rotationDegrees(member.yaw()));
+            RenderSystem.enableBlend();
+            graphics.setColor(SQUAD_TINT_R, SQUAD_TINT_G, SQUAD_TINT_B, 1.0F);
+            MapIcon.draw(graphics, MapIcon.CURSOR, -9, -7, ICON_SIZE);
+            graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.disableBlend();
+            graphics.pose().popPose();
+            graphics.drawCenteredString(font, member.name(), Math.round(x), Math.round(y) + ICON_SIZE / 2 + 2,
+                    COLOR_SQUAD);
+        }
     }
 
     // Курсор игрока: остриё — куда он смотрит; размер не зависит от масштаба.

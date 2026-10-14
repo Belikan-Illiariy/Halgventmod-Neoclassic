@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.client.map.MapScreen;
+import com.nrdhvnstd.halgventmod.client.squad.SquadScreen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,8 +18,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 /**
- * Вкладки «Инвентарь», «Персонаж», «Карта», «Кодекс» над окнами игрока и переход между ними.
- * Клавиши: E, O, M, J (переназначаются в «Управлении»).
+ * Вкладки «Инвентарь», «Персонаж», «Карта», «Отряд», «Кодекс» над окнами игрока и переход между ними.
+ * Клавиши: E, O, M, G, J (переназначаются в «Управлении»).
  * - В игре клавиша открывает своё окно (E — ванильный путь, через InventoryOverride).
  * - В окне-вкладке клавиша другой вкладки переключает на неё, своя — закрывает окно.
  * - Из инвентаря не уйти, пока на курсоре предмет: при закрытии он мог бы выпасть.
@@ -68,12 +69,13 @@ public final class MenuTabs {
         minecraft.setScreen(switch (tab) {
             case CHARACTER -> new CharacterScreen();
             case MAP -> new MapScreen();
+            case SQUAD -> new SquadScreen();
             default -> new TabPlaceholderScreen(tab);
         });
         return true;
     }
 
-    // Клавиши O, M, J в игре, когда никакое окно не открыто
+    // Клавиши O, M, G, J в игре, когда никакое окно не открыто
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();

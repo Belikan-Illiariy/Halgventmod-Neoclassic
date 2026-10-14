@@ -20,7 +20,31 @@ import net.minecraft.world.item.ItemStack;
  */
 final class ArmorLook {
     /** Выступающая деталь: модель .geo.json и её текстура. */
-    record Detail(ResourceLocation model, ResourceLocation texture) {}
+    static final class Detail {
+        private final ResourceLocation model;
+        private final ResourceLocation texture;
+        @Nullable private final ArmorCompositor.PieceRecipe recipe; // вещь с покрытием: текстура склеивается
+        @Nullable private ArmorCompositor.Composite composite;
+
+        private Detail(ResourceLocation model, ResourceLocation texture, @Nullable ArmorCompositor.PieceRecipe recipe) {
+            this.model = model;
+            this.texture = texture;
+            this.recipe = recipe;
+        }
+
+        ResourceLocation model() {
+            return model;
+        }
+
+        /** Текстура как нарисована или склейка «основа → покрытие → overlay». */
+        ResourceLocation texture() {
+            if (recipe == null) {
+                return texture;
+            }
+            composite = fresh(composite, recipe);
+            return composite.texture();
+        }
+    }
 
     private static final String CAPE_SUFFIX = "_cape";
 
@@ -31,7 +55,8 @@ final class ArmorLook {
     @Nullable private ArmorCompositor.Composite outer;
     final List<Detail> details;
     @Nullable final ResourceLocation capeTexture; // null — плаща нет
-    final int capeColor;
+    @Nullable private final ArmorCompositor.PieceRecipe capeRecipe; // окрашенный плащ: текстура склеивается
+    @Nullable private ArmorCompositor.Composite cape;
 
     static ArmorLook of(ArmorInventory armor) {
         if (armor.renderCache() instanceof ArmorLook look && look.version == armor.version()) {
@@ -56,23 +81,39 @@ final class ArmorLook {
             }
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
             for (String name : info.models()) {
-                found.add(new Detail(path(itemId, slot, "models/armor/", ".geo.json", name),
-                        path(itemId, slot, "textures/armor/", ".png", name)));
+                ResourceLocation texture = path(itemId, slot, "textures/armor/", ".png", name);
+                // Детали ткани не красятся; у вещи с покрытием деталь — тоже основа, своё покрытие и _overlay
+                ArmorCompositor.PieceRecipe recipe = info.dye() == ModArmor.Dye.COATED
+                        ? new ArmorCompositor.PieceRecipe(ArmorCompositor.layer(stack, texture))
+                        : null;
+                found.add(new Detail(path(itemId, slot, "models/armor/", ".geo.json", name), texture, recipe));
             }
         }
         details = List.copyOf(found);
 
-        // Плащ: textures/armor/cloak/<id>_cape.png, цвет — как у окрашенной накидки
+        // Плащ: textures/armor/cloak/<id>_cape.png; окрашенный красится склейкой, как сама накидка
         ItemStack cloak = armor.get(ArmorSlot.CLOAK);
         ModArmor.ArmorInfo info = ModArmor.get(cloak);
         if (info != null && info.cloak() != null && info.cloak().hasCape()) {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(cloak.getItem());
             capeTexture = path(itemId, ArmorSlot.CLOAK, "textures/armor/", ".png", itemId.getPath() + CAPE_SUFFIX);
-            capeColor = info.dyeable() ? ArmorCompositor.color(cloak) : ArmorCompositor.Layer.NO_COLOR;
+            capeRecipe = info.dyeable() && ArmorCompositor.color(cloak) != ArmorCompositor.Layer.NO_COLOR
+                    ? new ArmorCompositor.PieceRecipe(ArmorCompositor.layer(cloak, capeTexture))
+                    : null;
         } else {
             capeTexture = null;
-            capeColor = ArmorCompositor.Layer.NO_COLOR;
+            capeRecipe = null;
         }
+    }
+
+    /** Текстура плаща или null, если плаща нет. */
+    @Nullable
+    ResourceLocation cape() {
+        if (capeRecipe == null) {
+            return capeTexture;
+        }
+        cape = fresh(cape, capeRecipe);
+        return cape.texture();
     }
 
     /** Склейка плоскости или null, если на ней ничего не надето. */
@@ -89,7 +130,7 @@ final class ArmorLook {
     // Склейку могли освободить (давно не рисовалась, F3+T) — тогда берём из кэша заново
     @Nullable
     private static ArmorCompositor.Composite fresh(@Nullable ArmorCompositor.Composite composite,
-                                                   @Nullable ArmorCompositor.Recipe recipe) {
+                                                   @Nullable ArmorCompositor.Key recipe) {
         if (recipe == null) {
             return null;
         }

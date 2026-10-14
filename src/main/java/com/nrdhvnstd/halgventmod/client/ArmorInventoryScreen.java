@@ -1,5 +1,7 @@
 package com.nrdhvnstd.halgventmod.client;
 
+import javax.annotation.Nullable;
+
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.menu.ArmorEquipSlot;
 import com.nrdhvnstd.halgventmod.menu.PlayerArmorMenu;
@@ -32,6 +34,15 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     private static final int CATALOG_WIDTH = 64;
     private static final int CATALOG_HEIGHT = 20;
 
+    // Кнопка очистки инвентаря (только в творческом) — справа от хотбара, с тем же зазором,
+    // что у второй руки слева: рамка ячейки начинается на 1 пиксель левее и выше предмета
+    private static final int CLEAR_X = PlayerArmorMenu.INVENTORY_X + 9 * PlayerArmorMenu.SLOT_STEP
+            + (PlayerArmorMenu.INVENTORY_X - PlayerArmorMenu.OFFHAND_X - PlayerArmorMenu.SLOT_STEP) - 1;
+    private static final int CLEAR_Y = PlayerArmorMenu.HOTBAR_Y - 1;
+
+    @Nullable
+    private ClearInventoryButton clearButton; // только в творческом
+
     public ArmorInventoryScreen(PlayerArmorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.imageWidth = PlayerArmorMenu.WIDTH;
@@ -54,7 +65,23 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
                             button -> InventoryOverride.openCatalog())
                     .bounds(leftPos + CATALOG_X, topPos + CATALOG_Y, CATALOG_WIDTH, CATALOG_HEIGHT)
                     .build());
+            clearButton = addRenderableWidget(new ClearInventoryButton(menu, leftPos + CLEAR_X, topPos + CLEAR_Y));
+        } else {
+            clearButton = null;
         }
+    }
+
+    // Вещь перетащили на крестик и отпустили — удаляем её. Без этого игра выбросила бы её:
+    // кнопка лежит за краем окна. Начатую раскладку по ячейкам (перетаскивание через ячейки) отменяем
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (clearButton != null && !menu.getCarried().isEmpty() && clearButton.isMouseOver(mouseX, mouseY)) {
+            isQuickCrafting = false;
+            quickCraftSlots.clear();
+            clearButton.destroyCarried();
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override

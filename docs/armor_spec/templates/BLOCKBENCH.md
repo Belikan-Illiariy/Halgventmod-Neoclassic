@@ -23,8 +23,8 @@
 assets/halgventmod/models/armor/<папка слота>/<id>_<деталь>.geo.json   File → Export → Bedrock Geometry
 assets/halgventmod/textures/armor/<папка слота>/<id>_<деталь>.png       текстура детали
 ```
-В коде вещи: `.armorModel("<id>_<деталь>")`. Пример — забрало хундсгугеля:
-`models/armor/helmet/bascinet_hounskull_visor.geo.json`.
+В коде вещи: `.armorModel("<id>_<деталь>")`. Готовых примеров в моде сейчас нет — за основу бери
+`templates/armor_model_template.geo.json`.
 
 ## Проверить в игре без пересборки
 Положить файлы в ресурспак с той же структурой папок (`assets/halgventmod/...`), включить его и нажать F3+T.

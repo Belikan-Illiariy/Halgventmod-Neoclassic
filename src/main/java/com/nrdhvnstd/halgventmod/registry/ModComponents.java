@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.armor.ModArmor;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -52,6 +53,13 @@ public final class ModComponents {
             COMPONENTS.register("key_ring", () -> DataComponentType.<List<ItemStack>>builder()
                     .persistent(ItemStack.CODEC.listOf())
                     .networkSynchronized(ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()))
+                    .build());
+
+    // Покрытие брони, у которой их несколько (эмаль или роспись); цвет — в ванильном dyed_color
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ModArmor.Coating>> COATING =
+            COMPONENTS.register("coating", () -> DataComponentType.<ModArmor.Coating>builder()
+                    .persistent(ModArmor.Coating.CODEC)
+                    .networkSynchronized(ModArmor.Coating.STREAM_CODEC)
                     .build());
 
     private ModComponents() {}

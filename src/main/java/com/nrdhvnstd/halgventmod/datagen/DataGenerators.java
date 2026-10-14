@@ -35,6 +35,10 @@ public final class DataGenerators {
         generator.addProvider(event.includeServer(),
                 new ModPaintingTagsProvider(output, datapackEntries.getRegistryProvider(), existingFileHelper));
 
+        // Теги блоков: что срезает серп, куда сажаются семена
+        generator.addProvider(event.includeServer(),
+                new ModBlockTagsProvider(output, lookupProvider, existingFileHelper));
+
         // Модели предметов и переводы
         generator.addProvider(event.includeClient(), new ModItemModelProvider(output, existingFileHelper));
         generator.addProvider(event.includeClient(), new ModLanguageProvider(output, "ru_ru"));

@@ -170,9 +170,9 @@ public class CalendarScreen extends Screen {
 
         long today = Calendar.clientDay;
         long firstDay = Calendar.toDay(viewYear, viewMonth, 1);
-        Calendar.Season season = Calendar.Season.values()[(viewMonth - 1) / Calendar.MONTHS_PER_SEASON];
+        Calendar.Season season = Calendar.season(viewMonth);
 
-        // Свиток: значок сезона и «Студень 1419 г.», вместе по центру
+        // Свиток: значок сезона и «Декабрь 1384 г.», вместе по центру
         Component title = Component.translatable("calendar.halgventmod.screen.header",
                 Component.translatable(Calendar.monthKey(viewMonth)), viewYear);
         Part icon = SEASON_ICONS[season.ordinal()];
@@ -254,7 +254,7 @@ public class CalendarScreen extends Screen {
         }
     }
 
-    // «3 студня 1419 г.», затем по каждому событию — название и пояснение
+    // «3 декабрь 1384 г.», затем по каждому событию — название и пояснение
     private List<FormattedCharSequence> eventTooltip(long day) {
         List<FormattedCharSequence> lines = new ArrayList<>();
         lines.add(Calendar.dateText(day).withStyle(ChatFormatting.GOLD).getVisualOrderText());

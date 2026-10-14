@@ -9,6 +9,7 @@ import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -28,7 +29,7 @@ public class ArmorEquipSlot extends SlotItemHandler {
         return armorSlot;
     }
 
-    /** Почему сюда нельзя положить вещь (правило «капюшон — шлем») или null. */
+    /** Почему сюда нельзя положить вещь (правила «капюшон — шлем», «шлем — подшлемник») или null. */
     @Nullable
     public Component refusal(ItemStack stack) {
         return ArmorRules.refusal(armor, armorSlot, stack);
@@ -38,6 +39,17 @@ public class ArmorEquipSlot extends SlotItemHandler {
     @Override
     public boolean mayPlace(ItemStack stack) {
         return super.mayPlace(stack) && refusal(stack) == null;
+    }
+
+    /** Почему отсюда нельзя вынуть вещь (подшлемник под шлемом) или null. */
+    @Nullable
+    public Component takeOffRefusal() {
+        return ArmorRules.takeOffRefusal(armor, armorSlot);
+    }
+
+    @Override
+    public boolean mayPickup(Player player) {
+        return super.mayPickup(player) && takeOffRefusal() == null;
     }
 
     // Силуэт пустой ячейки. Временно — ванильные силуэты по части тела;

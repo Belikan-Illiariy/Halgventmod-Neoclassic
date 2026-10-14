@@ -74,14 +74,148 @@ public class ModLanguageProvider extends LanguageProvider {
             add(slot.langKey(), russian ? slot.nameRu() : slot.nameEn());
         }
         add("gui.halgventmod.catalog", russian ? "Каталог" : "Catalog");
+        add("gui.halgventmod.clear_inventory",
+                russian ? "Shift+щелчок — очистить весь инвентарь" : "Shift+click to clear the whole inventory");
         add("tooltip.halgventmod.armor_slot", russian ? "Слот: %s" : "Slot: %s");
         add("message.halgventmod.hood_over_helmet",
                 russian ? "Капюшон не надеть поверх этого шлема" : "The hood won't fit over this helmet");
         add("message.halgventmod.remove_hood_first", russian ? "Сначала снимите капюшон" : "Take off the hood first");
+        add("message.halgventmod.arming_cap_first",
+                russian ? "Шлем надевается только поверх подшлемника" : "A helmet goes on only over an arming cap");
+        add("message.halgventmod.remove_helmet_first", russian ? "Сначала снимите шлем" : "Take off the helmet first");
+
+        // Отладка: хитбоксы (F3+B) — только администраторам
+        add("debug.halgventmod.hitboxes.no_permission",
+                russian ? "Хитбоксы доступны только администраторам" : "Hitboxes are available to admins only");
+
+        // Ники над головами игроков (/nametags)
+        add("command.halgventmod.nametags.current", russian ? "Ники над головами: %s" : "Name tags: %s");
+        add("command.halgventmod.nametags.set",
+                russian ? "Ники над головами теперь: %s" : "Name tags are now: %s");
+        add("command.halgventmod.nametags.mode.off", russian ? "отключены" : "off");
+        add("command.halgventmod.nametags.mode.admins",
+                russian ? "видны только администраторам" : "visible to admins only");
+        add("command.halgventmod.nametags.mode.all", russian ? "видны всем" : "visible to everyone");
+
+        // Каналы чата
+        add("chat.halgventmod.global", russian ? "[Глобальный] %s: %s" : "[Global] %s: %s");
+        add("chat.halgventmod.local", russian ? "[Локальный] %s: %s" : "[Local] %s: %s");
+        add("chat.halgventmod.emote", russian ? "[Локальный] * %s %s" : "[Local] * %s %s");
+        add("chat.halgventmod.global_admins_only",
+                russian ? "В глобальный чат («!» в начале) пишут только администраторы" : "Only admins can write to the global chat (\"!\" prefix)");
+        add("chat.halgventmod.nobody_heard", russian ? "Рядом никого — вас никто не услышал" : "Nobody is near enough to hear you");
+
+        // Отряды (/squad)
+        squad("none", "Вы не в отряде. Создать: /squad create <название>", "You are not in a squad. Create one: /squad create <name>");
+        squad("info.header", "Отряд «%s»", "Squad \"%s\"");
+        squad("info.leader", "Лидер: %s", "Leader: %s");
+        squad("info.members", "Участники (%s): %s", "Members (%s): %s");
+        squad("already_in", "Вы уже в отряде «%s»", "You are already in squad \"%s\"");
+        squad("name_length", "Название отряда — от %s до %s знаков", "The squad name must be %s to %s characters long");
+        squad("name_characters", "В названии можно использовать буквы (кириллица, латиница), цифры, пробел, дефис и апостроф",
+                "Only letters (Cyrillic, Latin), digits, spaces, hyphens and apostrophes are allowed");
+        squad("name_taken", "Отряд «%s» уже есть", "Squad \"%s\" already exists");
+        squad("not_in", "Вы не в отряде", "You are not in a squad");
+        squad("not_leader", "Это может только лидер отряда", "Only the squad leader can do this");
+        squad("invite_self", "Нельзя пригласить самого себя", "You can't invite yourself");
+        squad("target_in_squad", "%s уже в отряде", "%s is already in a squad");
+        squad("invite_sent", "Приглашение отправлено: %s. Оно действует пять минут", "Invitation sent to %s. It lasts five minutes");
+        squad("invited", "%s приглашает вас в отряд «%s».", "%s invites you to squad \"%s\".");
+        squad("button.accept", "[Принять]", "[Accept]");
+        squad("button.decline", "[Отклонить]", "[Decline]");
+        squad("no_invite", "У вас нет приглашений в отряд", "You have no squad invitations");
+        squad("joined", "%s вступает в отряд «%s»", "%s joins squad \"%s\"");
+        squad("declined", "%s отклоняет приглашение в отряд", "%s declines the squad invitation");
+        squad("leader_cant_leave", "Лидер не может просто уйти: передайте лидерство (/squad leader <игрок>) или распустите отряд (/squad disband)",
+                "The leader can't just leave: pass leadership (/squad leader <player>) or disband the squad (/squad disband)");
+        squad("you_left", "Вы покинули отряд «%s»", "You left squad \"%s\"");
+        squad("left", "%s покидает отряд", "%s leaves the squad");
+        squad("kick_self", "Себя исключить нельзя: /squad leave или /squad disband", "You can't kick yourself: /squad leave or /squad disband");
+        squad("not_member", "В отряде нет игрока %s", "There is no %s in the squad");
+        squad("kicked", "%s исключён из отряда", "%s was kicked from the squad");
+        squad("you_kicked", "Вас исключили из отряда «%s»", "You were kicked from squad \"%s\"");
+        squad("new_leader", "Новый лидер отряда: %s", "New squad leader: %s");
+        squad("disbanded", "Отряд «%s» распущен", "Squad \"%s\" has been disbanded");
+        squad("chat", "[Отряд] %s: %s", "[Squad] %s: %s");
+        squad("chat_not_in", "Вы не в отряде — писать в чат отряда некому", "You are not in a squad — nobody to talk to");
+        squad("created_title", "Создан отряд", "Squad founded");
+        squad("banner_too_many", "На знамени не больше %s узоров", "A banner can have at most %s patterns");
+        squad("player_offline", "Игрок уже не в сети", "The player is no longer online");
+        squad("renamed", "Отряд теперь называется «%s»", "The squad is now called \"%s\"");
+        squad("rank_leader", "Звание лидера — «Лидер»", "The leader's rank is always \"Leader\"");
+        squad("rank_length", "Звание — не длиннее %s знаков", "A rank can be at most %s characters long");
+        squad("friendly_fire_on", "Лидер разрешил урон по своим", "The leader allowed friendly fire");
+        squad("friendly_fire_off", "Лидер запретил урон по своим", "The leader disabled friendly fire");
+        squad("map_mode", "Отображение отряда на карте: %s", "Squad map display: %s");
+        squad("which_invite", "Приглашений несколько — укажите отряд: /squad accept <отряд>", "You have several invitations — name the squad: /squad accept <squad>");
+
+        // Окно «Отряд»
+        squadGui("title", "Отряд", "Squad");
+        squadGui("invites", "Приглашения в отряд", "Squad invitations");
+        squadGui("invites_count", "Приглашения в отряд (%s)", "Squad invitations (%s)");
+        squadGui("create", "Создать отряд", "Create squad");
+        squadGui("column.squad", "Отряд", "Squad");
+        squadGui("column.inviter", "Пригласил", "Invited by");
+        squadGui("no_invites", "Приглашений нет", "No invitations");
+        squadGui("rename", "Переименовать отряд", "Rename squad");
+        squadGui("edit_banner", "Изменить знамя отряда", "Change squad banner");
+        squadGui("members", "Список игроков %s/%s", "Players %s/%s");
+        squadGui("rank.leader", "Лидер", "Leader");
+        squadGui("rank.member", "Участник", "Member");
+        squadGui("friendly_fire.on", "Урон по своим включен", "Friendly fire is on");
+        squadGui("friendly_fire.off", "Урон по своим выключен", "Friendly fire is off");
+        squadGui("invite_members", "Пригласить участников", "Invite players");
+        squadGui("disband", "Распустить отряд", "Disband squad");
+        squadGui("disband.confirm", "Вы уверены, что хотите распустить отряд?", "Are you sure you want to disband the squad?");
+        squadGui("leave", "Покинуть отряд", "Leave squad");
+        squadGui("leave.confirm", "Вы уверены, что хотите покинуть отряд?", "Are you sure you want to leave the squad?");
+        squadGui("menu.rank", "Изменить звание", "Change rank");
+        squadGui("menu.kick", "Выгнать из отряда", "Kick from squad");
+        squadGui("menu.leader", "Сделать лидером", "Make leader");
+        squadGui("kick.confirm", "Выгнать %s из отряда?", "Kick %s from the squad?");
+        squadGui("leader.confirm", "Сделать %s лидером отряда? Вы станете обычным участником", "Make %s the squad leader? You will become a regular member");
+        squadGui("save", "Сохранить", "Save");
+        squadGui("name", "Название отряда", "Squad name");
+        squadGui("banner", "Знамя отряда", "Squad banner");
+        squadGui("banner.hint", "Выберите цвет, затем узор. Щелчок по слою — перекрасить его", "Pick a color, then a pattern. Click a layer to recolor it");
+        squadGui("banner.layers", "Слои %s/%s", "Layers %s/%s");
+        squadGui("banner.base", "Основа: %s", "Base: %s");
+        squadGui("invited", "Приглашён", "Invited");
+        squadGui("invited_mark", "приглашён", "invited");
+        squadGui("invite_to_squad", "Пригласить в отряд", "Invite to squad");
+        squadGui("map.tooltip", "Отображение на карте: %s", "Shown on map: %s");
+        squadGui("map.off", "отключено", "off");
+        squadGui("map.ranks", "включено только для избранных рангов", "only for chosen ranks");
+        squadGui("map.all", "включено для всех", "for everyone");
+        squadGui("map.ranks_list", "Ранги: %s", "Ranks: %s");
+        squadGui("map.ranks.none", "не выбраны", "none chosen");
+        squadGui("map.hint", "ЛКМ — сменить режим, ПКМ — выбрать ранги", "LMB — change mode, RMB — choose ranks");
+        squadGui("map.ranks_title", "Кому видны товарищи на карте", "Who sees squad members on the map");
+        squadGui("map.ranks_hint", "Лидеру видно всегда", "The leader always sees them");
+        squadGui("nobody_to_invite", "Все игроки в сети уже в отрядах", "Everyone online is already in a squad");
+        squadGui("rank_of", "Звание: %s", "Rank: %s");
+        squadGui("rank.hint", "Пустое поле — звание «Участник»", "Leave empty for \"Member\"");
+
+        // RP-имя (/nick)
+        add("command.halgventmod.nick.none",
+                russian ? "У вас нет RP-имени. Задать: /nick <имя>" : "You have no RP name. Set one: /nick <name>");
+        add("command.halgventmod.nick.current", russian ? "Ваше RP-имя: %s" : "Your RP name: %s");
+        add("command.halgventmod.nick.set", russian ? "Теперь вас зовут: %s" : "Your name is now: %s");
+        add("command.halgventmod.nick.reset", russian ? "RP-имя снято, виден настоящий ник" : "RP name removed, your real name is shown");
+        add("command.halgventmod.nick.length",
+                russian ? "Имя должно быть от %s до %s знаков" : "The name must be %s to %s characters long");
+        add("command.halgventmod.nick.characters",
+                russian ? "В имени можно использовать только буквы (кириллица, латиница), пробел, дефис и апостроф; начинаться и заканчиваться оно должно буквой"
+                        : "Only letters (Cyrillic, Latin), spaces, hyphens and apostrophes are allowed; the name must start and end with a letter");
 
         // Срок годности
         add("tooltip.halgventmod.spoils_in", russian ? "Испортится через: %s сут." : "Spoils in: %s d.");
         add("tooltip.halgventmod.spoiled", russian ? "Испорчено" : "Spoiled");
+
+        // Правила фермерства (/gamerule и экран «Правила игры»)
+        add("gamerule.farmlandTrampling", russian ? "Вытаптывание пашни" : "Farmland trampling");
+        add("gamerule.farmlandDriesToDirt", russian ? "Сухая пашня превращается в землю" : "Dry farmland turns to dirt");
+        add("gamerule.cropsNeedWater", russian ? "Растениям нужна сырая пашня" : "Crops need wet farmland");
 
         // Календарь: дни недели, месяцы, сезоны
         for (int i = 0; i < Calendar.DAYS_PER_WEEK; i++) {
@@ -121,12 +255,14 @@ public class ModLanguageProvider extends LanguageProvider {
         add("key.halgventmod.calendar", russian ? "Календарь" : "Calendar");
         add("key.halgventmod.character", russian ? "Персонаж" : "Character");
         add("key.halgventmod.map", russian ? "Карта" : "Map");
+        add("key.halgventmod.squad", russian ? "Отряд" : "Squad");
         add("key.halgventmod.codex", russian ? "Кодекс" : "Codex");
 
         // Вкладки над окнами игрока
         add("gui.halgventmod.tab.inventory", russian ? "Инвентарь" : "Inventory");
         add("gui.halgventmod.tab.character", russian ? "Персонаж" : "Character");
         add("gui.halgventmod.tab.map", russian ? "Карта" : "Map");
+        add("gui.halgventmod.tab.squad", russian ? "Отряд" : "Squad");
         add("gui.halgventmod.tab.codex", russian ? "Кодекс" : "Codex");
         add("gui.halgventmod.tab.hint", "%s (%s)");
         add("gui.halgventmod.tab.wip", russian ? "Раздел в разработке" : "Coming soon");
@@ -297,5 +433,13 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.BURDEN.get(), russian ? "Обуза" : "Burden");
         add(ModEffects.ENCUMBERED.get(), russian ? "Скованность" : "Encumbered");
         add(ModEffects.OVERLOADED.get(), russian ? "Тяжесть" : "Overloaded");
+    }
+
+    private void squad(String key, String ru, String en) {
+        add("squad.halgventmod." + key, russian ? ru : en);
+    }
+
+    private void squadGui(String key, String ru, String en) {
+        add("gui.halgventmod.squad." + key, russian ? ru : en);
     }
 }

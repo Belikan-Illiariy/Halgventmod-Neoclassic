@@ -4,7 +4,9 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.food.HungerData;
 import com.nrdhvnstd.halgventmod.food.ThirstData;
+import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.lock.ChunkLocks;
+import com.nrdhvnstd.halgventmod.name.RpNames;
 import com.nrdhvnstd.halgventmod.needs.NeedsSync;
 import com.nrdhvnstd.halgventmod.needs.StaminaData;
 
@@ -57,6 +59,14 @@ public final class ModAttachments {
             ATTACHMENTS.register("armor", () -> AttachmentType.serializable(() -> new ArmorInventory())
                     .copyOnDeath()
                     .sync(ArmorInventory.SYNC)
+                    .build());
+
+    // RP-имя игрока (/nick); пустое — настоящий ник. Сохраняется, переживает смерть, видно всем.
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<String>> RP_NAME =
+            ATTACHMENTS.register("rp_name", () -> AttachmentType.builder(() -> "")
+                    .serialize(Codec.STRING)
+                    .copyOnDeath()
+                    .sync(RpNames.SYNC)
                     .build());
 
     private ModAttachments() {}

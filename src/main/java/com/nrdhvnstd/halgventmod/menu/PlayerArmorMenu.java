@@ -85,7 +85,7 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
     }
 
     // Клик по ячейке брони вещью с курсора или обмен с хотбаром цифрой: если правило не пускает —
-    // сообщение над хотбаром (сам запрет делает ArmorEquipSlot.mayPlace)
+    // сообщение над хотбаром (сам запрет делает ArmorEquipSlot.mayPlace / mayPickup)
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
         if (slotId >= ARMOR_START && slotId < ARMOR_END) {
@@ -95,11 +95,19 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
                 default -> ItemStack.EMPTY;
             };
             ArmorEquipSlot slot = (ArmorEquipSlot) slots.get(slotId);
-            if (ModArmor.slotOf(incoming) == slot.armorSlot()) {
-                Component refusal = slot.refusal(incoming);
-                if (refusal != null) {
-                    ArmorRules.tell(player, refusal);
-                }
+            Component refusal = null;
+            boolean takesOff = switch (clickType) {
+                case PICKUP, QUICK_MOVE, SWAP, THROW -> true;
+                default -> false;
+            };
+            if (takesOff && slot.hasItem()) {
+                refusal = slot.takeOffRefusal();
+            }
+            if (refusal == null && ModArmor.slotOf(incoming) == slot.armorSlot()) {
+                refusal = slot.refusal(incoming);
+            }
+            if (refusal != null) {
+                ArmorRules.tell(player, refusal);
             }
         }
         super.clicked(slotId, button, clickType, player);

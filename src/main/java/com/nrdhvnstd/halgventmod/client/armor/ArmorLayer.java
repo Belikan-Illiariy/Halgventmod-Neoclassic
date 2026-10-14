@@ -69,15 +69,14 @@ public class ArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
         return armor != null && ArmorLook.of(armor).capeTexture != null;
     }
 
-    // Плащ: геометрия и физика ванильного плаща (CapeLayer), текстура и цвет — из ArmorLook
+    // Плащ: геометрия и физика ванильного плаща (CapeLayer), текстура — из ArmorLook
     private void renderCape(PoseStack poseStack, MultiBufferSource buffer, int packedLight,
                             AbstractClientPlayer player, ArmorInventory armor, float partialTick) {
         ArmorLook look = ArmorLook.of(armor);
-        ResourceLocation texture = look.capeTexture;
+        ResourceLocation texture = look.cape();
         if (texture == null) {
             return;
         }
-        int color = look.capeColor;
 
         poseStack.pushPose();
         poseStack.translate(0.0F, 0.0F, 0.125F);
@@ -104,7 +103,7 @@ public class ArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
         cape.z = crouching ? CROUCH_CAPE_Z : 0.0F;
         cape.y = crouching ? CROUCH_CAPE_Y : 0.0F;
         cape.render(poseStack, buffer.getBuffer(RenderType.entityCutoutNoCull(texture)),
-                packedLight, OverlayTexture.NO_OVERLAY, color);
+                packedLight, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();
     }
 

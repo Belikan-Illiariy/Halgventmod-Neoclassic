@@ -34,6 +34,7 @@ import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import com.nrdhvnstd.halgventmod.lock.KeyRingItem;
+import com.nrdhvnstd.halgventmod.farming.HarvestToolItem;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HalgventMod.MODID);
@@ -49,6 +50,7 @@ public final class ModItems {
     //     .lore(по-русски, по-английски, 0xRRGGBB)   — описание своим цветом
     //     .stacksTo(n)                               — размер стака 1–99, по умолчанию 64
     //     .grams(n) или .kg(n)                       — вес одной штуки
+    //     .durability(n)                             — прочность инструмента, стак 1
     //   Еда и питьё:
     //     .food(сытость, насыщение)                  — съедобно, в единицах шкалы голода 0–100
     //     .drink()                                   — пьётся, а не ешется
@@ -58,7 +60,10 @@ public final class ModItems {
     //   Броня:
     //     .armor(ArmorSlot.HELMET)                   — вещь брони своего слота; стак 1, надевается ПКМ
     //     .layerOrder(n)                             — свой порядок отрисовки вместо порядка слота
-    //     .dyeable()                                 — красится (текстура в сером + <id>_overlay.png)
+    //     .dyeable()                                 — красится как ткань (текстура в сером + <id>_overlay.png)
+    //     .enamel()                                  — покрывается эмалью (<id>.png в цвете + серый <id>_enamel.png)
+    //     .painted()                                 — покрывается росписью (<id>.png в цвете + серый <id>_painted.png)
+    //                                                  можно оба: .enamel().painted() — первое по умолчанию
     //     .armorModel("hounskull_visor")             — выступающие детали (модели), необязательно
     //     .hoodCompatible()                          — только шлем: поверх него можно надеть капюшон
     //     .cloak(CloakType.HOODED_CAPE)              — только накидка: капюшон, плащ или оба
@@ -103,6 +108,24 @@ public final class ModItems {
             .grams(20)
             .register(KeyRingItem::new);
 
+    // ----- Фермерство -----
+    public static final DeferredItem<HarvestToolItem> SICKLE = item("sickle", "Серп", "Sickle", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Срезает растение любой стадии роста. Недозрелое даёт лишь семена.",
+                    "Cuts a crop at any stage of growth. An unripe one yields only seeds.")
+            .durability(250)
+            .grams(300)
+            .register(HarvestToolItem::sickle);
+    public static final DeferredItem<HarvestToolItem> SCYTHE = item("scythe", "Коса", "Scythe", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Срезает растения рядом по три поперёк взгляда. Каждый стебель тупит лезвие.",
+                    "Cuts crops three in a row across your view. Every stalk dulls the blade.")
+            .durability(250)
+            .kg(2.5)
+            .register(HarvestToolItem::scythe);
+
 
 
     // ----- Доспехи -----
@@ -113,6 +136,7 @@ public final class ModItems {
             .lore("Простая железная шапка по форме головы. Лёгкая и неприметная: прячется под капюшоном.",
                     "A plain iron skullcap shaped to the head. Light and unobtrusive, it hides under a hood.")
             .armor(ArmorSlot.HELMET)
+            .dyeable()
             .hoodCompatible()
             .kg(1.2)
             .register();
@@ -143,49 +167,212 @@ public final class ModItems {
             .hoodCompatible()
             .kg(2.2)
             .register();
-    // Проверочные шлемы: вес временный, описаний пока нет
-    public static final DeferredItem<Item> KETTLE_HAT = item("kettle_hat", "Капеллина", "Kettle hat", Gender.F)
+    public static final DeferredItem<Item> BARBUTE = item("barbute", "Барбют", "Barbute", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .lore("Глухой шлем, закрывающий голову до шеи; лицо открыто узким вырезом. Его нередко покрывают эмалью.",
+                    "A closed helmet reaching down to the neck, with a narrow opening for the face. It is often enamelled.")
+            .armor(ArmorSlot.HELMET)
+            .enamel()
+            .hoodCompatible()
+            .kg(2.4)
+            .register();
+    // Новые шлемы: вес временный, описаний пока нет
+    public static final DeferredItem<Item> GILDED_BARBUTE = item("gilded_barbute", "Золочёный барбют", "Gilded barbute", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .hoodCompatible()
+            .kg(2.4)
+            .register();
+    public static final DeferredItem<Item> GREAT_BASCINET = item("great_bascinet", "Большой бацинет", "Great bascinet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3.5)
+            .register();
+    public static final DeferredItem<Item> HUNDSGUGEL_BASCINET = item("hundsgugel_bascinet", "Хундсгугель", "Hounskull", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3.2)
+            .register();
+    public static final DeferredItem<Item> SCHWEINSGUGEL_BASCINET = item("schweinsgugel_bascinet", "Швайнсгугель", "Pig-faced bascinet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3.2)
+            .register();
+    public static final DeferredItem<Item> KLAPPVISOR_BASCINET = item("klappvisor_bascinet", "Бацинет с клапвизором", "Klappvisor bascinet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3)
+            .register();
+    public static final DeferredItem<Item> ARMET = item("armet", "Армет", "Armet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3.5)
+            .register();
+    public static final DeferredItem<Item> INFANTRY_SALLET = item("infantry_sallet", "Пехотный салад", "Infantry sallet", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(2.2)
+            .register();
+    public static final DeferredItem<Item> KNIGHT_SALLET = item("knight_sallet", "Рыцарский салад", "Knight's sallet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3)
+            .register();
+    public static final DeferredItem<Item> LIGHT_TOPFHELM = item("light_topfhelm", "Лёгкий топфхельм", "Light pot helm", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(2.5)
+            .register();
+    public static final DeferredItem<Item> HEAVY_TOPFHELM = item("heavy_topfhelm", "Тяжёлый топфхельм", "Heavy pot helm", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .dyeable()
+            .kg(3.5)
+            .register();
+    public static final DeferredItem<Item> KUBELHELM = item("kubelhelm", "Кюбельхельм", "Great helm", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .enamel()
+            .painted()
+            .kg(4)
+            .register();
+    public static final DeferredItem<Item> HALGVENT_HELMET = item("halgvent_helmet", "Хальгвентский шлем", "Halgvent helmet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3)
+            .register();
+    public static final DeferredItem<Item> ALLENDORIC_HELMET = item("allendoric_helmet", "Аллендорский шлем", "Allendoric helmet", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .kg(3)
+            .register();
+    public static final DeferredItem<Item> WENDISH_HELMET = item("wendish_helmet", "Вендский шлем", "Wendish helmet", Gender.M)
+            .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
             .kg(2)
             .register();
-    // Проверочный набор для отрисовки: текстуры — временные заглушки, иконок пока нет (кроме хундсгугеля)
-    public static final DeferredItem<Item> BASCINET_HOUNSKULL = item("bascinet_hounskull", "Хундсгугель", "Hounskull", Gender.M)
+    public static final DeferredItem<Item> KETTLE_HAT = item("kettle_hat", "Капеллина", "Kettle hat", Gender.F)
+            .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
-            .armorModel("bascinet_hounskull_visor")
-            .kg(3.2)
+            .dyeable()
+            .kg(2)
             .register();
-    public static final DeferredItem<Item> HOODED_CLOAK = item("hooded_cloak", "Плащ с капюшоном", "Hooded cloak", Gender.M)
+    public static final DeferredItem<Item> KETTLE_HAT_BEVOR = item("kettle_hat_bevor", "Капеллина с бувигером", "Kettle hat with bevor", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.HELMET)
+            .dyeable()
+            .kg(2.8)
+            .register();
+
+    // Койфы: вес временный, описаний пока нет
+    public static final DeferredItem<Item> MAIL_COIF = item("mail_coif", "Кольчужный капюшон", "Mail coif", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.COIF)
+            .kg(2)
+            .register();
+    public static final DeferredItem<Item> VENTAIL_COIF = item("ventail_coif", "Койф с вентайлем", "Ventail coif", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.COIF)
+            .kg(2.4)
+            .register();
+    public static final DeferredItem<Item> VENTAIL_COIF_NASAL = item("ventail_coif_nasal", "Койф с вентайлем и наносником", "Ventail coif with nasal", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.COIF)
+            .kg(2.6)
+            .register();
+
+    // Подшлемники и головные уборы: вес временный, описаний пока нет
+    public static final DeferredItem<Item> CALE = item("cale", "Чепец", "Cale", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.ARMING_CAP)
+            .painted()
+            .grams(150)
+            .register();
+    public static final DeferredItem<Item> CHAPERON = item("chaperon", "Шаперон", "Chaperon", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.ARMING_CAP)
+            .dyeable()
+            .grams(400)
+            .register();
+    public static final DeferredItem<Item> HOOD = item("hood", "Капюшон", "Hood", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.ARMING_CAP)
+            .dyeable()
+            .grams(400)
+            .register();
+
+    // Накидки: вес временный, описаний пока нет
+    public static final DeferredItem<Item> WOOLEN_CLOAK = item("woolen_cloak", "Шерстяной плащ", "Woolen cloak", Gender.M)
+            .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.CLOAK)
-            .cloak(CloakType.HOODED_CAPE)
+            .cloak(CloakType.CAPE)
             .dyeable()
             .kg(1.8)
             .register();
+    public static final DeferredItem<Item> FINE_CLOAK = item("fine_cloak", "Добротный плащ", "Fine cloak", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.CLOAK)
+            .cloak(CloakType.CAPE)
+            .dyeable()
+            .kg(1.5)
+            .register();
+    public static final DeferredItem<Item> FUR_CLOAK = item("fur_cloak", "Меховой плащ", "Fur cloak", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.CLOAK)
+            .cloak(CloakType.CAPE)
+            .kg(3)
+            .register();
+    public static final DeferredItem<Item> SIMPLE_SURCOAT = item("simple_surcoat", "Простое сюрко", "Simple surcoat", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.CLOAK)
+            .cloak(CloakType.NONE)
+            .dyeable()
+            .kg(0.8)
+            .register();
+    public static final DeferredItem<Item> SURCOAT = item("surcoat", "Сюрко", "Surcoat", Gender.N)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.CLOAK)
+            .cloak(CloakType.NONE)
+            .dyeable()
+            .kg(1)
+            .register();
+
+    // Поддоспех
     public static final DeferredItem<Item> QUILTED_AKETON = item("quilted_aketon", "Акетон", "Aketon", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .lore("Стёганая куртка, набитая паклей или хлопком. Смягчает удары и не даёт кольчуге натирать тело.",
                     "A quilted jacket stuffed with tow or cotton. It softens blows and keeps mail from chafing.")
             .armor(ArmorSlot.PADDING)
-            .dyeable()
             .kg(2.5)
-            .register();
-    public static final DeferredItem<Item> SHORT_MAIL = item("short_mail", "Короткая кольчуга", "Short mail", Gender.F)
-            .category(Category.ARMOR)
-            .armor(ArmorSlot.MAIL)
-            .kg(8)
-            .register();
-    public static final DeferredItem<Item> BOOTS = item("boots", "Сапоги", "Boots", Gender.PL)
-            .category(Category.ARMOR)
-            .armor(ArmorSlot.BOOTS)
-            .kg(1.5)
-            .register();
-    public static final DeferredItem<Item> GREAVES = item("greaves", "Поножи", "Greaves", Gender.PL)
-            .category(Category.ARMOR)
-            .armor(ArmorSlot.GREAVES)
-            .kg(2)
             .register();
 
 
@@ -351,6 +538,7 @@ public final class ModItems {
         private String loreEn;
         private int loreColor = ModLore.DEFAULT_COLOR;
         private int maxStack = 64;
+        private int durability; // 0 — не изнашивается
         private double weightGrams = -1; // -1 — не задан, берётся вес по умолчанию
 
         // Еда и питьё
@@ -365,7 +553,8 @@ public final class ModItems {
         // Броня
         private ArmorSlot armorSlot;
         private int layerOrder = ModArmor.ArmorInfo.SLOT_ORDER;
-        private boolean dyeable;
+        private ModArmor.Dye dye = ModArmor.Dye.NONE;
+        private final List<ModArmor.Coating> coatings = new ArrayList<>();
         private List<String> armorModels = List.of();
         private boolean hoodCompatible;
         private CloakType cloak;
@@ -408,6 +597,16 @@ public final class ModItems {
 
         public Builder grams(double grams) {
             this.weightGrams = grams;
+            return this;
+        }
+
+        /** Прочность инструмента; стакается по 1. */
+        public Builder durability(int durability) {
+            if (durability < 1) {
+                throw new IllegalArgumentException(id + ": прочность должна быть больше 0");
+            }
+            this.durability = durability;
+            this.maxStack = 1;
             return this;
         }
 
@@ -470,9 +669,34 @@ public final class ModItems {
             return this;
         }
 
-        /** Красится: текстура в оттенках серого, неокрашиваемые детали — в <id>_overlay.png. */
+        /** Красится как ткань: текстура в оттенках серого, неокрашиваемые детали — в <id>_overlay.png. */
         public Builder dyeable() {
-            this.dyeable = true;
+            if (dye == ModArmor.Dye.COATED) {
+                throw new IllegalArgumentException(id + ": .dyeable() и покрытие вместе не бывают");
+            }
+            this.dye = ModArmor.Dye.CLOTH;
+            return this;
+        }
+
+        /** Красится эмалью: <id>.png в цвете, серый слой <id>_enamel.png, неокрашиваемое — в <id>_overlay.png. */
+        public Builder enamel() {
+            return coating(ModArmor.Coating.ENAMEL);
+        }
+
+        /** Красится росписью: <id>.png в цвете, серый слой <id>_painted.png, неокрашиваемое — в <id>_overlay.png. */
+        public Builder painted() {
+            return coating(ModArmor.Coating.PAINT);
+        }
+
+        // Покрытия копятся: .enamel().painted() — бывает и так, и так; первое — по умолчанию
+        private Builder coating(ModArmor.Coating coating) {
+            if (dye == ModArmor.Dye.CLOTH) {
+                throw new IllegalArgumentException(id + ": .dyeable() и покрытие вместе не бывают");
+            }
+            this.dye = ModArmor.Dye.COATED;
+            if (!coatings.contains(coating)) {
+                coatings.add(coating);
+            }
             return this;
         }
 
@@ -511,6 +735,9 @@ public final class ModItems {
 
         private Item.Properties properties() {
             Item.Properties properties = new Item.Properties().stacksTo(maxStack);
+            if (durability > 0) {
+                properties.durability(durability);
+            }
             if (edible || drink) {
                 properties.food(foodProperties());
             }
@@ -549,7 +776,7 @@ public final class ModItems {
             }
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());
-            } else if (layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dyeable || !armorModels.isEmpty()
+            } else if (layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dye != ModArmor.Dye.NONE || !armorModels.isEmpty()
                     || hoodCompatible || cloak != null) {
                 throw new IllegalArgumentException(id + ": свойства брони без .armor(...)");
             }
@@ -567,7 +794,11 @@ public final class ModItems {
             if ((cloak != null) != (armorSlot == ArmorSlot.CLOAK)) {
                 throw new IllegalArgumentException(id + ": у накидки обязателен .cloak(...), у остальных его быть не может");
             }
-            return new ModArmor.ArmorInfo(armorSlot, layerOrder, dyeable, List.copyOf(armorModels), hoodCompatible, cloak);
+            if (dye == ModArmor.Dye.COATED && armorSlot == ArmorSlot.CLOAK) {
+                throw new IllegalArgumentException(id + ": накидка не покрывается эмалью и росписью — только .dyeable()");
+            }
+            return new ModArmor.ArmorInfo(armorSlot, layerOrder, dye, List.copyOf(coatings), List.copyOf(armorModels),
+                    hoodCompatible, cloak);
         }
     }
 }

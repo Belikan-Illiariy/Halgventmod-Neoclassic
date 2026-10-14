@@ -4,6 +4,8 @@
   "package": "com.nrdhvnstd.halgventmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "CropBlockMixin",
+    "FarmBlockMixin",
     "FoodDataMixin",
     "MobEffectMixin",
     "PaintingMixin",
@@ -11,7 +13,9 @@
   ],
   "client": [
     "CapeLayerMixin",
+    "ClientPacketListenerMixin",
     "CreativeModeInventoryScreenMixin",
+    "KeyboardHandlerMixin",
     "LocalPlayerMixin"
   ],
   "injectors": {

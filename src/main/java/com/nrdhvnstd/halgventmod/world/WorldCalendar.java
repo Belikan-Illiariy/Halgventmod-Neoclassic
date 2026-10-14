@@ -186,7 +186,7 @@ public class WorldCalendar extends SavedData {
         return copy;
     }
 
-    // «Вторица, 3 травня» крупно и «Весна, 1419 г.» под ней
+    // «Монтаг, 3 трент» крупно и «Весна, 1384 г.» под ней
     private static void announceDawn(MinecraftServer server, long day) {
         Calendar.Date date = Calendar.date(day);
         Component title = Component.translatable("calendar.halgventmod.dawn.title",
