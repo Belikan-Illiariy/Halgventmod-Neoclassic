@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
@@ -83,6 +84,31 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.halgventmod.arming_cap_first",
                 russian ? "Шлем надевается только поверх подшлемника" : "A helmet goes on only over an arming cap");
         add("message.halgventmod.remove_helmet_first", russian ? "Сначала снимите шлем" : "Take off the helmet first");
+
+        // Снаряжение и хранилище (концепт инвентаря)
+        for (GearSlot slot : GearSlot.values()) {
+            add(slot.langKey(), russian ? slot.nameRu() : slot.nameEn());
+        }
+        add("gear_slot.halgventmod.pouch", russian ? "Подсумок" : "Pouch"); // подсказка вещи (GearTooltip)
+        add("message.halgventmod.belt_first", russian ? "Сначала наденьте пояс" : "Put on a belt first");
+        add("message.halgventmod.remove_belt_items_first",
+                russian ? "Сначала снимите то, что висит на поясе" : "First take off what hangs from the belt");
+        add("message.halgventmod.no_room", russian ? "Некуда положить" : "No room for it");
+        add("gui.halgventmod.storage.back", russian ? "Спина" : "Back");
+        add("gui.halgventmod.storage.pouch_1", russian ? "Подсумок 1" : "Pouch 1");
+        add("gui.halgventmod.storage.pouch_2", russian ? "Подсумок 2" : "Pouch 2");
+        add("gui.halgventmod.storage.pockets", russian ? "Карманы" : "Pockets");
+        add("gui.halgventmod.storage.locked.back", russian ? "Наденьте рюкзак или сумку" : "Put on a backpack or a bag");
+        add("gui.halgventmod.storage.locked.pouch", russian ? "Наденьте пояс и подсумок" : "Put on a belt and a pouch");
+        add("tooltip.halgventmod.capacity", russian ? "Вместимость: %s" : "Capacity: %s");
+        add("tooltip.halgventmod.contents", russian ? "Внутри: %s из %s" : "Inside: %s of %s");
+        add("tooltip.halgventmod.carry_bonus", russian ? "Грузоподъёмность: +%s, пока надето" : "Carry capacity: +%s while worn");
+        add("tooltip.halgventmod.gear_slot", russian ? "Носится: %s" : "Worn: %s");
+        add("gui.halgventmod.load", russian ? "Нагрузка" : "Load");
+        add("gui.halgventmod.load.none", russian ? "ЛЕГКО" : "LIGHT");
+        add("gui.halgventmod.load.burden", russian ? "ОБУЗА" : "BURDENED");
+        add("gui.halgventmod.load.encumbered", russian ? "СКОВАННОСТЬ" : "ENCUMBERED");
+        add("gui.halgventmod.load.overloaded", russian ? "ТЯЖЕСТЬ" : "OVERLOADED");
 
         // Отладка: хитбоксы (F3+B) — только администраторам
         add("debug.halgventmod.hitboxes.no_permission",
@@ -325,6 +351,10 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // Метки
         add("key.halgventmod.waypoint", russian ? "Поставить метку" : "Add Waypoint");
+        add("key.halgventmod.pickup", russian ? "Подобрать" : "Pick Up");
+        add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
+        add("hud.halgventmod.pickup_equip", russian ? "[Shift+%s] Надеть" : "[Shift+%s] Put on");
+        add("tooltip.halgventmod.arrows", russian ? "Стрел: %s из %s" : "Arrows: %s of %s");
         add("gui.halgventmod.waypoint.new", russian ? "Новая метка" : "New Waypoint");
         add("gui.halgventmod.waypoint.edit", russian ? "Метка" : "Waypoint");
         add("gui.halgventmod.waypoint.name", russian ? "Название" : "Name");

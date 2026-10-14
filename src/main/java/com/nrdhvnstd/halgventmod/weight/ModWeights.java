@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
+import com.nrdhvnstd.halgventmod.gear.GearInventory;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import net.minecraft.core.component.DataComponents;
@@ -120,7 +121,7 @@ public final class ModWeights {
         return stack.getItem() instanceof BlockItem ? DEFAULT_BLOCK_GRAMS : DEFAULT_ITEM_GRAMS;
     }
 
-    /** Вес всего стака, вместе с содержимым шалкеров и мешочков. */
+    /** Вес всего стака, вместе с содержимым шалкеров, сумок и мешочков. */
     public static double stackGrams(ItemStack stack) {
         return stackGrams(stack, 0);
     }
@@ -143,6 +144,12 @@ public final class ModWeights {
                     one += stackGrams(inner, depth + 1);
                 }
             }
+            ItemContainerContents bag = stack.get(ModComponents.BAG_CONTENTS.get());
+            if (bag != null) {
+                for (ItemStack inner : bag.nonEmptyItems()) {
+                    one += stackGrams(inner, depth + 1);
+                }
+            }
             List<ItemStack> ring = stack.get(ModComponents.KEY_RING.get());
             if (ring != null) {
                 for (ItemStack inner : ring) {
@@ -154,7 +161,7 @@ public final class ModWeights {
         return one * stack.getCount();
     }
 
-    /** Всё, что несёт игрок: инвентарь, надетая броня, вторая рука и предмет на курсоре. */
+    /** Всё, что несёт игрок: инвентарь, надетая броня и снаряжение с сумками, вторая рука и предмет на курсоре. */
     public static double inventoryGrams(Player player) {
         Inventory inventory = player.getInventory();
         double total = 0;
@@ -170,6 +177,10 @@ public final class ModWeights {
         ArmorInventory armor = player.getData(ModAttachments.ARMOR);
         for (int i = 0; i < armor.getSlots(); i++) {
             total += stackGrams(armor.getStackInSlot(i));
+        }
+        GearInventory gear = player.getData(ModAttachments.GEAR); // сумки — вместе с содержимым
+        for (int i = 0; i < gear.getSlots(); i++) {
+            total += stackGrams(gear.getStackInSlot(i));
         }
         total += stackGrams(player.containerMenu.getCarried());
         return total;

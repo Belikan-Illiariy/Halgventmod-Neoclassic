@@ -10,6 +10,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -60,6 +61,14 @@ public final class ModComponents {
             COMPONENTS.register("coating", () -> DataComponentType.<ModArmor.Coating>builder()
                     .persistent(ModArmor.Coating.CODEC)
                     .networkSynchronized(ModArmor.Coating.STREAM_CODEC)
+                    .build());
+
+    // Вещи внутри рюкзака, сумки, подсумка или мешочка. Лежат в самой вещи: сняли сумку — вещи остались в ней
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemContainerContents>> BAG_CONTENTS =
+            COMPONENTS.register("bag_contents", () -> DataComponentType.<ItemContainerContents>builder()
+                    .persistent(ItemContainerContents.CODEC)
+                    .networkSynchronized(ItemContainerContents.STREAM_CODEC)
+                    .cacheEncoding()
                     .build());
 
     private ModComponents() {}

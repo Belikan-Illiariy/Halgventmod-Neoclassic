@@ -27,7 +27,7 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
-/** Подключение отрисовки брони: слой на игроке, рука от первого лица, скрытие второго слоя скина, кэш. */
+/** Подключение отрисовки брони и снаряжения: слои на игроке, рука от первого лица, скрытие второго слоя скина, кэш. */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class ArmorRenderEvents {
     private static final int RELEASE_CHECK_INTERVAL = 200; // проверка неиспользуемых склеек раз в 10 секунд
@@ -52,6 +52,7 @@ public final class ArmorRenderEvents {
                     bake(context, slim ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR),
                     context.bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER).getChild("cloak"));
             renderer.addLayer(layer);
+            renderer.addLayer(new GearLayer(renderer)); // снаряжение — поверх брони
             LAYERS.put(skin, layer);
         }
     }

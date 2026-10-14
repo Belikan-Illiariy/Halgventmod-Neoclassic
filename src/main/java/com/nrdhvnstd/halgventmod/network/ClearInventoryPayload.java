@@ -3,6 +3,8 @@ package com.nrdhvnstd.halgventmod.network;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.gear.GearInventory;
+import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import io.netty.buffer.ByteBuf;
@@ -17,7 +19,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /**
  * Клиент → сервер: кнопка с крестиком в инвентаре. Только в творческом режиме.
  * all = false — удалить вещь на курсоре (её перетащили на крестик);
- * all = true — очистить всё: рюкзак, хотбар, вторую руку, всю броню и вещь на курсоре.
+ * all = true — очистить всё: карманы, вторую руку, всю броню, снаряжение с сумками и вещь на курсоре.
  */
 public record ClearInventoryPayload(boolean all) implements CustomPacketPayload {
     public static final ClearInventoryPayload ALL = new ClearInventoryPayload(true);
@@ -45,6 +47,10 @@ public record ClearInventoryPayload(boolean all) implements CustomPacketPayload 
                 ArmorInventory armor = player.getData(ModAttachments.ARMOR);
                 for (ArmorSlot slot : ArmorSlot.values()) {
                     armor.set(slot, ItemStack.EMPTY);
+                }
+                GearInventory gear = player.getData(ModAttachments.GEAR); // сумки — вместе с содержимым
+                for (GearSlot slot : GearSlot.values()) {
+                    gear.set(slot, ItemStack.EMPTY);
                 }
             }
             player.containerMenu.setCarried(ItemStack.EMPTY);

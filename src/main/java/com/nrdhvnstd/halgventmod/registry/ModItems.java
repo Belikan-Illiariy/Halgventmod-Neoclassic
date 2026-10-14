@@ -15,7 +15,13 @@ import com.nrdhvnstd.halgventmod.armor.ArmorPieceItem;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.CloakType;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.draw.DrawType;
+import com.nrdhvnstd.halgventmod.draw.ModDraw;
 import com.nrdhvnstd.halgventmod.food.DrinkItem;
+import com.nrdhvnstd.halgventmod.gear.GearItem;
+import com.nrdhvnstd.halgventmod.gear.GearType;
+import com.nrdhvnstd.halgventmod.gear.ModGear;
+import com.nrdhvnstd.halgventmod.storage.ContainerType;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
 import com.nrdhvnstd.halgventmod.item.Category;
@@ -51,6 +57,8 @@ public final class ModItems {
     //     .stacksTo(n)                               — размер стака 1–99, по умолчанию 64
     //     .grams(n) или .kg(n)                       — вес одной штуки
     //     .durability(n)                             — прочность инструмента, стак 1
+    //     .draw(DrawType.TOOL)                       — как достаётся в руку: SMALL, TOOL, HEAVY; по умолчанию
+    //                                                  блок — HEAVY, остальное — SMALL (ModDraw)
     //   Еда и питьё:
     //     .food(сытость, насыщение)                  — съедобно, в единицах шкалы голода 0–100
     //     .drink()                                   — пьётся, а не ешется
@@ -67,6 +75,10 @@ public final class ModItems {
     //     .armorModel("hounskull_visor")             — выступающие детали (модели), необязательно
     //     .hoodCompatible()                          — только шлем: поверх него можно надеть капюшон
     //     .cloak(CloakType.HOODED_CAPE)              — только накидка: капюшон, плащ или оба
+    //   Снаряжение и сумки:
+    //     .gear(GearType.BELT)                       — надеваемое снаряжение своей ячейки; стак 1, надевается ПКМ
+    //     .container(ContainerType.BACKPACK, 12)     — контейнер на n ячеек (рюкзак, сумка, подсумок, мешочек)
+    //     .carryBonus(20)                            — только рюкзак и сумка: +кг к грузоподъёмности, пока надеты
     //   Плоская текстура брони: assets/halgventmod/textures/armor/<папка слота>/<id>.png (128×64)
     //     .register()
     // Иконка: assets/halgventmod/textures/item/<папка категории>/<id>.png
@@ -116,6 +128,7 @@ public final class ModItems {
                     "Cuts a crop at any stage of growth. An unripe one yields only seeds.")
             .durability(250)
             .grams(300)
+            .draw(DrawType.TOOL)
             .register(HarvestToolItem::sickle);
     public static final DeferredItem<HarvestToolItem> SCYTHE = item("scythe", "Коса", "Scythe", Gender.F)
             .traits(ModTraits.COMMON)
@@ -124,9 +137,97 @@ public final class ModItems {
                     "Cuts crops three in a row across your view. Every stalk dulls the blade.")
             .durability(250)
             .kg(2.5)
+            .draw(DrawType.HEAVY)
             .register(HarvestToolItem::scythe);
 
 
+
+    // ----- Снаряжение и сумки (проверочный набор концепта инвентаря; вес временный) -----
+    public static final DeferredItem<Item> BACKPACK = item("backpack", "Заплечный мешок", "Backpack", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Носится на спине. Пока надет, позволяет нести больше.",
+                    "Worn on the back. While worn, lets you carry more.")
+            .container(ContainerType.BACKPACK, 15)
+            .carryBonus(20)
+            .kg(0.8)
+            .register();
+    public static final DeferredItem<Item> SHOULDER_BAG = item("shoulder_bag", "Сумка через плечо", "Shoulder bag", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Носится на спине или на боку.", "Worn on the back or at the side.")
+            .container(ContainerType.BAG, 6)
+            .carryBonus(10)
+            .kg(0.5)
+            .register();
+    public static final DeferredItem<Item> LEATHER_BELT = item("leather_belt", "Кожаный пояс", "Leather belt", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("На поясе висят фонарь, колчан и подсумки.", "A lantern, a quiver and pouches hang from the belt.")
+            .gear(GearType.BELT)
+            .kg(0.3)
+            .register();
+    public static final DeferredItem<Item> POUCH = item("pouch", "Подсумок", "Pouch", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Вешается на пояс.", "Hangs from the belt.")
+            .container(ContainerType.POUCH, 6)
+            .kg(0.2)
+            .register();
+    public static final DeferredItem<Item> SMALL_POUCH = item("small_pouch", "Малый подсумок", "Small pouch", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Вешается на пояс.", "Hangs from the belt.")
+            .container(ContainerType.POUCH, 3)
+            .kg(0.1)
+            .register();
+    public static final DeferredItem<Item> PURSE = item("purse", "Кошель", "Purse", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("ПКМ по нему в инвентаре — открыть.", "Right-click it in the inventory to open.")
+            .container(ContainerType.PURSE, 3)
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> CANVAS_SACK = item("canvas_sack", "Холщовый мешочек", "Canvas sack", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("ПКМ по нему в инвентаре — открыть.", "Right-click it in the inventory to open.")
+            .container(ContainerType.PURSE, 4)
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> BELT_LANTERN = item("belt_lantern", "Поясной фонарь", "Belt lantern", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Вешается на пояс и светит.", "Hangs from the belt and gives light.")
+            .gear(GearType.LANTERN)
+            .kg(0.6)
+            .register();
+    public static final DeferredItem<Item> QUIVER = item("quiver", "Колчан", "Quiver", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.GEAR)
+            .lore("Вешается на пояс. Держит до 20 стрел, лук и арбалет берут стрелы сначала из него.",
+                    "Hangs from the belt. Holds up to 20 arrows; bows and crossbows draw from it first.")
+            .container(ContainerType.QUIVER, 1)
+            .kg(0.4)
+            .register();
+    public static final DeferredItem<Item> COPPER_RING = item("copper_ring", "Медное кольцо", "Copper ring", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.JEWELRY)
+            .gear(GearType.RING)
+            .grams(20)
+            .register();
+    public static final DeferredItem<Item> COPPER_PENDANT = item("copper_pendant", "Медная подвеска", "Copper pendant", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.JEWELRY)
+            .gear(GearType.NECK)
+            .grams(20)
+            .register();
+    public static final DeferredItem<Item> COPPER_BRACELET = item("copper_bracelet", "Медный браслет", "Copper bracelet", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.JEWELRY)
+            .gear(GearType.BRACELET)
+            .grams(20)
+            .register();
 
     // ----- Доспехи -----
     // Шлемы, которые надеваются под капюшон
@@ -540,6 +641,7 @@ public final class ModItems {
         private int maxStack = 64;
         private int durability; // 0 — не изнашивается
         private double weightGrams = -1; // -1 — не задан, берётся вес по умолчанию
+        private DrawType draw; // null — по умолчанию (ModDraw)
 
         // Еда и питьё
         private boolean edible;
@@ -558,6 +660,12 @@ public final class ModItems {
         private List<String> armorModels = List.of();
         private boolean hoodCompatible;
         private CloakType cloak;
+
+        // Снаряжение и контейнеры
+        private GearType gear;
+        private ContainerType containerType;
+        private int containerCapacity;
+        private double carryBonusKg;
 
         private Builder(String id, String nameRu, String nameEn, Gender gender) {
             this.id = id;
@@ -607,6 +715,12 @@ public final class ModItems {
             }
             this.durability = durability;
             this.maxStack = 1;
+            return this;
+        }
+
+        /** Как достаётся в руку: время и звук (ТЗ 5.3). */
+        public Builder draw(DrawType type) {
+            this.draw = type;
             return this;
         }
 
@@ -718,11 +832,39 @@ public final class ModItems {
             return this;
         }
 
+        /** Снаряжение: кольцо, подвеска, браслет, фонарь, пояс, колчан. Стакается по 1, надевается ПКМ. */
+        public Builder gear(GearType type) {
+            this.gear = type;
+            this.maxStack = 1;
+            return this;
+        }
+
+        /** Контейнер: рюкзак, сумка, подсумок (надеваются сами) или мешочек. Стакается по 1. */
+        public Builder container(ContainerType type, int capacity) {
+            if (capacity < 1 || capacity > type.maxCapacity()) {
+                throw new IllegalArgumentException(id + ": вместимость " + type + " — от 1 до " + type.maxCapacity());
+            }
+            this.containerType = type;
+            this.containerCapacity = capacity;
+            this.gear = type.gear();
+            this.maxStack = 1;
+            return this;
+        }
+
+        /** Прибавка к грузоподъёмности, пока вещь надета на спину (только рюкзак и сумка). */
+        public Builder carryBonus(double kg) {
+            this.carryBonusKg = kg;
+            return this;
+        }
+
         /** Обычный предмет, еда, питьё или броня. */
         public DeferredItem<Item> register() {
             return add(ITEMS.<Item>register(id, () -> {
                 if (armorSlot != null) {
                     return new ArmorPieceItem(properties());
+                }
+                if (gear != null) {
+                    return new GearItem(properties());
                 }
                 return drink ? new DrinkItem(properties()) : new Item(properties());
             }));
@@ -768,11 +910,19 @@ public final class ModItems {
             if (loreRu != null) {
                 ModLore.put(item.getId(), loreRu, loreEn, loreColor);
             }
+            if (draw != null) {
+                ModDraw.put(item.getId(), draw);
+            }
             if (weightGrams >= 0) {
                 ModWeights.put(item.getId(), weightGrams);
             }
             if (edible || thirst != 0 || shelfLifeDays > 0) {
                 ModFoods.put(item.getId(), new ModFoods.FoodInfo(nutrition, saturation, thirst, shelfLifeDays));
+            }
+            if (gear != null || containerType != null) {
+                ModGear.put(item.getId(), gearInfo());
+            } else if (carryBonusKg != 0) {
+                throw new IllegalArgumentException(id + ": .carryBonus(...) без .container(...)");
             }
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());
@@ -781,6 +931,19 @@ public final class ModItems {
                 throw new IllegalArgumentException(id + ": свойства брони без .armor(...)");
             }
             return item;
+        }
+
+        private ModGear.GearInfo gearInfo() {
+            if (armorSlot != null) {
+                throw new IllegalArgumentException(id + ": вещь не может быть и бронёй, и снаряжением");
+            }
+            if (maxStack != 1) {
+                throw new IllegalArgumentException(id + ": снаряжение стакается только по 1");
+            }
+            if (carryBonusKg != 0 && gear != GearType.BACK) {
+                throw new IllegalArgumentException(id + ": .carryBonus(...) — только у рюкзака и сумки");
+            }
+            return new ModGear.GearInfo(gear, containerType, containerCapacity, carryBonusKg);
         }
 
         // Проверка сочетаний: что разрешено только определённым слотам

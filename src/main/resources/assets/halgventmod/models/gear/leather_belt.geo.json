@@ -1,0 +1,22 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.halgventmod.leather_belt",
+        "texture_width": 64,
+        "texture_height": 64
+      },
+      "bones": [
+        {
+          "name": "body",
+          "pivot": [0, 24, 0],
+          "cubes": [
+            {"origin": [-5.1, 11.5, -3.1], "size": [10.2, 1.5, 6.2], "uv": [0, 0]},
+            {"origin": [-1, 11.25, -3.4], "size": [2, 2, 0.3], "uv": [0, 0]}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.weight;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.draw.ModDraw;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModAttributes;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
@@ -100,6 +101,7 @@ public final class Encumbrance {
     @SubscribeEvent
     public static void onTagsUpdated(TagsUpdatedEvent event) {
         ModWeights.clearCache();
+        ModDraw.clearCache();
     }
 
     // Урон игрока — и в ближнем бою, и стрелами — уменьшается на штраф

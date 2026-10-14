@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "4"; // 4: режим ников над головами, очистка инвентаря, отряды
+    private static final String VERSION = "6"; // 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -28,6 +28,7 @@ public final class ModNetwork {
         registrar.playToServer(DrinkWaterPayload.TYPE, DrinkWaterPayload.STREAM_CODEC, DrinkWaterPayload::handle);
         registrar.playToServer(ClearInventoryPayload.TYPE, ClearInventoryPayload.STREAM_CODEC, ClearInventoryPayload::handle);
         registrar.playToServer(OpenInventoryPayload.TYPE, OpenInventoryPayload.STREAM_CODEC, OpenInventoryPayload::handle);
+        registrar.playToServer(PickupPayload.TYPE, PickupPayload.STREAM_CODEC, PickupPayload::handle);
         registrar.playToServer(RenameKeyPayload.TYPE, RenameKeyPayload.STREAM_CODEC, RenameKeyPayload::handle);
         registrar.playToServer(MapTeleportPayload.TYPE, MapTeleportPayload.STREAM_CODEC, MapTeleportPayload::handle);
     }

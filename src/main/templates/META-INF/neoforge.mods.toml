@@ -44,3 +44,14 @@ config="${mod_id}.mixins.json"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# Динамический свет: необязательный клиентский мод. Есть у игрока — поясной фонарь светит (compat/lambdynlights)
+[[dependencies.${mod_id}]]
+    modId="lambdynlights"
+    type="optional"
+    versionRange="[4.8,)"
+    ordering="NONE"
+    side="CLIENT"
+
+[modproperties.${mod_id}."yumi:entrypoints"]
+    "lambdynlights:initializer" = "com.nrdhvnstd.halgventmod.compat.lambdynlights.GearDynamicLights"

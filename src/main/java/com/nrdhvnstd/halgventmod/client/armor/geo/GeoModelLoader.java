@@ -28,7 +28,8 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 /**
- * Загрузка моделей выступающих деталей: assets/<мод>/models/armor/**.geo.json.
+ * Загрузка моделей выступающих деталей: assets/<мод>/models/armor/**.geo.json
+ * и снаряжения на теле: assets/<мод>/models/gear/<id>.geo.json (GearLayer).
  * Формат — Blockbench «Bedrock Entity» (format_version 1.12.0 и новее).
  *
  * В модели верхние кости с именами частей тела (head, body, right_arm, left_arm, right_leg, left_leg)
@@ -39,13 +40,19 @@ import net.minecraft.util.profiling.ProfilerFiller;
  * углы те же, отсчёт — от точки вращения родителя.
  */
 public final class GeoModelLoader extends SimplePreparableReloadListener<Map<ResourceLocation, GeoModel>> {
-    private static final String FOLDER = "models/armor";
+    private static final String[] FOLDERS = {"models/armor", "models/gear"}; // детали брони и снаряжение на теле
     private static final String EXTENSION = ".geo.json";
     private static final String HIDDEN_PREFIX = "_";
     private static final int DEFAULT_TEXTURE_SIZE = 64;
 
     private static Map<ResourceLocation, GeoModel> models = Map.of();
     private static final Set<ResourceLocation> MISSING_REPORTED = new HashSet<>();
+
+    /** Модель по пути или null — без предупреждения (у снаряжения модели необязательны). */
+    @Nullable
+    public static GeoModel find(ResourceLocation location) {
+        return models.get(location);
+    }
 
     /** Модель по пути (models/armor/<папка слота>/<имя>.geo.json) или null, если такой нет. */
     @Nullable
@@ -60,8 +67,10 @@ public final class GeoModelLoader extends SimplePreparableReloadListener<Map<Res
     @Override
     protected Map<ResourceLocation, GeoModel> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         Map<ResourceLocation, GeoModel> loaded = new HashMap<>();
-        Map<ResourceLocation, Resource> files =
-                resourceManager.listResources(FOLDER, location -> location.getPath().endsWith(EXTENSION));
+        Map<ResourceLocation, Resource> files = new HashMap<>();
+        for (String folder : FOLDERS) {
+            files.putAll(resourceManager.listResources(folder, location -> location.getPath().endsWith(EXTENSION)));
+        }
         for (Map.Entry<ResourceLocation, Resource> file : files.entrySet()) {
             try (Reader reader = file.getValue().openAsReader()) {
                 loaded.put(file.getKey(), parse(JsonParser.parseReader(reader).getAsJsonObject()));

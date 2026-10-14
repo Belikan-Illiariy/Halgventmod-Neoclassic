@@ -56,7 +56,7 @@ public final class ArmorEvents {
     }
 
     // Разлёт во все стороны — как у ванильного выпадения инвентаря
-    private static ItemEntity scattered(Player player, ItemStack stack) {
+    public static ItemEntity scattered(Player player, ItemStack stack) {
         ItemEntity entity = new ItemEntity(player.level(), player.getX(), player.getEyeY() - 0.3, player.getZ(), stack);
         entity.setPickUpDelay(DROP_PICKUP_DELAY);
         float speed = player.getRandom().nextFloat() * 0.5F;

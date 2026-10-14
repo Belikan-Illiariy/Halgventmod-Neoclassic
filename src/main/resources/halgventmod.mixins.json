@@ -4,9 +4,14 @@
   "package": "com.nrdhvnstd.halgventmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AbstractArrowAccessor",
+    "AbstractArrowMixin",
+    "AbstractContainerMenuMixin",
     "CropBlockMixin",
     "FarmBlockMixin",
     "FoodDataMixin",
+    "InventoryMixin",
+    "ItemEntityAccessor",
     "MobEffectMixin",
     "PaintingMixin",
     "PlayerMixin"
@@ -15,8 +20,10 @@
     "CapeLayerMixin",
     "ClientPacketListenerMixin",
     "CreativeModeInventoryScreenMixin",
+    "ItemInHandRendererMixin",
     "KeyboardHandlerMixin",
-    "LocalPlayerMixin"
+    "LocalPlayerMixin",
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -19,8 +19,8 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 
 /**
  * Вкладки «Инвентарь», «Персонаж», «Карта», «Отряд», «Кодекс» над окнами игрока и переход между ними.
- * Клавиши: E, O, M, G, J (переназначаются в «Управлении»).
- * - В игре клавиша открывает своё окно (E — ванильный путь, через InventoryOverride).
+ * Клавиши: I, P, M, O, J (переназначаются в «Управлении»).
+ * - В игре клавиша открывает своё окно (I — ванильная клавиша инвентаря, через InventoryOverride).
  * - В окне-вкладке клавиша другой вкладки переключает на неё, своя — закрывает окно.
  * - Из инвентаря не уйти, пока на курсоре предмет: при закрытии он мог бы выпасть.
  */
@@ -75,7 +75,7 @@ public final class MenuTabs {
         return true;
     }
 
-    // Клавиши O, M, G, J в игре, когда никакое окно не открыто
+    // Клавиши P, M, O, J в игре, когда никакое окно не открыто
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -105,7 +105,7 @@ public final class MenuTabs {
             if (tab != current) {
                 open(tab);
                 event.setCanceled(true);
-            } else if (tab != MenuTab.INVENTORY) { // E в инвентаре закрывает его и так
+            } else if (tab != MenuTab.INVENTORY) { // клавиша инвентаря в инвентаре закрывает его и так
                 event.getScreen().onClose();
                 event.setCanceled(true);
             }

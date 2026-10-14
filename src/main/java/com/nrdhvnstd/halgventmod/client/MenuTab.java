@@ -22,7 +22,7 @@ public enum MenuTab {
         return Component.translatable("gui.halgventmod.tab." + id);
     }
 
-    /** Инвентарь — ванильная клавиша E, остальные — клавиши мода. */
+    /** Инвентарь — ванильная клавиша инвентаря (у нас по умолчанию I), остальные — клавиши мода. */
     public KeyMapping key() {
         return switch (this) {
             case INVENTORY -> Minecraft.getInstance().options.keyInventory;
