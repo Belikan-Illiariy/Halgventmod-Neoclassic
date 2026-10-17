@@ -13,10 +13,13 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.ArmorStandRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -27,13 +30,13 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
-/** Подключение отрисовки брони и снаряжения: слои на игроке, рука от первого лица, скрытие второго слоя скина, кэш. */
+/** Подключение отрисовки брони и снаряжения: слои на игроке и на стойке для брони, рука от первого лица, скрытие второго слоя скина, кэш. */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class ArmorRenderEvents {
     private static final int RELEASE_CHECK_INTERVAL = 200; // проверка неиспользуемых склеек раз в 10 секунд
 
     // Слой брони для каждого вида скина (обычный и «тонкий»)
-    private static final Map<PlayerSkin.Model, ArmorLayer> LAYERS = new EnumMap<>(PlayerSkin.Model.class);
+    private static final Map<PlayerSkin.Model, ArmorLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> LAYERS = new EnumMap<>(PlayerSkin.Model.class);
     private static int ticks;
 
     private ArmorRenderEvents() {}
@@ -47,17 +50,25 @@ public final class ArmorRenderEvents {
                 continue;
             }
             boolean slim = skin == PlayerSkin.Model.SLIM;
-            ArmorLayer layer = new ArmorLayer(renderer,
+            ArmorLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> layer = new ArmorLayer<>(renderer,
                     bake(context, slim ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR),
                     bake(context, slim ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR),
                     context.bakeLayer(slim ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER).getChild("cloak"));
             renderer.addLayer(layer);
-            renderer.addLayer(new GearLayer(renderer)); // снаряжение — поверх брони
             LAYERS.put(skin, layer);
+        }
+
+        // Стойка для брони: та же броня слоями, на оболочках ванильной брони стойки
+        ArmorStandRenderer stand = event.getRenderer(EntityType.ARMOR_STAND);
+        if (stand != null) {
+            stand.addLayer(new ArmorLayer<>(stand,
+                    bake(context, ModelLayers.ARMOR_STAND_INNER_ARMOR),
+                    bake(context, ModelLayers.ARMOR_STAND_OUTER_ARMOR),
+                    context.bakeLayer(ModelLayers.PLAYER).getChild("cloak")));
         }
     }
 
-    private static HumanoidModel<AbstractClientPlayer> bake(EntityRendererProvider.Context context, ModelLayerLocation location) {
+    private static <T extends LivingEntity> HumanoidModel<T> bake(EntityRendererProvider.Context context, ModelLayerLocation location) {
         return new HumanoidModel<>(context.bakeLayer(location));
     }
 
@@ -92,7 +103,7 @@ public final class ArmorRenderEvents {
     @SubscribeEvent
     public static void onRenderArm(RenderArmEvent event) {
         AbstractClientPlayer player = event.getPlayer();
-        ArmorLayer layer = LAYERS.get(player.getSkin().model());
+        ArmorLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> layer = LAYERS.get(player.getSkin().model());
         if (layer != null) {
             layer.renderFirstPersonArm(event.getPoseStack(), event.getMultiBufferSource(),
                     event.getPackedLight(), player, event.getArm());
@@ -109,7 +120,10 @@ public final class ArmorRenderEvents {
     // F3+T: текстуры вещей могли измениться — склеиваем заново; модели деталей перечитываются
     @SubscribeEvent
     public static void registerReloadListener(RegisterClientReloadListenersEvent event) {
-        event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> ArmorCompositor.clear());
+        event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+            ArmorCompositor.clear();
+            VisorOverlay.clearCache(); // картинку забрала могли добавить или убрать
+        });
         event.registerReloadListener(new GeoModelLoader());
     }
 

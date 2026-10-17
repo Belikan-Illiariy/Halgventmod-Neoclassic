@@ -11,7 +11,6 @@ import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
-import com.nrdhvnstd.halgventmod.registry.ModPaintings;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.data.PackOutput;
@@ -20,8 +19,6 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 
 /** Языковые файлы ru_ru и en_us. Все переводы мода живут здесь. */
 public class ModLanguageProvider extends LanguageProvider {
-    private static final String PAINTING_AUTHOR = "Halgvent";
-
     private final boolean russian;
 
     public ModLanguageProvider(PackOutput output, String locale) {
@@ -31,11 +28,10 @@ public class ModLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        // Вкладки: категории и «Искусство»
+        // Вкладки: по одной на категорию
         for (Category category : Category.values()) {
             add(category.langKey(), russian ? category.nameRu() : category.nameEn());
         }
-        add("itemGroup.halgventmod.art", russian ? "Искусство" : "Art");
 
         // Названия предметов мода
         for (ModItems.Definition def : ModItems.definitions()) {
@@ -55,19 +51,20 @@ public class ModLanguageProvider extends LanguageProvider {
             }
         }
 
-        // Картины: название предмета берётся из названия картины
-        for (ModPaintings.Definition def : ModPaintings.definitions()) {
-            var id = def.variant().location();
-            add(id.toLanguageKey("painting", "title"), russian ? def.titleRu() : def.titleEn());
-            add(id.toLanguageKey("painting", "author"), PAINTING_AUTHOR);
-        }
-
         // Вес
         add("weight.halgventmod.grams", russian ? "%s гр" : "%s g");
         add("weight.halgventmod.kilograms", russian ? "%s кг" : "%s kg");
         add("weight.halgventmod.decimal", russian ? "," : ".");
         add("tooltip.halgventmod.weight", russian ? "Вес: %s" : "Weight: %s");
         add("hud.halgventmod.carry", "%s / %s");
+
+        // Компас вверху экрана: стороны света
+        String[] compassRu = {"С", "СВ", "В", "ЮВ", "Ю", "ЮЗ", "З", "СЗ"};
+        String[] compassEn = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+        String[] compassKeys = {"n", "ne", "e", "se", "s", "sw", "w", "nw"};
+        for (int i = 0; i < compassKeys.length; i++) {
+            add("hud.halgventmod.compass." + compassKeys[i], russian ? compassRu[i] : compassEn[i]); // CompassHud.langKey
+        }
         add("attribute.name.halgventmod.carry_capacity", russian ? "Грузоподъёмность" : "Carry Capacity");
 
         // Броня: названия слотов и кнопка каталога в инвентаре
@@ -78,6 +75,9 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.clear_inventory",
                 russian ? "Shift+щелчок — очистить весь инвентарь" : "Shift+click to clear the whole inventory");
         add("tooltip.halgventmod.armor_slot", russian ? "Слот: %s" : "Slot: %s");
+        add("tooltip.halgventmod.protection", russian ? "Защита: %s, твёрдость %s" : "Protection: %s, toughness %s");
+        add("tooltip.halgventmod.visor_raised", russian ? "Забрало поднято" : "Visor raised");
+        add("tooltip.halgventmod.visor_lowered", russian ? "Забрало опущено" : "Visor lowered");
         add("message.halgventmod.hood_over_helmet",
                 russian ? "Капюшон не надеть поверх этого шлема" : "The hood won't fit over this helmet");
         add("message.halgventmod.remove_hood_first", russian ? "Сначала снимите капюшон" : "Take off the hood first");
@@ -104,7 +104,6 @@ public class ModLanguageProvider extends LanguageProvider {
         add("tooltip.halgventmod.contents", russian ? "Внутри: %s из %s" : "Inside: %s of %s");
         add("tooltip.halgventmod.carry_bonus", russian ? "Грузоподъёмность: +%s, пока надето" : "Carry capacity: +%s while worn");
         add("tooltip.halgventmod.gear_slot", russian ? "Носится: %s" : "Worn: %s");
-        add("gui.halgventmod.load", russian ? "Нагрузка" : "Load");
         add("gui.halgventmod.load.none", russian ? "ЛЕГКО" : "LIGHT");
         add("gui.halgventmod.load.burden", russian ? "ОБУЗА" : "BURDENED");
         add("gui.halgventmod.load.encumbered", russian ? "СКОВАННОСТЬ" : "ENCUMBERED");
@@ -352,6 +351,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // Метки
         add("key.halgventmod.waypoint", russian ? "Поставить метку" : "Add Waypoint");
         add("key.halgventmod.pickup", russian ? "Подобрать" : "Pick Up");
+        add("key.halgventmod.visor", russian ? "Поднять/опустить забрало" : "Raise/Lower Visor");
         add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
         add("hud.halgventmod.pickup_equip", russian ? "[Shift+%s] Надеть" : "[Shift+%s] Put on");
         add("tooltip.halgventmod.arrows", russian ? "Стрел: %s из %s" : "Arrows: %s of %s");
@@ -363,6 +363,39 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.waypoint.delete", russian ? "Удалить" : "Delete");
         add("gui.halgventmod.waypoint.icon", russian ? "Значок: %s" : "Icon: %s");
         add("gui.halgventmod.waypoint.flag_color", russian ? "Цвет флага: %s" : "Flag color: %s");
+        add("gui.halgventmod.waypoint.compass", russian ? "Видимость на компасе" : "Show on compass");
+
+        // Точки карты (ставит администрация, видны всем)
+        add("gui.halgventmod.map.menu.add_point", russian ? "Поставить точку" : "Add Point");
+        add("gui.halgventmod.map.menu.edit_point", russian ? "Изменить точку" : "Edit Point");
+        add("gui.halgventmod.map.menu.edit_point_bounds", russian ? "Изменить границы точки" : "Edit Point Bounds");
+        add("gui.halgventmod.point.new", russian ? "Новая точка" : "New Point");
+        add("gui.halgventmod.point.edit", russian ? "Точка" : "Point");
+        add("gui.halgventmod.point.shape.circle", russian ? "Круг" : "Circle");
+        add("gui.halgventmod.point.shape.polygon", russian ? "Многоугольник" : "Polygon");
+        add("gui.halgventmod.point.next", russian ? "Далее" : "Next");
+        add("gui.halgventmod.point.hint.circle", russian
+                ? "Колёсико или стрелки — радиус · ручку на краю можно тянуть · Shift+колёсико — масштаб"
+                : "Scroll or arrows — radius · drag the handle on the edge · Shift+scroll — zoom");
+        add("gui.halgventmod.point.hint.polygon", russian
+                ? "Тяните углы · кружок на стороне — новый угол · ПКМ по углу — убрать · стрелки — сдвиг угла"
+                : "Drag corners · dot on a side — new corner · right-click a corner — remove · arrows — nudge");
+        add("gui.halgventmod.point.open", russian ? "Открыта" : "Discovered");
+        add("gui.halgventmod.point.hidden", russian ? "Не открыта" : "Undiscovered");
+        add("gui.halgventmod.point.unknown", russian ? "Неизвестное место" : "Unknown Place");
+        add("gui.halgventmod.point.info", russian ? "Сведения" : "Details");
+        add("gui.halgventmod.point.described", russian ? "С описанием" : "With description");
+        add("gui.halgventmod.point.description", russian ? "Описание" : "Description");
+        add("gui.halgventmod.point.hover_text", russian ? "Текст при наведении (пока не открыта)" : "Hover text (while undiscovered)");
+        add("gui.halgventmod.point.icon_hidden", russian ? "Значок до открытия: %s" : "Icon before discovery: %s");
+        add("gui.halgventmod.point.icon_open", russian ? "Значок после открытия: %s" : "Icon after discovery: %s");
+        add("gui.halgventmod.point.icon_unknown", russian ? "Знак вопроса" : "Question mark");
+        add("gui.halgventmod.point.banner", russian ? "Знамя из реестра: %s" : "Registry banner: %s");
+        add("gui.halgventmod.point.no_banner", russian ? "нет" : "none");
+        add("gui.halgventmod.point.missing_banner", russian ? "%s (нет в реестре)" : "%s (not in the registry)");
+        add("gui.halgventmod.point.all_banners", russian ? "Весь реестр" : "All banners");
+        add("gui.halgventmod.point.click_description", russian ? "ЛКМ — описание" : "Left-click: description");
+        add("hud.halgventmod.point.discovered", russian ? "Открытая локация" : "Location discovered");
         add("gui.halgventmod.map.icon.flag", russian ? "Флаг" : "Flag");
         add("gui.halgventmod.map.icon.castle", russian ? "Крепость" : "Fortress");
         add("gui.halgventmod.map.icon.tower", russian ? "Башня" : "Tower");
@@ -455,6 +488,78 @@ public class ModLanguageProvider extends LanguageProvider {
         add("lock.halgventmod.command.named", russian ? "Ключ подписан: %s" : "Key named: %s");
         add("lock.halgventmod.command.not_key", russian
                 ? "Возьмите ключ в основную руку" : "Hold a key in your main hand");
+        // Реестр знамён (BannerCommand)
+        add("banner.halgventmod.prefix", russian ? "[Реестр] " : "[Registry] ");
+        add("banner.halgventmod.registered", russian ? "Знамя «%s» внесено под id %s" : "Banner \"%s\" registered as %s");
+        add("banner.halgventmod.updated", russian ? "Рисунок знамени «%s» (%s) обновлён" : "Design of banner \"%s\" (%s) updated");
+        add("banner.halgventmod.renamed", russian ? "Знамя %s теперь называется «%s»" : "Banner %s is now called \"%s\"");
+        add("banner.halgventmod.described", russian ? "Описание знамени «%s» обновлено" : "Description of banner \"%s\" updated");
+        add("banner.halgventmod.given", russian ? "Выдано знамя «%s» ×%s: %s" : "Gave banner \"%s\" ×%s to %s");
+        add("banner.halgventmod.removed", russian ? "Знамя «%s» (%s) убрано из реестра" : "Banner \"%s\" (%s) removed from the registry");
+        add("banner.halgventmod.unknown", russian ? "В реестре нет знамени %s" : "No banner %s in the registry");
+        add("banner.halgventmod.taken", russian
+                ? "id %1$s уже занят. Сменить рисунок: /banner update %1$s"
+                : "id %1$s is taken. To change the design: /banner update %1$s");
+        add("banner.halgventmod.bad_id", russian
+                ? "id — латиница в нижнем регистре, цифры и _, не длиннее %s"
+                : "id: lowercase latin letters, digits and _, at most %s");
+        add("banner.halgventmod.no_banner", russian ? "Возьмите баннер в основную руку" : "Hold a banner in your main hand");
+        add("banner.halgventmod.name_too_long", russian ? "Название длиннее %s символов" : "Name is longer than %s characters");
+        add("banner.halgventmod.description_too_long", russian
+                ? "Описание длиннее %s символов" : "Description is longer than %s characters");
+        add("banner.halgventmod.edited", russian ? "Знамя «%s» исправлено" : "Banner \"%s\" edited");
+        String banners = "gui.halgventmod.banners.";
+        add(banners + "title", russian ? "Реестр знамён" : "Banner Registry");
+        add(banners + "pick", russian ? "Выберите знамя" : "Choose a Banner");
+        add(banners + "hint", russian ? "Внести новое: /banner register <id> <название>" : "Add new: /banner register <id> <name>");
+        add(banners + "pick_hint", russian ? "Щёлкните по знамени" : "Click a banner");
+        add(banners + "search", russian ? "Поиск" : "Search");
+        add(banners + "empty", russian ? "Реестр пуст" : "The registry is empty");
+        add(banners + "not_found", russian ? "Ничего не найдено" : "Nothing found");
+        add(banners + "in_points", russian ? "В точках: %s" : "In points: %s");
+        add(banners + "take",russian ? "Взять" : "Take");
+        add(banners + "edit", russian ? "Править" : "Edit");
+        add(banners + "delete", russian ? "Удалить" : "Delete");
+        add(banners + "delete_title", russian ? "Удалить знамя из реестра?" : "Remove the banner from the registry?");
+        add(banners + "delete_question", russian
+                ? "«%s» (%s) пропадёт из точек и книг. Внесёте снова под тем же id — вернётся."
+                : "\"%s\" (%s) will vanish from points and books. Register it again under the same id to bring it back.");
+        add(banners + "edit_title", russian ? "Знамя" : "Banner");
+        add(banners + "name", russian ? "Название" : "Name");
+        add(banners + "description", russian ? "Описание" : "Description");
+        // Гербовник (ArmorialCommand, ArmorialScreen)
+        String armorial = "armorial.halgventmod.";
+        add(armorial + "prefix", russian ? "[Гербовник] " : "[Armorial] ");
+        add(armorial + "created", russian ? "Книга «%s» создана под id %s" : "Book \"%s\" created as %s");
+        add(armorial + "renamed", russian ? "Книга %s теперь называется «%s»" : "Book %s is now called \"%s\"");
+        add(armorial + "given", russian ? "Выдана книга %s: %s" : "Gave book %s to %s");
+        add(armorial + "removed", russian ? "Книга %s удалена" : "Book %s removed");
+        add(armorial + "missing", russian ? "Книги %s нет" : "There is no book %s");
+        add(armorial + "taken", russian ? "id %s уже занят" : "id %s is taken");
+        add(armorial + "bad_id", russian
+                ? "id — латиница в нижнем регистре, цифры и _, не длиннее %s"
+                : "id: lowercase latin letters, digits and _, at most %s");
+        add(armorial + "title_too_long", russian ? "Название длиннее %s символов" : "Title is longer than %s characters");
+        add(armorial + "list_empty", russian ? "Книг пока нет (общая книга main есть всегда)" : "No books yet (the common book main always exists)");
+        add(armorial + "list_header", russian ? "Книг: %s" : "Books: %s");
+        add(armorial + "list_entry", russian ? "  %s — «%s», страниц: %s" : "  %s — \"%s\", pages: %s");
+        add(armorial + "empty", russian ? "Книга пуста" : "The book is empty");
+        add(armorial + "take_copy", russian ? "ПКМ — взять копию" : "Right-click: take a copy");
+        add(armorial + "edit_title", russian ? "Правка книги «%s»" : "Editing \"%s\"");
+        add(armorial + "add_page", russian ? "+ Страница в конец" : "+ Page at the end");
+        add(armorial + "type_large", russian ? "1 знамя" : "1 banner");
+        add(armorial + "type_grid", russian ? "9 знамён" : "9 banners");
+        add(armorial + "page_title", russian ? "Название страницы" : "Page title");
+        add(armorial + "change_banner", russian ? "Сменить знамя" : "Change banner");
+        add(armorial + "edit_banner", russian ? "Править в реестре" : "Edit in registry");
+        add(armorial + "move_left", russian ? "Сдвинуть страницу назад" : "Move page back");
+        add(armorial + "move_right", russian ? "Сдвинуть страницу вперёд" : "Move page forward");
+        add(armorial + "delete_page", russian ? "Удалить страницу" : "Delete page");
+        add(armorial + "delete_page_question", russian ? "Удалить страницу %s?" : "Delete page %s?");
+        add(armorial + "clear_cell", russian ? "Убрать знамя" : "Remove banner");
+        add(armorial + "save_question", russian ? "Сохранить изменения в книге?" : "Save changes to the book?");
+        add(armorial + "save_hint", russian ? "«Нет» — закрыть без сохранения" : "\"No\" closes without saving");
+        add("tooltip.halgventmod.registry_banner", russian ? "Реестр знамён: %s" : "Banner registry: %s");
         add("lock.halgventmod.name_screen", russian ? "Подпись" : "Label");
         add("lock.halgventmod.ring_count", russian ? "Ключей: %1$s из %2$s" : "Keys: %1$s of %2$s");
         add("lock.halgventmod.ring_unnamed_key", russian ? "ключ без подписи" : "unlabelled key");

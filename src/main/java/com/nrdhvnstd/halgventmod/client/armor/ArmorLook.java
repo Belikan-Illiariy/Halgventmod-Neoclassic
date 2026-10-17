@@ -19,21 +19,29 @@ import net.minecraft.world.item.ItemStack;
  * после изменения брони (ArmorInventory.version) и хранится прямо на ней.
  */
 final class ArmorLook {
-    /** Выступающая деталь: модель .geo.json и её текстура. */
+    /** Выступающая деталь: модель .geo.json, её текстура и поднято ли забрало. */
     static final class Detail {
         private final ResourceLocation model;
         private final ResourceLocation texture;
         @Nullable private final ArmorCompositor.PieceRecipe recipe; // вещь с покрытием: текстура склеивается
         @Nullable private ArmorCompositor.Composite composite;
+        private final boolean visorRaised;
 
-        private Detail(ResourceLocation model, ResourceLocation texture, @Nullable ArmorCompositor.PieceRecipe recipe) {
+        private Detail(ResourceLocation model, ResourceLocation texture, @Nullable ArmorCompositor.PieceRecipe recipe,
+                       boolean visorRaised) {
             this.model = model;
             this.texture = texture;
             this.recipe = recipe;
+            this.visorRaised = visorRaised;
         }
 
         ResourceLocation model() {
             return model;
+        }
+
+        /** Забрало поднято: кость visor модели поворачивается (ArmorLayer). */
+        boolean visorRaised() {
+            return visorRaised;
         }
 
         /** Текстура как нарисована или склейка «основа → покрытие → overlay». */
@@ -80,13 +88,18 @@ final class ArmorLook {
                 continue;
             }
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            boolean visorRaised = ModArmor.visorRaised(stack);
             for (String name : info.models()) {
                 ResourceLocation texture = path(itemId, slot, "textures/armor/", ".png", name);
-                // Детали ткани не красятся; у вещи с покрытием деталь — тоже основа, своё покрытие и _overlay
-                ArmorCompositor.PieceRecipe recipe = info.dye() == ModArmor.Dye.COATED
+                // Деталь окрашиваемой вещи — та же основа, что и плоская текстура: у ткани (серая) красится тем же цветом,
+                // у вещи с покрытием — своё покрытие; неокрашиваемое — в <деталь>_overlay.png (файла может не быть).
+                // Непокрашенной ткани склейка не нужна (как у плаща); деталь неокрашиваемой вещи — как нарисована
+                boolean painted = info.dye() == ModArmor.Dye.COATED
+                        || info.dye() == ModArmor.Dye.CLOTH && ArmorCompositor.color(stack) != ArmorCompositor.Layer.NO_COLOR;
+                ArmorCompositor.PieceRecipe recipe = painted
                         ? new ArmorCompositor.PieceRecipe(ArmorCompositor.layer(stack, texture))
                         : null;
-                found.add(new Detail(path(itemId, slot, "models/armor/", ".geo.json", name), texture, recipe));
+                found.add(new Detail(path(itemId, slot, "models/armor/", ".geo.json", name), texture, recipe, visorRaised));
             }
         }
         details = List.copyOf(found);

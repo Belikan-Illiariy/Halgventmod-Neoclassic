@@ -14,7 +14,6 @@ import com.nrdhvnstd.halgventmod.registry.ModCreativeTabs;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.registry.ModMenus;
-import com.nrdhvnstd.halgventmod.registry.ModPaintings;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -32,7 +31,6 @@ public class HalgventMod {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModMenus.register(modEventBus);
-        ModPaintings.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModNetwork.register(modEventBus);
         FarmingEvents.register(modEventBus);

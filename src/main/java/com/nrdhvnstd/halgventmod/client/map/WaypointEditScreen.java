@@ -4,6 +4,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -11,12 +12,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 
-/** Окно новой метки или правки старой: название, значок, цвет флага, координаты. */
+/**
+ * Окно новой метки или правки старой: название, значок, цвет флага, координаты, видимость на компасе.
+ * Метки — личные, у игрока; окно точки карты у администрации — PointEditScreen.
+ */
 public class WaypointEditScreen extends Screen {
     private static final ResourceLocation PANEL = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "character/panel");
 
     private static final int WIDTH = 228;
-    private static final int HEIGHT = 222;
+    private static final int HEIGHT = 244;
     private static final int INNER = 12;
     private static final int ICON_CELL = 20;
     private static final int ICONS_PER_ROW = 10;
@@ -48,6 +52,7 @@ public class WaypointEditScreen extends Screen {
     private EditBox xBox;
     private EditBox yBox;
     private EditBox zBox;
+    private Checkbox compassBox;
 
     /** Новая метка в этой точке. */
     public static WaypointEditScreen create(Screen parent, int x, int y, int z) {
@@ -89,6 +94,12 @@ public class WaypointEditScreen extends Screen {
         yBox = coordinate(x + COORD_WIDTH + 9, coordsY, yBox, startY);
         zBox = coordinate(x + 2 * (COORD_WIDTH + 9), coordsY, zBox, startZ);
 
+        boolean onCompass = compassBox != null ? compassBox.selected() : editing != null && editing.compass;
+        compassBox = addRenderableWidget(Checkbox.builder(Component.translatable("gui.halgventmod.waypoint.compass"), font)
+                .pos(x, top + 194)
+                .selected(onCompass)
+                .build());
+
         int buttonsY = top + HEIGHT - 28;
         int buttonWidth = (fieldWidth - 8) / 3;
         addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.waypoint.save"), button -> save())
@@ -118,9 +129,14 @@ public class WaypointEditScreen extends Screen {
         int x = parse(xBox, startX);
         int y = parse(yBox, startY);
         int z = parse(zBox, startZ);
+        lastIcon = icon;
+        lastDye = dye;
         if (editing == null) {
-            Waypoints.add(new Waypoint(name, x, y, z, icon, dye));
+            Waypoint waypoint = new Waypoint(name, x, y, z, icon, dye);
+            waypoint.compass = compassBox.selected();
+            Waypoints.add(waypoint);
         } else {
+            editing.compass = compassBox.selected();
             editing.name = name;
             editing.x = x;
             editing.y = y;
@@ -129,8 +145,6 @@ public class WaypointEditScreen extends Screen {
             editing.dye = dye.getSerializedName();
             Waypoints.changed();
         }
-        lastIcon = icon;
-        lastDye = dye;
         onClose();
     }
 

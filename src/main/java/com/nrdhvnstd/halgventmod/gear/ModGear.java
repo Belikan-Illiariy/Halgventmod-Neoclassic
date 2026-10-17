@@ -19,7 +19,7 @@ public final class ModGear {
     private ModGear() {}
 
     /**
-     * gear — куда надевается (null у мешочка), container — что внутри (null у пояса, кольца...),
+     * gear — куда надевается, container — что внутри (null у пояса, кольца...),
      * capacity — сколько ячеек внутри, carryBonusKg — прибавка к грузоподъёмности, пока надето.
      */
     public record GearInfo(@Nullable GearType gear, @Nullable ContainerType container, int capacity, double carryBonusKg) {}

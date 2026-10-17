@@ -7,12 +7,16 @@ import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
+import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.MapTooltipBox;
 import com.nrdhvnstd.halgventmod.client.MenuTab;
 import com.nrdhvnstd.halgventmod.client.MenuTabButton;
 import com.nrdhvnstd.halgventmod.client.MenuTabScreen;
 import com.nrdhvnstd.halgventmod.client.MenuTabs;
 import com.nrdhvnstd.halgventmod.network.MapTeleportPayload;
 import com.nrdhvnstd.halgventmod.network.SquadMembersPayload;
+import com.nrdhvnstd.halgventmod.point.MapPoint;
+import com.nrdhvnstd.halgventmod.point.MapPoints;
 import com.nrdhvnstd.halgventmod.squad.SquadMarkers;
 
 import net.minecraft.ChatFormatting;
@@ -23,6 +27,7 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -42,6 +47,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Колёсико — масштаб к курсору, Пробел — вернуться к себе. При отдалении рисуются уровни MapPyramid: пиксель — среднее по блокам под ним.
  * Неразведанное — чёрное. Поверх — пометки, названия биомов (BiomeLabels; выключаются в панели стиля) и надписи.
  * Внизу — биом и координаты под курсором.
+ * Точки карты (MapPoint) — общие для всех: граница и значок, неоткрытая — серая, открытая — светлая.
+ * Администрация ставит их из меню «Поставить точку»: сначала граница прямо на карте (PointBoundsEditor,
+ * кнопки «Круг» / «Многоугольник» / «Далее» / «Отмена» вверху), потом окно точки (PointEditScreen).
+ * Неоткрытая точка под курсором подсвечивается, у курсора — окно с текстом администрации (MapTooltipBox).
+ * Открытая точка с описанием кликается: слева панель со знаменем, описанием и сведениями (PointInfoPanel).
  */
 public class MapScreen extends Screen implements MenuTabScreen {
     // Масштаб — в пикселях интерфейса на блок; «настоящий» масштаб — в пикселях монитора (× масштаб интерфейса).
@@ -52,6 +62,13 @@ public class MapScreen extends Screen implements MenuTabScreen {
     private static final float ZOOM_STEP = 1.25F;
     private static final float MIN_TEXT_PIXELS = 3; // надписи ниже стольких пикселей не рисуются
     private static final int ICON_SIZE = 16;
+    // Свечение под значком точки под курсором (заглушка)
+    private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID,
+            "textures/gui/map_point_glow.png");
+    private static final int GLOW_TEXTURE = 32;
+    private static final float GLOW_SCALE = 1.6F;  // ⚠️ от размера значка
+    private static final float GLOW_ALPHA = 0.6F;  // ⚠️
+    private static final int CLICK_SLOP = 3;       // ⚠️ сдвиг мыши, при котором нажатие ещё клик, а не перетаскивание
     // Товарищи по отряду: курсор, окрашенный в зелёный, и имя тем же цветом
     private static final float SQUAD_TINT_R = 0.45F;
     private static final float SQUAD_TINT_G = 1.0F;
@@ -60,11 +77,15 @@ public class MapScreen extends Screen implements MenuTabScreen {
 
     private static final int MARGIN = 4;
     private static final int TOOL_SIZE = 20;
+    private static final int TOOL_GAP = 2;
+    private static final int TEXT_ROW = 11;     // строка биома или координат над кнопками инструментов
     private static final int PANEL_WIDTH = 170;
-    private static final int PANEL_BOTTOM = 28; // место под координаты и подсказку
+    // Внизу: кнопки инструментов, над ними биом и координаты — панель кончается выше
+    private static final int PANEL_BOTTOM = 2 * MARGIN + TOOL_SIZE + 2 * TEXT_ROW;
     private static final int SWATCH = 16;
     private static final int SLIDER_HEIGHT = 14;
     private static final int MAX_BRUSH = 12;
+    private static final int BOUNDS_GAP = 4;    // между кнопками правки границы точки
 
     private static final int COLOR_UNKNOWN = 0xFF000000;
     private static final int COLOR_TEXT = 0xFFE8DCC0;
@@ -99,18 +120,28 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
     }
 
-    // Масштаб, инструмент и кисть помнятся между открытиями; середина — всегда на игроке при открытии
+    // Масштаб и кисть помнятся между открытиями; середина — всегда на игроке при открытии
     private static float zoom = 2.0F;
-    private static Tool tool = Tool.MOVE;
     private static int ink = 1;
     private static int brushSize = 3;
     private static int drawScroll;
     private static int styleScroll;
 
+    // Инструмент — только на это открытие: карта всегда открывается с перемещением, без панели карандаша или стиля
+    // (init() зовётся и при смене размера окна — тогда инструмент и панель остаются)
+    private Tool tool = Tool.MOVE;
     private double centerX;
     private double centerZ;
     private boolean centered;
     private MapSidePanel panel;
+    /** Панель описания открытой точки слева; null — закрыта. */
+    private PointInfoPanel infoPanel;
+    // Нажатие левой по открытой точке с описанием: отпустили рядом — это клик, а не перетаскивание карты
+    private MapPoint pressedPoint;
+    private double pressX;
+    private double pressY;
+    /** Правка границы точки (администратор); null — обычная карта. */
+    private PointBoundsEditor bounds;
     /** Кнопка, нажатая на самой карте (не на панели); -1 — никакая. */
     private int pressedButton = -1;
     private double lastDrawX;
@@ -141,6 +172,33 @@ public class MapScreen extends Screen implements MenuTabScreen {
             return zoom;
         }
     });
+
+    private final MapView view = new MapView() {
+        @Override
+        public float screenX(double worldX) {
+            return MapScreen.this.screenX(worldX);
+        }
+
+        @Override
+        public float screenY(double worldZ) {
+            return MapScreen.this.screenY(worldZ);
+        }
+
+        @Override
+        public double worldX(double screenX) {
+            return MapScreen.this.worldX(screenX);
+        }
+
+        @Override
+        public double worldZ(double screenY) {
+            return MapScreen.this.worldZ(screenY);
+        }
+
+        @Override
+        public float zoom() {
+            return zoom;
+        }
+    };
 
     private final BiomeLabels biomeLabels = new BiomeLabels();
     private final BiomeLabels.Projection projection = new BiomeLabels.Projection() {
@@ -174,18 +232,110 @@ public class MapScreen extends Screen implements MenuTabScreen {
         for (MenuTabButton button : MenuTabs.createButtons(font, 0, width, MenuTab.MAP)) {
             addRenderableWidget(button);
         }
-        int toolX = width - TOOL_SIZE - MARGIN;
-        int toolY = MenuTabs.TAB_HEIGHT + MARGIN;
+        if (bounds != null) {
+            initBoundsButtons();
+            panel = null;
+            infoPanel = null;
+            return; // пока правится граница — без инструментов и их панелей
+        }
+        int toolX = toolsLeft();
         for (Tool each : Tool.values()) {
-            addRenderableWidget(new MapWidgets.ToolButton(toolX, toolY, TOOL_SIZE, each.icon, each.title(),
+            addRenderableWidget(new MapWidgets.ToolButton(toolX, toolsTop(), TOOL_SIZE, each.icon, each.title(),
                     each == tool, () -> selectTool(each)));
-            toolY += TOOL_SIZE + 2;
+            toolX += TOOL_SIZE + TOOL_GAP;
         }
         panel = switch (tool) {
             case DRAW -> drawPanel();
             case STYLE -> stylePanel();
             case MOVE -> null;
         };
+        if (infoPanel != null) {
+            placeInfoPanel();
+        }
+    }
+
+    // ===== Панель описания точки =====
+
+    // Слева, по высоте — как правая панель (выше кнопок инструментов); правую панель не перекрывает
+    private void placeInfoPanel() {
+        int top = MenuTabs.TAB_HEIGHT + MARGIN;
+        int maxRight = panel != null ? width - 2 * MARGIN - PANEL_WIDTH : width - MARGIN;
+        infoPanel.place(MARGIN, top, height - PANEL_BOTTOM, maxRight, width);
+    }
+
+    private void openInfo(MapPoint point) {
+        if (infoPanel == null || infoPanel.pointId() != point.id) {
+            infoPanel = new PointInfoPanel(point.id);
+            placeInfoPanel();
+        }
+    }
+
+    /** Открытая точка с описанием — кликается. */
+    private static boolean clickable(MapPoint point) {
+        return point != null && point.described && PointShapes.discovered(point);
+    }
+
+    // ===== Граница точки =====
+
+    // Вверху по середине: «Круг», «Многоугольник» (выбранная фигура — неактивна), «Далее», «Отмена»
+    private void initBoundsButtons() {
+        Component[] titles = {
+                Component.translatable("gui.halgventmod.point.shape.circle"),
+                Component.translatable("gui.halgventmod.point.shape.polygon"),
+                Component.translatable("gui.halgventmod.point.next"),
+                CommonComponents.GUI_CANCEL};
+        Runnable[] actions = {
+                () -> setBoundsShape(MapPoint.Shape.CIRCLE),
+                () -> setBoundsShape(MapPoint.Shape.POLYGON),
+                this::boundsNext,
+                this::boundsCancel};
+        int[] widths = new int[titles.length];
+        int total = (titles.length - 1) * BOUNDS_GAP;
+        for (int i = 0; i < titles.length; i++) {
+            widths[i] = font.width(titles[i]) + 16;
+            total += widths[i];
+        }
+        int x = (width - total) / 2;
+        int y = MenuTabs.TAB_HEIGHT + MARGIN;
+        for (int i = 0; i < titles.length; i++) {
+            Runnable action = actions[i];
+            Button button = addRenderableWidget(Button.builder(titles[i], b -> action.run())
+                    .bounds(x, y, widths[i], 20).build());
+            if (i < 2) {
+                button.active = bounds.point().shape != MapPoint.Shape.values()[i];
+            }
+            x += widths[i] + BOUNDS_GAP;
+        }
+    }
+
+    // «Поставить точку»: круг вокруг места клика, дальше — граница на карте
+    private void startPoint(int x, int z) {
+        MapPoint point = new MapPoint();
+        point.x = x;
+        point.y = standingY(x, z);
+        point.z = z;
+        startBounds(point);
+    }
+
+    private void startBounds(MapPoint draft) {
+        textEditor.select(null);
+        bounds = new PointBoundsEditor(view, draft);
+        rebuildWidgets();
+    }
+
+    private void setBoundsShape(MapPoint.Shape shape) {
+        bounds.setShape(shape);
+        rebuildWidgets();
+    }
+
+    // «Далее» — окно точки; там «Сохранить» или «Удалить» закончит правку границы, «Отмена» вернёт к ней
+    private void boundsNext() {
+        minecraft.setScreen(new PointEditScreen(this, bounds.point(), () -> bounds = null));
+    }
+
+    private void boundsCancel() {
+        bounds = null;
+        rebuildWidgets();
     }
 
     // Повторный выбор карандаша или стиля закрывает панель
@@ -206,7 +356,7 @@ public class MapScreen extends Screen implements MenuTabScreen {
 
     private MapSidePanel newPanel(int scroll) {
         int top = MenuTabs.TAB_HEIGHT + MARGIN;
-        return new MapSidePanel(width - TOOL_SIZE - 2 * MARGIN - PANEL_WIDTH, top, PANEL_WIDTH,
+        return new MapSidePanel(width - MARGIN - PANEL_WIDTH, top, PANEL_WIDTH,
                 height - top - PANEL_BOTTOM, scroll, this::addRenderableWidget);
     }
 
@@ -326,19 +476,32 @@ public class MapScreen extends Screen implements MenuTabScreen {
             biomeLabels.update(worldX(0), worldZ(0), worldX(width), worldZ(height));
             biomeLabels.render(graphics, font, projection, zoom);
         }
+        renderPointAreas(graphics);
         renderTexts(graphics);
+        renderPointIcons(graphics, mouseX, mouseY);
         renderWaypoints(graphics);
+        if (bounds != null) {
+            bounds.render(graphics, ICON_SIZE);
+        }
         renderSquad(graphics);
         renderPlayer(graphics, partialTick);
         if (textEditor.selected() != null && !MapTexts.all().contains(textEditor.selected())) {
             textEditor.select(null); // надпись удалили (меню, окно правки)
         }
         textEditor.render(graphics, font);
-        if (tool == Tool.DRAW && overMap(mouseX, mouseY)) {
+        if (tool == Tool.DRAW && bounds == null && overMap(mouseX, mouseY)) {
             renderBrush(graphics, mouseX, mouseY);
         }
         if (panel != null) {
             panel.render(graphics, font);
+        }
+        if (infoPanel != null) {
+            MapPoint point = infoPanel.point();
+            if (point == null) {
+                infoPanel = null; // точку удалили или сняли «с описанием»
+            } else {
+                infoPanel.render(graphics, font, point, mouseX, mouseY);
+            }
         }
     }
 
@@ -370,6 +533,76 @@ public class MapScreen extends Screen implements MenuTabScreen {
             }
         }
         return null;
+    }
+
+    // Точки: граница под надписями и метками — только администрации в творческом режиме (MapPoints.canEdit).
+    // Неоткрытая — серая, открытая — светлая. Точку, у которой сейчас правится граница, рисует сам редактор
+    private void renderPointAreas(GuiGraphics graphics) {
+        if (!MapPoints.canEdit(minecraft.player)) {
+            return;
+        }
+        RenderSystem.enableBlend();
+        for (MapPoint point : PointShapes.here()) {
+            if (!editingBounds(point)) {
+                boolean open = PointShapes.discovered(point);
+                PointShapes.draw(graphics, view, point, open ? PointShapes.FILL_OPEN : PointShapes.FILL_HIDDEN,
+                        open ? PointShapes.LINE_OPEN : PointShapes.LINE_HIDDEN);
+            }
+        }
+        RenderSystem.disableBlend();
+    }
+
+    // Под курсором неоткрытая точка и открытая с описанием подсвечиваются: свечение под значком, «?» — цветом заголовка
+    private void renderPointIcons(GuiGraphics graphics, int mouseX, int mouseY) {
+        MapPoint hovered = hoveredPoint(mouseX, mouseY);
+        RenderSystem.enableBlend();
+        for (MapPoint point : PointShapes.here()) {
+            if (editingBounds(point)) {
+                continue;
+            }
+            int x = Math.round(screenX(point.x + 0.5));
+            int y = Math.round(screenY(point.z + 0.5));
+            boolean open = PointShapes.discovered(point);
+            boolean glow = point == hovered && (!open || point.described);
+            if (glow) {
+                int size = Math.round(ICON_SIZE * GLOW_SCALE);
+                graphics.setColor(1, 1, 1, GLOW_ALPHA);
+                graphics.blit(GLOW, x - size / 2, y - size / 2, size, size, 0, 0, GLOW_TEXTURE, GLOW_TEXTURE,
+                        GLOW_TEXTURE, GLOW_TEXTURE);
+                graphics.setColor(1, 1, 1, 1);
+            }
+            if (open) {
+                MapIcon.draw(graphics, PointShapes.cell(point), x - ICON_SIZE / 2, y - ICON_SIZE / 2, ICON_SIZE);
+            } else {
+                // Неоткрытая — свой значок или «?»: белый, под курсором — цветом заголовка
+                PointShapes.drawHidden(graphics, font, point, x, y, ICON_SIZE, glow ? COLOR_TITLE : PointShapes.COLOR_UNKNOWN);
+            }
+        }
+        RenderSystem.disableBlend();
+    }
+
+    /** Точка под курсором, если сейчас её можно навести: не правится граница, нет меню, курсор над картой. */
+    private MapPoint hoveredPoint(double mouseX, double mouseY) {
+        return bounds == null && menu == null && overMap(mouseX, mouseY) ? pointAt(mouseX, mouseY) : null;
+    }
+
+    private boolean editingBounds(MapPoint point) {
+        return bounds != null && bounds.point().id != 0 && bounds.point().id == point.id;
+    }
+
+    /** Точка под курсором — по значку (ближайшая, если несколько). */
+    private MapPoint pointAt(double mouseX, double mouseY) {
+        MapPoint found = null;
+        double best = (ICON_SIZE / 2.0) * (ICON_SIZE / 2.0);
+        for (MapPoint point : PointShapes.here()) {
+            double dx = screenX(point.x + 0.5) - mouseX;
+            double dy = screenY(point.z + 0.5) - mouseY;
+            if (dx * dx + dy * dy <= best) {
+                best = dx * dx + dy * dy;
+                found = point;
+            }
+        }
+        return found;
     }
 
     // Метка: значок серединой на месте метки; размер не зависит от масштаба
@@ -543,19 +776,62 @@ public class MapScreen extends Screen implements MenuTabScreen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        // Внизу: биом под курсором (если там разведано), под ним — координаты
+        // Над кнопками инструментов: биом под курсором (если там разведано), под ним — координаты
         int blockX = Mth.floor(worldX(mouseX));
         int blockZ = Mth.floor(worldZ(mouseY));
+        int coordsY = toolsTop() - TEXT_ROW;
         ResourceLocation biome = overMap(mouseX, mouseY) ? WorldMap.biome(WorldMap.biomeAt(blockX, blockZ)) : null;
         if (biome != null) {
             graphics.drawCenteredString(font, Component.translatable(Util.makeDescriptionId("biome", biome)),
-                    width / 2, height - 22, COLOR_TITLE);
+                    width / 2, coordsY - TEXT_ROW, COLOR_TITLE);
         }
         graphics.drawCenteredString(font, Component.translatable("gui.halgventmod.map.cursor", blockX, blockZ),
-                width / 2, height - 11, COLOR_TEXT);
+                width / 2, coordsY, COLOR_TEXT);
 
+        if (bounds != null) {
+            // Под кнопками правки границы — подсказка по фигуре
+            String hint = bounds.point().shape == MapPoint.Shape.CIRCLE
+                    ? "gui.halgventmod.point.hint.circle" : "gui.halgventmod.point.hint.polygon";
+            graphics.drawCenteredString(font, Component.translatable(hint), width / 2,
+                    MenuTabs.TAB_HEIGHT + MARGIN + 20 + MARGIN, COLOR_TEXT);
+            return;
+        }
         if (menu != null) {
             renderMenu(graphics, mouseX, mouseY);
+            return;
+        }
+        MapPoint hoveredPoint = overMap(mouseX, mouseY) ? pointAt(mouseX, mouseY) : null;
+        if (hoveredPoint != null && minecraft.player != null) {
+            int distance = Mth.floor(Math.sqrt(minecraft.player.distanceToSqr(
+                    hoveredPoint.x + 0.5, hoveredPoint.y, hoveredPoint.z + 0.5)));
+            boolean open = PointShapes.discovered(hoveredPoint);
+            Component coords = Component.translatable("gui.halgventmod.waypoint.coords",
+                    hoveredPoint.x, hoveredPoint.y, hoveredPoint.z);
+            Component away = Component.translatable("gui.halgventmod.waypoint.distance", distance);
+            if (!open) {
+                // Неоткрытая — своё окно: «Неизвестное место» и текст администрации; администрация в творческом
+                // видит вместо заголовка имя и «не открыта», чтобы проверить текст
+                boolean editor = MapPoints.canEdit(minecraft.player);
+                Component title = editor ? Component.literal(hoveredPoint.name)
+                        : Component.translatable("gui.halgventmod.point.unknown");
+                List<Component> dim = new ArrayList<>();
+                if (editor) {
+                    dim.add(Component.translatable("gui.halgventmod.point.hidden"));
+                }
+                dim.add(coords);
+                dim.add(away);
+                MapTooltipBox.render(graphics, font, title, Component.literal(hoveredPoint.hoverText), dim, mouseX, mouseY);
+                return;
+            }
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.literal(hoveredPoint.name));
+            lines.add(Component.translatable("gui.halgventmod.point.open").withStyle(ChatFormatting.WHITE));
+            lines.add(coords.copy().withStyle(ChatFormatting.GRAY));
+            lines.add(away.copy().withStyle(ChatFormatting.GRAY));
+            if (hoveredPoint.described) {
+                lines.add(Component.translatable("gui.halgventmod.point.click_description").withStyle(ChatFormatting.DARK_GRAY));
+            }
+            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             return;
         }
         Waypoint hovered = overMap(mouseX, mouseY) ? waypointAt(mouseX, mouseY) : null;
@@ -602,6 +878,17 @@ public class MapScreen extends Screen implements MenuTabScreen {
         // Только администрации; сервер всё равно проверит права сам
         if (minecraft.player != null && minecraft.player.hasPermissions(MapTeleportPayload.PERMISSION_LEVEL)) {
             items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.teleport"), () -> teleport(x, z)));
+        }
+        if (MapPoints.canEdit(minecraft.player)) { // администрация в творческом режиме
+            MapPoint point = pointAt(mouseX, mouseY);
+            if (point != null) {
+                items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.edit_point"),
+                        () -> minecraft.setScreen(new PointEditScreen(this, point.copy(), () -> {}))));
+                items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.edit_point_bounds"),
+                        () -> startBounds(point.copy())));
+            } else {
+                items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.add_point"), () -> startPoint(x, z)));
+            }
         }
         if (items.isEmpty()) {
             return;
@@ -685,13 +972,29 @@ public class MapScreen extends Screen implements MenuTabScreen {
 
     /** Курсор над самой картой, а не над панелью или кнопками инструментов. */
     private boolean overMap(double mouseX, double mouseY) {
-        if (panel != null && panel.contains(mouseX, mouseY)) {
+        if (panel != null && panel.contains(mouseX, mouseY) || infoPanel != null && infoPanel.contains(mouseX, mouseY)) {
             return false;
         }
-        int toolX = width - TOOL_SIZE - MARGIN;
-        int toolsTop = MenuTabs.TAB_HEIGHT + MARGIN;
-        int toolsBottom = toolsTop + Tool.values().length * (TOOL_SIZE + 2);
-        return !(mouseX >= toolX && mouseX < toolX + TOOL_SIZE && mouseY >= toolsTop && mouseY < toolsBottom);
+        if (bounds != null) {
+            return true; // кнопок инструментов сейчас нет
+        }
+        int left = toolsLeft();
+        int top = toolsTop();
+        return !(mouseX >= left && mouseX < left + toolsWidth() && mouseY >= top && mouseY < top + TOOL_SIZE);
+    }
+
+    // Кнопки инструментов — ряд у нижнего края экрана, по середине
+    private static int toolsWidth() {
+        int count = Tool.values().length;
+        return count * TOOL_SIZE + (count - 1) * TOOL_GAP;
+    }
+
+    private int toolsLeft() {
+        return (width - toolsWidth()) / 2;
+    }
+
+    private int toolsTop() {
+        return height - MARGIN - TOOL_SIZE;
     }
 
     // ===== Управление =====
@@ -708,7 +1011,20 @@ public class MapScreen extends Screen implements MenuTabScreen {
             }
             return true;
         }
+        // Панель описания: [×] закрывает, остальные клики по ней карте не достаются
+        if (infoPanel != null && infoPanel.contains(mouseX, mouseY)) {
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && infoPanel.overClose(mouseX, mouseY)) {
+                infoPanel = null;
+            }
+            return true;
+        }
         if (super.mouseClicked(mouseX, mouseY, button) || !overMap(mouseX, mouseY)) {
+            return true;
+        }
+        if (bounds != null) {
+            // Ручки и вершины — редактору; мимо них левой кнопкой карта двигается, меню нет
+            bounds.mousePressed(mouseX, mouseY, button, ICON_SIZE);
+            pressedButton = button;
             return true;
         }
         if (tool == Tool.DRAW) {
@@ -723,6 +1039,10 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
         pressedButton = button;
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            MapPoint point = pointAt(mouseX, mouseY);
+            pressedPoint = clickable(point) ? point : null;
+            pressX = mouseX;
+            pressY = mouseY;
             pressText(mouseX, mouseY);
             return true;
         }
@@ -776,6 +1096,18 @@ public class MapScreen extends Screen implements MenuTabScreen {
         if (pressedButton != button) {
             return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
         }
+        if (bounds != null) {
+            if (bounds.dragging()) {
+                bounds.mouseDragged(mouseX, mouseY);
+            } else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                centerX -= dragX / zoom;
+                centerZ -= dragY / zoom;
+            }
+            return true;
+        }
+        if (pressedPoint != null && (Math.abs(mouseX - pressX) > CLICK_SLOP || Math.abs(mouseY - pressY) > CLICK_SLOP)) {
+            pressedPoint = null; // ушли дальше — это перетаскивание карты, а не клик по точке
+        }
         if (textEditor.dragging()) {
             textEditor.drag(font, mouseX, mouseY, hasShiftDown());
             return true;
@@ -794,10 +1126,18 @@ public class MapScreen extends Screen implements MenuTabScreen {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (pressedButton == button) {
             pressedButton = -1;
+            if (bounds != null) {
+                bounds.mouseReleased();
+            }
             MapDrawing.endStroke();
             if (textEditor.release()) {
                 MapTexts.changed();
             }
+            // Нажали и отпустили на точке с описанием, почти не сдвинув мышь, — открыть панель (или переключить)
+            if (pressedPoint != null && Math.abs(mouseX - pressX) <= CLICK_SLOP && Math.abs(mouseY - pressY) <= CLICK_SLOP) {
+                openInfo(pressedPoint);
+            }
+            pressedPoint = null;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
@@ -810,6 +1150,14 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
         if (panel != null && panel.contains(mouseX, mouseY)) {
             panel.scrollBy(scrollY);
+            return true;
+        }
+        if (infoPanel != null && infoPanel.contains(mouseX, mouseY)) {
+            infoPanel.scroll(mouseX, mouseY, scrollY);
+            return true;
+        }
+        // Граница-круг: колесико — радиус; Shift+колесико — как обычно, масштаб карты
+        if (bounds != null && !hasShiftDown() && bounds.scroll(scrollY)) {
             return true;
         }
         menu = null; // меню привязано к точке карты — после масштаба оно было бы не там
@@ -837,6 +1185,25 @@ public class MapScreen extends Screen implements MenuTabScreen {
         if (menu != null && keyCode == GLFW.GLFW_KEY_ESCAPE) {
             menu = null;
             return true;
+        }
+        // Первый Esc закрывает панель описания, второй — карту
+        if (infoPanel != null && keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            infoPanel = null;
+            return true;
+        }
+        // Правка границы: Esc — отмена, Enter — дальше, стрелки — радиус или вершина
+        if (bounds != null) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                boundsCancel();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                boundsNext();
+                return true;
+            }
+            if (bounds.keyPressed(keyCode)) {
+                return true;
+            }
         }
         // Выделенная надпись: Esc — снять выделение, Delete — удалить
         MapText selected = textEditor.selected();

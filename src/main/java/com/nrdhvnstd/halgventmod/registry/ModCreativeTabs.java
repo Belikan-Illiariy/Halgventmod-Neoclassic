@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Вкладки: по одной на каждую категорию (в порядке Category), последней — «Искусство».
+ * Вкладки: по одной на каждую категорию (в порядке Category).
  * Пустые вкладки игра скрывает сама. Иконка вкладки — первый предмет категории.
  */
 public final class ModCreativeTabs {
@@ -28,11 +28,11 @@ public final class ModCreativeTabs {
     public static final Map<Category, DeferredHolder<CreativeModeTab, CreativeModeTab>> CATEGORY_TABS =
             new EnumMap<>(Category.class);
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> ART_TAB;
-
     static {
-        // Первая вкладка встаёт после последней ванильной, каждая следующая — после предыдущей
-        ResourceKey<CreativeModeTab> previous = CreativeModeTabs.OP_BLOCKS;
+        // Первая вкладка встаёт после последней ванильной, каждая следующая — после предыдущей.
+        // Не OP_BLOCKS: NeoForge не сортирует служебные вкладки, привязка к ним теряется,
+        // и вкладка без привязки уходит по алфавиту ID в начало списка.
+        ResourceKey<CreativeModeTab> previous = CreativeModeTabs.SPAWN_EGGS;
         for (Category category : Category.values()) {
             ResourceKey<CreativeModeTab> after = previous;
             DeferredHolder<CreativeModeTab, CreativeModeTab> tab = CREATIVE_MODE_TABS.register(category.folder(),
@@ -51,16 +51,6 @@ public final class ModCreativeTabs {
             CATEGORY_TABS.put(category, tab);
             previous = tab.getKey();
         }
-
-        // «Искусство»: все картины из ModPaintings, после всех категорий
-        ResourceKey<CreativeModeTab> lastCategory = previous;
-        ART_TAB = CREATIVE_MODE_TABS.register("art", () -> CreativeModeTab.builder()
-                .title(Component.translatable("itemGroup.halgventmod.art"))
-                .withTabsBefore(lastCategory)
-                .icon(() -> new ItemStack(Items.PAINTING))
-                .displayItems((parameters, output) ->
-                        ModPaintings.PAINTINGS.getEntries().forEach(item -> output.accept(item.get())))
-                .build());
     }
 
     private ModCreativeTabs() {}

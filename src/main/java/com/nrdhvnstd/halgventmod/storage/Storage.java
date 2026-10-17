@@ -48,18 +48,11 @@ public final class Storage {
     }
 
     /**
-     * Можно ли положить вещь внутрь сумки или мешочка.
+     * Можно ли положить вещь внутрь сумки.
      * Сумку или подсумок с вещами — нельзя (ТЗ 4.4), пустые — можно: они сложены.
      */
     public static boolean canStore(ItemStack stack) {
-        ContainerType type = ModGear.containerOf(stack);
-        return type == null || !type.wearable() || !LiveContents.hasItems(stack);
-    }
-
-    /** Можно ли положить вещь в мешочек: как в сумку, но мешочек с вещами — тоже нельзя. */
-    public static boolean canStoreInPurse(ItemStack stack) {
-        return canStore(stack) && !(ModGear.containerOf(stack) == ContainerType.PURSE
-                && LiveContents.hasItems(stack));
+        return ModGear.containerOf(stack) == null || !LiveContents.hasItems(stack);
     }
 
     /**

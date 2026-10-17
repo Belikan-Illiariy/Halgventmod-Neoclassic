@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * Всплывающий хотбар (ТЗ 5.2): по умолчанию скрыт, выезжает снизу при прокрутке колёсика или 1–9
  * и уезжает через HOTBAR_HIDE_DELAY без них. Колёсико листает сразу (ваниль), «холостого» поворота нет.
  * Пока открыто окно с ячейками, хотбар не рисуется — карманы видны в самом окне.
- * Шкалы потребностей (NeedsHud) — отдельные слои и остаются на месте.
+ * Шкалы потребностей (NeedsHud) прячутся и выезжают вместе с хотбаром (visible). Урон тоже показывает хотбар.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class HotbarPopup {
@@ -32,6 +32,8 @@ public final class HotbarPopup {
 
     private static int idleTicks = HOTBAR_HIDE_DELAY; // с последней прокрутки
     private static int lastSelected = -1;
+    private static float lastHealth = -1;
+    private static int lastHurtTime;
     private static float shown;                     // 0 — спрятан, 1 — на месте
     private static float shownBefore;
 
@@ -52,7 +54,7 @@ public final class HotbarPopup {
             if (minecraft.screen instanceof AbstractContainerScreen<?>) {
                 return;
             }
-            float visible = Mth.lerp(delta.getGameTimeDeltaPartialTick(false), shownBefore, shown);
+            float visible = visible(delta);
             if (visible <= 0) {
                 return;
             }
@@ -61,6 +63,11 @@ public final class HotbarPopup {
             hotbar.render(graphics, delta);
             graphics.pose().popPose();
         };
+    }
+
+    /** Насколько хотбар выехал в этом кадре: 0 — спрятан, 1 — на месте. По нему же прячутся шкалы (NeedsHud). */
+    public static float visible(DeltaTracker delta) {
+        return Mth.lerp(delta.getGameTimeDeltaPartialTick(false), shownBefore, shown);
     }
 
     /** Показать хотбар заново на HOTBAR_HIDE_DELAY. */
@@ -74,8 +81,17 @@ public final class HotbarPopup {
         LocalPlayer player = minecraft.player;
         if (player == null) {
             lastSelected = -1;
+            lastHealth = -1;
             return;
         }
+        // Урон: здоровье упало или игрок дёрнулся от удара (удар мог уйти в поглощение)
+        float health = player.getHealth();
+        if ((lastHealth >= 0 && health < lastHealth) || player.hurtTime > lastHurtTime) {
+            wake();
+        }
+        lastHealth = health;
+        lastHurtTime = player.hurtTime;
+
         int selected = player.getInventory().selected;
         if (lastSelected >= 0 && selected != lastSelected) {
             wake();

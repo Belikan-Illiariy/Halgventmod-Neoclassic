@@ -12,8 +12,6 @@ import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.gear.ModGear;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModMenus;
-import com.nrdhvnstd.halgventmod.storage.ContainerType;
-import com.nrdhvnstd.halgventmod.storage.LiveContents;
 import com.nrdhvnstd.halgventmod.storage.Quiver;
 import com.nrdhvnstd.halgventmod.storage.StorageArea;
 
@@ -33,14 +31,14 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Инвентарь игрока вместо ванильного (концепт инвентаря, docs/INVENTORY_SPEC.md):
  * броня 4×3, фигурка, снаряжение 3×3, хранилище 9×3 на месте бывшего рюкзака
- * (спина 3×5, подсумок 3×2, подсумок 3×2), карманы (= хотбар) со второй рукой, шкала нагрузки
- * и панель предмета справа. Открытый мешочек — ряд ячеек под шкалой нагрузки.
+ * (спина 3×5, подсумок 3×2, подсумок 3×2), карманы (= хотбар) со второй рукой
+ * и панель предмета справа. Нагрузка — строкой над окном (ArmorInventoryScreen).
  * Открывается сервером по OpenInventoryPayload.
  */
 public class PlayerArmorMenu extends AbstractContainerMenu {
     // ===== Раскладка окна (в пикселях от левого верхнего угла; координаты — у предмета, рамка на 1 больше) =====
     public static final int WIDTH = 328;
-    public static final int HEIGHT = 216;
+    public static final int HEIGHT = 168;        // карманы внизу + отступ 8, как у ванильного окна
     public static final int SLOT_STEP = 18;
     public static final int TOP = 8;             // верхний ряд ячеек
     // Броня — сетка 4×3: голова, туловище, ноги (по строке на часть тела, порядок как в ArmorSlot)
@@ -58,11 +56,6 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
     public static final int OFFHAND_X = 8;
     public static final int POCKETS_X = 30;
     public static final int POCKETS_Y = STORAGE_Y + 3 * SLOT_STEP + 4;
-    // Шкала нагрузки и открытый мешочек — под карманами
-    public static final int LOAD_Y = POCKETS_Y + SLOT_STEP + 6;
-    public static final int LOAD_RIGHT = 192;
-    public static final int PURSE_X = 8;
-    public static final int PURSE_Y = LOAD_Y + 24;
     // Панель выбранного предмета — справа
     public static final int PANEL_LEFT = 200;
     public static final int PANEL_RIGHT = 320;
@@ -77,13 +70,9 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
     public static final int ARMOR_END = ARMOR_START + ArmorSlot.COUNT;
     public static final int GEAR_START = ARMOR_END;
     public static final int GEAR_END = GEAR_START + GearSlot.COUNT;
-    public static final int PURSE_START = GEAR_END;
-    public static final int PURSE_END = PURSE_START + ContainerType.PURSE.maxCapacity();
 
     private final Player owner;
     private final GearInventory gear;
-    private final LiveContents purseContents = new LiveContents();
-    private int openPurse = -1; // номер ячейки с открытым мешочком; -1 — закрыт
 
     // Конструктор для клиента (MenuType) и сервера
     public PlayerArmorMenu(int containerId, Inventory inventory) {
@@ -112,23 +101,6 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
             int row = slot.ordinal() / GearSlot.COLUMNS;
             addSlot(new GearEquipSlot(gear, slot, GEAR_X + col * SLOT_STEP, TOP + row * SLOT_STEP));
         }
-        for (int row = 0; row < ContainerType.PURSE.maxCapacity(); row++) {
-            addSlot(new PurseSlot(this::openPurseSlot, purseContents, row, PURSE_X + row * SLOT_STEP, PURSE_Y));
-        }
-    }
-
-    /** Ячейка с открытым мешочком или null. */
-    @Nullable
-    public Slot openPurseSlot() {
-        if (openPurse < 0) {
-            return null;
-        }
-        Slot slot = slots.get(openPurse);
-        if (ModGear.containerOf(slot.getItem()) != ContainerType.PURSE) {
-            openPurse = -1; // мешочек переложили — панель закрылась
-            return null;
-        }
-        return slot;
     }
 
     @Override
@@ -137,17 +109,11 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
     }
 
     // Клик по ячейке брони или снаряжения: если правило не пускает — сообщение над хотбаром
-    // (сам запрет делают mayPlace / mayPickup). ПКМ по мешочку пустым курсором — открыть или закрыть его.
+    // (сам запрет делают mayPlace / mayPickup).
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
         if (slotId >= 0 && slotId < slots.size()) {
             Slot slot = slots.get(slotId);
-            if (clickType == ClickType.PICKUP && button == 1 && getCarried().isEmpty()
-                    && !(slot instanceof PurseSlot)
-                    && ModGear.containerOf(slot.getItem()) == ContainerType.PURSE) {
-                openPurse = openPurse == slotId ? -1 : slotId;
-                return;
-            }
             if (clickType == ClickType.PICKUP && slot instanceof GearEquipSlot gearSlot
                     && gearSlot.gearSlot() == GearSlot.QUIVER && slot.hasItem() && quiverClick(button, player)) {
                 return;
@@ -200,7 +166,7 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
         return null;
     }
 
-    // Shift+клик: стрелы — в колчан; броня и снаряжение — в свою ячейку; снятое, вторая рука, мешочек и сумки — в карманы;
+    // Shift+клик: стрелы — в колчан; броня и снаряжение — в свою ячейку; снятое, вторая рука и сумки — в карманы;
     // из карманов — в подсумки, затем на спину
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -294,8 +260,8 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
         return target;
     }
 
-    // Вторая рука — как в ванильном инвентаре
-    private static class OffhandSlot extends Slot {
+    // Вторая рука — как в ванильном инвентаре (и в окне стойки для брони)
+    static class OffhandSlot extends Slot {
         private final Player owner;
 
         OffhandSlot(Inventory inventory, Player owner) {

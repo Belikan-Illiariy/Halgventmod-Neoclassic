@@ -13,7 +13,6 @@
     "InventoryMixin",
     "ItemEntityAccessor",
     "MobEffectMixin",
-    "PaintingMixin",
     "PlayerMixin"
   ],
   "client": [

@@ -29,7 +29,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 
 /**
  * Загрузка моделей выступающих деталей: assets/<мод>/models/armor/**.geo.json
- * и снаряжения на теле: assets/<мод>/models/gear/<id>.geo.json (GearLayer).
+ * (папок может стать больше — FOLDERS).
  * Формат — Blockbench «Bedrock Entity» (format_version 1.12.0 и новее).
  *
  * В модели верхние кости с именами частей тела (head, body, right_arm, left_arm, right_leg, left_leg)
@@ -40,10 +40,11 @@ import net.minecraft.util.profiling.ProfilerFiller;
  * углы те же, отсчёт — от точки вращения родителя.
  */
 public final class GeoModelLoader extends SimplePreparableReloadListener<Map<ResourceLocation, GeoModel>> {
-    private static final String[] FOLDERS = {"models/armor", "models/gear"}; // детали брони и снаряжение на теле
+    private static final String[] FOLDERS = {"models/armor"}; // детали брони
     private static final String EXTENSION = ".geo.json";
     private static final String HIDDEN_PREFIX = "_";
     private static final int DEFAULT_TEXTURE_SIZE = 64;
+    private static final String ROTATED_CUBE = ""; // имя кости повёрнутого кубика: своего имени в файле у него нет
 
     private static Map<ResourceLocation, GeoModel> models = Map.of();
     private static final Set<ResourceLocation> MISSING_REPORTED = new HashSet<>();
@@ -129,7 +130,7 @@ public final class GeoModelLoader extends SimplePreparableReloadListener<Map<Res
             List<GeoModel.Bone> rotatedCubes = new ArrayList<>();
             cubes(bone, attachment.pivot, uvSize, ownQuads, rotatedCubes);
             if (!ownQuads.isEmpty() || !rotatedCubes.isEmpty()) {
-                bones.add(new GeoModel.Bone(new Vector3f(), new Vector3f(), ownQuads, rotatedCubes));
+                bones.add(new GeoModel.Bone(name, new Vector3f(), new Vector3f(), ownQuads, rotatedCubes));
             }
             for (JsonObject child : children.getOrDefault(name, List.of())) {
                 bones.add(bone(child, attachment.pivot, children, uvSize));
@@ -157,7 +158,8 @@ public final class GeoModelLoader extends SimplePreparableReloadListener<Map<Res
         for (JsonObject child : children.getOrDefault(json.get("name").getAsString(), List.of())) {
             nested.add(bone(child, pivot, children, uvSize));
         }
-        return new GeoModel.Bone(offset(pivot, parentPivot), radians(vec(json, "rotation")), quads, nested);
+        return new GeoModel.Bone(json.get("name").getAsString(), offset(pivot, parentPivot), radians(vec(json, "rotation")),
+                quads, nested);
     }
 
     // Кубики кости: без поворота — грани прямо в кости, с поворотом — отдельной костью вокруг своей точки
@@ -175,7 +177,7 @@ public final class GeoModelLoader extends SimplePreparableReloadListener<Map<Res
                 quads.addAll(cube(cube, bonePivot, boneMirror, boneInflate, uvSize));
             } else {
                 Vector3f cubePivot = vec(cube, "pivot");
-                rotated.add(new GeoModel.Bone(offset(cubePivot, bonePivot), radians(rotation),
+                rotated.add(new GeoModel.Bone(ROTATED_CUBE, offset(cubePivot, bonePivot), radians(rotation),
                         cube(cube, cubePivot, boneMirror, boneInflate, uvSize), List.of()));
             }
         }

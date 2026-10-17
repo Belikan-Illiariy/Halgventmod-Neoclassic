@@ -52,14 +52,21 @@ public final class GeoModel {
     /** Четырёхугольная грань: вершины в пикселях, развёртка 0..1, нормаль. */
     record Quad(Vector3f[] positions, float[] u, float[] v, Vector3f normal) {}
 
-    /** Кость: сдвиг от родителя (пиксели), поворот (радианы), свои грани и дочерние кости. */
-    record Bone(Vector3f offset, Vector3f rotation, List<Quad> quads, List<Bone> children) {
-        void render(PoseStack poseStack, VertexConsumer buffer, int light, int overlay) {
+    /**
+     * Кость: имя из Blockbench (у повёрнутого кубика — пустое), сдвиг от родителя (пиксели), поворот (радианы),
+     * свои грани и дочерние кости.
+     */
+    record Bone(String name, Vector3f offset, Vector3f rotation, List<Quad> quads, List<Bone> children) {
+        void render(PoseStack poseStack, VertexConsumer buffer, int light, int overlay, Map<String, Vector3f> extraRotations) {
             poseStack.pushPose();
-            // Как ModelPart.translateAndRotate
+            // Как ModelPart.translateAndRotate; добавочный поворот (подвижная деталь) складывается с поворотом из файла
             poseStack.translate(offset.x / 16.0F, offset.y / 16.0F, offset.z / 16.0F);
-            if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0) {
-                poseStack.mulPose(new Quaternionf().rotationZYX(rotation.z, rotation.y, rotation.x));
+            Vector3f extra = extraRotations.get(name);
+            float x = rotation.x + (extra != null ? extra.x : 0);
+            float y = rotation.y + (extra != null ? extra.y : 0);
+            float z = rotation.z + (extra != null ? extra.z : 0);
+            if (x != 0 || y != 0 || z != 0) {
+                poseStack.mulPose(new Quaternionf().rotationZYX(z, y, x));
             }
             PoseStack.Pose pose = poseStack.last();
             for (Quad quad : quads) {
@@ -74,7 +81,7 @@ public final class GeoModel {
                 }
             }
             for (Bone child : children) {
-                child.render(poseStack, buffer, light, overlay);
+                child.render(poseStack, buffer, light, overlay, extraRotations);
             }
             poseStack.popPose();
         }
@@ -91,12 +98,16 @@ public final class GeoModel {
         return bones.keySet();
     }
 
-    /** Нарисовать детали одной части тела; poseStack уже повёрнут как эта часть. */
-    public void render(Attachment attachment, PoseStack poseStack, VertexConsumer buffer, int light, int overlay) {
+    /**
+     * Нарисовать детали одной части тела; poseStack уже повёрнут как эта часть.
+     * extraRotations — добавочный поворот костей по имени (радианы), например поднятое забрало.
+     */
+    public void render(Attachment attachment, PoseStack poseStack, VertexConsumer buffer, int light, int overlay,
+                       Map<String, Vector3f> extraRotations) {
         List<Bone> list = bones.get(attachment);
         if (list != null) {
             for (Bone bone : list) {
-                bone.render(poseStack, buffer, light, overlay);
+                bone.render(poseStack, buffer, light, overlay, extraRotations);
             }
         }
     }

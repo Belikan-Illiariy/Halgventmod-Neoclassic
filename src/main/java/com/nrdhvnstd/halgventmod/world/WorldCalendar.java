@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.network.CalendarEventsPayload;
 import com.nrdhvnstd.halgventmod.network.CalendarSyncPayload;
+import com.nrdhvnstd.halgventmod.network.DawnPayload;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
@@ -17,9 +18,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -193,10 +191,7 @@ public class WorldCalendar extends SavedData {
                 date.weekdayName(), date.dayOfMonth(), date.monthNameOf()).withStyle(ChatFormatting.GOLD);
         Component subtitle = Component.translatable("calendar.halgventmod.dawn.subtitle",
                 date.season().displayName(), date.year()).withStyle(ChatFormatting.GRAY);
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            player.connection.send(new ClientboundSetTitlesAnimationPacket(20, 80, 30));
-            player.connection.send(new ClientboundSetSubtitleTextPacket(subtitle));
-            player.connection.send(new ClientboundSetTitleTextPacket(title));
-        }
+        // Не ванильный заголовок, а надпись вверху экрана (Announcements) — в одной очереди с «Открытой локацией»
+        PacketDistributor.sendToAllPlayers(new DawnPayload(title, subtitle));
     }
 }

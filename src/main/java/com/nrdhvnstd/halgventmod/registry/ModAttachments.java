@@ -12,6 +12,7 @@ import com.nrdhvnstd.halgventmod.name.RpNames;
 import com.nrdhvnstd.halgventmod.needs.NeedsSync;
 import com.nrdhvnstd.halgventmod.needs.StaminaData;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
+import com.nrdhvnstd.halgventmod.point.PointDiscovery;
 import com.nrdhvnstd.halgventmod.storage.Quiver;
 
 import net.neoforged.bus.api.IEventBus;
@@ -91,6 +92,13 @@ public final class ModAttachments {
                     .serialize(Codec.STRING)
                     .copyOnDeath()
                     .sync(RpNames.SYNC)
+                    .build());
+
+    // Открытые игроком точки карты (MapPoints). Сохраняется, переживает смерть; клиенту — PointsDiscoveredPayload.
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<PointDiscovery>> POINT_DISCOVERY =
+            ATTACHMENTS.register("point_discovery", () -> AttachmentType.builder(() -> new PointDiscovery())
+                    .serialize(PointDiscovery.CODEC)
+                    .copyOnDeath()
                     .build());
 
     private ModAttachments() {}

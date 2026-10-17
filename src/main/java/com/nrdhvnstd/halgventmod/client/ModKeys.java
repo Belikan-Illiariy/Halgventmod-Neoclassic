@@ -38,6 +38,10 @@ public final class ModKeys {
     public static final KeyMapping PICKUP = new KeyMapping("key.halgventmod.pickup",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E, CATEGORY);
 
+    // Поднять или опустить забрало надетого шлема (network/ToggleVisorPayload); у шлема без забрала ничего не делает
+    public static final KeyMapping VISOR = new KeyMapping("key.halgventmod.visor",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
+
     private ModKeys() {}
 
     @SubscribeEvent
@@ -49,5 +53,6 @@ public final class ModKeys {
         event.register(CODEX);
         event.register(WAYPOINT);
         event.register(PICKUP);
+        event.register(VISOR);
     }
 }

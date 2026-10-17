@@ -18,14 +18,13 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Окно инвентаря (концепт, docs/INVENTORY_SPEC.md): броня, фигурка, снаряжение, сетка сумок 9×3 (спина, П.1, П.2),
- * шкала нагрузки, карманы со второй рукой и панель предмета справа.
+ * карманы со второй рукой и панель предмета справа; нагрузка — строкой над окном.
  * Вкладки (MenuTabs) — у верхнего края экрана; календарь и, в творческом режиме, «Каталог» — внизу панели предмета.
  * Фон пока — заглушка из рамок; финальную текстуру нарисует художник.
  */
@@ -50,20 +49,17 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     private static final int ICON_SCALE = 4;
     private static final int ICON_SIZE = 16 * ICON_SCALE;
 
-    // Шкала нагрузки
-    private static final int BAR_HEIGHT = 5;
-    private static final int BAR_GAP = 3; // от текста до полосы
+    // Строка нагрузки над окном: зазор до верхнего края окна
+    private static final int LOAD_GAP = 2;
 
     // Цвета заглушки (как у ванильных окон)
-    private static final int WINDOW_FILL = 0xFFC6C6C6;
-    private static final int WINDOW_DARK = 0xFF555555;
-    private static final int WINDOW_LIGHT = 0xFFFFFFFF;
-    private static final int SLOT_FILL = 0xFF8B8B8B;
-    private static final int SLOT_SHADOW = 0xFF373737;
-    private static final int SLOT_LOCKED = 0xFF2B2B2B;
+    static final int WINDOW_FILL = 0xFFC6C6C6;
+    static final int WINDOW_DARK = 0xFF555555;
+    static final int WINDOW_LIGHT = 0xFFFFFFFF;
+    static final int SLOT_FILL = 0xFF8B8B8B;
+    static final int SLOT_SHADOW = 0xFF373737;
+    static final int SLOT_LOCKED = 0xFF2B2B2B;
     private static final int PANEL_FILL = 0xFF1E1E1E;
-    private static final int LABEL_COLOR = 0x404040;
-    private static final int BAR_BACKGROUND = 0xFF3A3A3A;
 
     @Nullable
     private ClearInventoryButton clearButton; // только в творческом
@@ -82,8 +78,8 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     @Override
     protected void init() {
         super.init();
-        // На маленьком экране (масштаб интерфейса 4 при 1080p) окно не должно заезжать на вкладки
-        topPos = Math.max(topPos, MenuTabs.TAB_HEIGHT + 2);
+        // На маленьком экране (масштаб интерфейса 4 при 1080p) окно и строка нагрузки над ним не должны заезжать на вкладки
+        topPos = Math.max(topPos, MenuTabs.TAB_HEIGHT + 2 + font.lineHeight + LOAD_GAP);
         for (MenuTabButton button : MenuTabs.createButtons(font, leftPos, imageWidth, MenuTab.INVENTORY)) {
             addRenderableWidget(button);
         }
@@ -114,6 +110,7 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+        renderLoad(graphics);
         renderItemPanel(graphics);
         renderTooltip(graphics, mouseX, mouseY);
     }
@@ -139,38 +136,29 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
         }
     }
 
-    // Над хранилищем подписей нет (сетка стоит вплотную под фигуркой, как в ванили) —
-    // какая это область, говорит подсказка над пустой ячейкой. Здесь только шкала нагрузки
+    // Подписей в окне нет: над хранилищем — тоже (сетка стоит вплотную под фигуркой, как в ванили),
+    // какая это область, говорит подсказка над пустой ячейкой. Нагрузка — над окном (renderLoad)
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        renderLoad(graphics);
     }
 
-    // «Нагрузка  8/40 кг ЛЕГКО» и полоса; полная полоса = грузоподъёмность, сверх неё — полная, цветом ступени
+    // «8 / 40 кг ЛЕГКО» над окном у правого края, цветом ступени
     private void renderLoad(GuiGraphics graphics) {
         double kg = ModWeights.inventoryGrams(minecraft.player) / 1000.0;
         double capacity = Encumbrance.capacity(minecraft.player);
         Encumbrance.Tier tier = Encumbrance.tier(kg, capacity);
         int color = switch (tier) {
-            case NONE -> 0xFF3F9F3F;       // зелёный
-            case BURDEN -> 0xFFE0C020;     // жёлтый
-            case ENCUMBERED -> 0xFFE08020; // оранжевый
-            case OVERLOADED -> 0xFFD03030; // красный
+            case NONE -> 0xFFFFFF;       // белый
+            case BURDEN -> 0xFFFF55;     // жёлтый
+            case ENCUMBERED -> 0xFFAA00; // оранжевый
+            case OVERLOADED -> 0xFF5555; // красный
         };
-        int left = PlayerArmorMenu.ARMOR_X;
-        int right = PlayerArmorMenu.LOAD_RIGHT;
-        int y = PlayerArmorMenu.LOAD_Y;
-
-        graphics.drawString(font, Component.translatable("gui.halgventmod.load"), left, y, LABEL_COLOR, false);
         Component value = Component.translatable("hud.halgventmod.carry", WeightText.kg(kg), WeightText.kg(capacity))
                 .append(" ")
                 .append(Component.translatable("gui.halgventmod.load." + tier.name().toLowerCase()));
-        graphics.drawString(font, value, right - font.width(value), y, color, false);
-
-        int barY = y + font.lineHeight + BAR_GAP;
-        graphics.fill(left, barY, right, barY + BAR_HEIGHT, BAR_BACKGROUND);
-        float ratio = capacity > 0 ? (float) Mth.clamp(kg / capacity, 0, 1) : 1;
-        graphics.fill(left, barY, left + Math.round((right - left) * ratio), barY + BAR_HEIGHT, color);
+        int x = leftPos + imageWidth - font.width(value);
+        int y = topPos - font.lineHeight - LOAD_GAP;
+        graphics.drawString(font, value, x, y, color, true);
     }
 
     @Override
@@ -198,7 +186,7 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     }
 
     // Прямоугольник с объёмной рамкой: светлая сверху-слева, тёмная снизу-справа (или наоборот — у ячеек)
-    private static void bevel(GuiGraphics graphics, int left, int top, int right, int bottom,
+    static void bevel(GuiGraphics graphics, int left, int top, int right, int bottom,
                               int fill, int topLeft, int bottomRight) {
         graphics.fill(left, top, right, bottom, fill);
         graphics.fill(left, top, right - 1, top + 1, topLeft);

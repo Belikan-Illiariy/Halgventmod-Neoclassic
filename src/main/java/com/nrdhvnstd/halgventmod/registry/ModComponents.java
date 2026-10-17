@@ -63,12 +63,33 @@ public final class ModComponents {
                     .networkSynchronized(ModArmor.Coating.STREAM_CODEC)
                     .build());
 
-    // Вещи внутри рюкзака, сумки, подсумка или мешочка. Лежат в самой вещи: сняли сумку — вещи остались в ней
+    // Забрало шлема поднято (у шлемов с .visor()). Нет компонента — опущено. Живёт на самом шлеме: снял и надел — осталось как было
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> VISOR_RAISED =
+            COMPONENTS.register("visor_raised", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // Вещи внутри рюкзака, сумки, подсумка или колчана. Лежат в самой вещи: сняли сумку — вещи остались в ней
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemContainerContents>> BAG_CONTENTS =
             COMPONENTS.register("bag_contents", () -> DataComponentType.<ItemContainerContents>builder()
                     .persistent(ItemContainerContents.CODEC)
                     .networkSynchronized(ItemContainerContents.STREAM_CODEC)
                     .cacheEncoding()
+                    .build());
+
+    // id знамени из реестра знамён у выданного баннера (/banner give). Строка в подсказке — только пока рисунок совпадает
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> REGISTRY_BANNER =
+            COMPONENTS.register("registry_banner", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // id книги-гербовника; нет компонента — общая книга main. Содержимое книги — на сервере (ArmorialBooks)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> ARMORIAL_BOOK =
+            COMPONENTS.register("armorial_book", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
                     .build());
 
     private ModComponents() {}

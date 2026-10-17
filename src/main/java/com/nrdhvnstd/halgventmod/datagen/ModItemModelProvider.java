@@ -2,7 +2,6 @@ package com.nrdhvnstd.halgventmod.datagen;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
-import com.nrdhvnstd.halgventmod.registry.ModPaintings;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -29,10 +28,6 @@ public class ModItemModelProvider extends ItemModelProvider {
         for (ModItems.Definition def : ModItems.definitions()) {
             categoryItem(def);
         }
-
-        // Картины: ванильная иконка картины
-        ModPaintings.PAINTINGS.getEntries().forEach(item ->
-                withExistingParent(item.getId().getPath(), mcLoc("item/painting")));
     }
 
     private void categoryItem(ModItems.Definition def) {

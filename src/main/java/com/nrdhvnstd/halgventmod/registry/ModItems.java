@@ -41,6 +41,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import com.nrdhvnstd.halgventmod.lock.KeyRingItem;
 import com.nrdhvnstd.halgventmod.farming.HarvestToolItem;
+import com.nrdhvnstd.halgventmod.armorial.ArmorialItem;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HalgventMod.MODID);
@@ -73,11 +74,14 @@ public final class ModItems {
     //     .painted()                                 — покрывается росписью (<id>.png в цвете + серый <id>_painted.png)
     //                                                  можно оба: .enamel().painted() — первое по умолчанию
     //     .armorModel("hounskull_visor")             — выступающие детали (модели), необязательно
+    //     .visor()                                   — подвижное забрало: кость visor в модели детали, поднимается клавишей V
+    //     .visor(2, 1)                               — то же, и опущенное забрало прибавляет к защите (броня, твёрдость)
+    //     .protection(2, 1)                          — защита: броня и твёрдость брони (временно, ванильные атрибуты)
     //     .hoodCompatible()                          — только шлем: поверх него можно надеть капюшон
     //     .cloak(CloakType.HOODED_CAPE)              — только накидка: капюшон, плащ или оба
     //   Снаряжение и сумки:
     //     .gear(GearType.BELT)                       — надеваемое снаряжение своей ячейки; стак 1, надевается ПКМ
-    //     .container(ContainerType.BACKPACK, 12)     — контейнер на n ячеек (рюкзак, сумка, подсумок, мешочек)
+    //     .container(ContainerType.BACKPACK, 12)     — контейнер на n ячеек (рюкзак, сумка, подсумок, колчан)
     //     .carryBonus(20)                            — только рюкзак и сумка: +кг к грузоподъёмности, пока надеты
     //   Плоская текстура брони: assets/halgventmod/textures/armor/<папка слота>/<id>.png (128×64)
     //     .register()
@@ -121,6 +125,12 @@ public final class ModItems {
             .register(KeyRingItem::new);
 
     // ----- Фермерство -----
+    // ----- Гербовник: книга знамён, выдаёт администрация (/armorial give), рецепта нет -----
+    public static final DeferredItem<ArmorialItem> ARMORIAL = item("armorial", "Гербовник", "Armorial", Gender.M)
+            .lore("Книга знамён. ПКМ — открыть.", "A book of banners. Right-click to open.")
+            .stacksTo(1)
+            .register(ArmorialItem::new);
+
     public static final DeferredItem<HarvestToolItem> SICKLE = item("sickle", "Серп", "Sickle", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
@@ -180,20 +190,6 @@ public final class ModItems {
             .lore("Вешается на пояс.", "Hangs from the belt.")
             .container(ContainerType.POUCH, 3)
             .kg(0.1)
-            .register();
-    public static final DeferredItem<Item> PURSE = item("purse", "Кошель", "Purse", Gender.M)
-            .traits(ModTraits.COMMON)
-            .category(Category.GEAR)
-            .lore("ПКМ по нему в инвентаре — открыть.", "Right-click it in the inventory to open.")
-            .container(ContainerType.PURSE, 3)
-            .grams(50)
-            .register();
-    public static final DeferredItem<Item> CANVAS_SACK = item("canvas_sack", "Холщовый мешочек", "Canvas sack", Gender.M)
-            .traits(ModTraits.COMMON)
-            .category(Category.GEAR)
-            .lore("ПКМ по нему в инвентаре — открыть.", "Right-click it in the inventory to open.")
-            .container(ContainerType.PURSE, 4)
-            .grams(100)
             .register();
     public static final DeferredItem<Item> BELT_LANTERN = item("belt_lantern", "Поясной фонарь", "Belt lantern", Gender.M)
             .traits(ModTraits.COMMON)
@@ -296,6 +292,9 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .armorModel("hundsgugel_bascinet_visor")
+            .protection(2, 1)
+            .visor(2, 1)
             .kg(3.2)
             .register();
     public static final DeferredItem<Item> SCHWEINSGUGEL_BASCINET = item("schweinsgugel_bascinet", "Швайнсгугель", "Pig-faced bascinet", Gender.M)
@@ -332,6 +331,7 @@ public final class ModItems {
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .dyeable()
             .kg(2.5)
             .register();
     public static final DeferredItem<Item> HEAVY_TOPFHELM = item("heavy_topfhelm", "Тяжёлый топфхельм", "Heavy pot helm", Gender.M)
@@ -372,6 +372,7 @@ public final class ModItems {
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
             .dyeable()
+            .armorModel("kettle_hat_brim")
             .kg(2)
             .register();
     public static final DeferredItem<Item> KETTLE_HAT_BEVOR = item("kettle_hat_bevor", "Капеллина с бувигером", "Kettle hat with bevor", Gender.F)
@@ -379,6 +380,7 @@ public final class ModItems {
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
             .dyeable()
+            .armorModel("kettle_hat_brim")
             .kg(2.8)
             .register();
 
@@ -474,6 +476,225 @@ public final class ModItems {
                     "A quilted jacket stuffed with tow or cotton. It softens blows and keeps mail from chafing.")
             .armor(ArmorSlot.PADDING)
             .kg(2.5)
+            .register();
+    // Новый поддоспех: вес временный, описаний пока нет
+    public static final DeferredItem<Item> SIMPLE_AKETON = item("simple_aketon", "Простой акетон", "Simple aketon", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.PADDING)
+            .dyeable()
+            .kg(2)
+            .register();
+    public static final DeferredItem<Item> GAMBESON = item("gambeson", "Гамбезон", "Gambeson", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.PADDING)
+            .dyeable()
+            .kg(3.5)
+            .register();
+    public static final DeferredItem<Item> PADDED_JACKET = item("padded_jacket", "Стёганая куртка", "Padded jacket", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.PADDING)
+            .painted()
+            .kg(2.5)
+            .register();
+    public static final DeferredItem<Item> POURPOINT = item("pourpoint", "Пурпуэн", "Pourpoint", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.PADDING)
+            .dyeable()
+            .kg(2)
+            .register();
+
+    // Кольчуги: вес временный, описаний пока нет
+    public static final DeferredItem<Item> MAIL_VEST = item("mail_vest", "Кольчужный жилет", "Mail vest", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(4)
+            .register();
+    public static final DeferredItem<Item> LIGHT_MAIL = item("light_mail", "Лёгкая кольчуга", "Light mail", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(6)
+            .register();
+    public static final DeferredItem<Item> HAUBERGEON = item("haubergeon", "Хаубержон", "Haubergeon", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(7)
+            .register();
+    public static final DeferredItem<Item> HAUBERK = item("hauberk", "Хауберк", "Hauberk", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(10)
+            .register();
+    public static final DeferredItem<Item> SALVAR_MAIL = item("salvar_mail", "Сальварская кольчуга", "Salvar mail", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(8)
+            .register();
+    public static final DeferredItem<Item> PLATED_MAIL = item("plated_mail", "Кольчуга с пластинами", "Plated mail", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.MAIL)
+            .kg(11)
+            .register();
+
+    // Нагрудники: вес временный, описаний пока нет
+    public static final DeferredItem<Item> LEATHER_BRIGANDINE = item("leather_brigandine", "Кожаная бригантина", "Leather brigandine", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(5)
+            .register();
+    public static final DeferredItem<Item> LIGHT_BRIGANDINE = item("light_brigandine", "Лёгкая бригантина", "Light brigandine", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .dyeable()
+            .kg(6)
+            .register();
+    public static final DeferredItem<Item> HEAVY_BRIGANDINE = item("heavy_brigandine", "Тяжёлая бригантина", "Heavy brigandine", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .dyeable()
+            .kg(10)
+            .register();
+    public static final DeferredItem<Item> NOBLE_BRIGANDINE = item("noble_brigandine", "Дворянская бригантина", "Noble brigandine", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .dyeable()
+            .kg(8)
+            .register();
+    public static final DeferredItem<Item> LAMELLAR_ARMOR = item("lamellar_armor", "Ламеллярный доспех", "Lamellar armour", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(8)
+            .register();
+    public static final DeferredItem<Item> SIMPLE_CUIRASS = item("simple_cuirass", "Простая кираса", "Simple cuirass", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(6)
+            .register();
+    public static final DeferredItem<Item> GWALDEN_CUIRASS = item("gwalden_cuirass", "Гвальденская кираса", "Gwalden cuirass", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(9)
+            .register();
+    public static final DeferredItem<Item> MARINIKIAN_CUIRASS = item("marinikian_cuirass", "Мариникийская кираса", "Marinikian cuirass", Gender.F)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(9)
+            .register();
+    public static final DeferredItem<Item> KASTENBRUST = item("kastenbrust", "Кастенбруст", "Kastenbrust", Gender.M)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(11)
+            .register();
+    public static final DeferredItem<Item> PARADE_CUIRASS = item("parade_cuirass", "Парадная кираса", "Parade cuirass", Gender.F)
+            .traits(ModTraits.LEGENDARY)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.BREASTPLATE)
+            .kg(9)
+            .register();
+
+    // Перчатки и рукавицы: вес временный, описаний пока нет
+    public static final DeferredItem<Item> WOOLEN_MITTENS = item("woolen_mittens", "Шерстяные варежки", "Woolen mittens", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(150)
+            .register();
+    public static final DeferredItem<Item> RAWHIDE_MITTENS = item("rawhide_mittens", "Сыромятные рукавицы", "Rawhide mittens", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(250)
+            .register();
+    public static final DeferredItem<Item> PADDED_MITTENS = item("padded_mittens", "Стёганые рукавицы", "Padded mittens", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(300)
+            .register();
+    public static final DeferredItem<Item> CLOTH_GAUNTLETS = item("cloth_gauntlets", "Тканевые перчатки", "Cloth gauntlets", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .dyeable()
+            .grams(200)
+            .register();
+    public static final DeferredItem<Item> LEATHER_GAUNTLETS = item("leather_gauntlets", "Кожаные краги", "Leather gauntlets", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(400)
+            .register();
+    public static final DeferredItem<Item> ARCHER_GLOVES = item("archer_gloves", "Лучные перчатки", "Archer's gloves", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(200)
+            .register();
+    public static final DeferredItem<Item> MAIL_GLOVES = item("mail_gloves", "Кольчужные перчатки", "Mail gloves", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(700)
+            .register();
+    public static final DeferredItem<Item> MUFFLERS = item("mufflers", "Кольчужные рукавицы", "Mufflers", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(600)
+            .register();
+    public static final DeferredItem<Item> VAMBRACES = item("vambraces", "Наручи", "Vambraces", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(800)
+            .register();
+    public static final DeferredItem<Item> LAMELLAR_GAUNTLETS = item("lamellar_gauntlets", "Ламеллярные перчатки", "Lamellar gauntlets", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(900)
+            .register();
+    public static final DeferredItem<Item> SPLINTED_GAUNTLETS = item("splinted_gauntlets", "Шинные перчатки", "Splinted gauntlets", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .grams(900)
+            .register();
+    public static final DeferredItem<Item> SIMPLE_PLATE_GAUNTLETS = item("simple_plate_gauntlets", "Простые латные перчатки", "Simple plate gauntlets", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .kg(1)
+            .register();
+    public static final DeferredItem<Item> GWALDEN_GAUNTLETS = item("gwalden_gauntlets", "Гвальденские латные перчатки", "Gwalden gauntlets", Gender.PL)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .kg(1.2)
+            .register();
+    public static final DeferredItem<Item> MARINIKIAN_GAUNTLETS = item("marinikian_gauntlets", "Мариникийские латные перчатки", "Marinikian gauntlets", Gender.PL)
+            .traits(ModTraits.RARE)
+            .category(Category.ARMOR)
+            .armor(ArmorSlot.GLOVES)
+            .kg(1.2)
             .register();
 
 
@@ -658,6 +879,9 @@ public final class ModItems {
         private ModArmor.Dye dye = ModArmor.Dye.NONE;
         private final List<ModArmor.Coating> coatings = new ArrayList<>();
         private List<String> armorModels = List.of();
+        private boolean visor;
+        private ModArmor.Protection protection = ModArmor.Protection.NONE;
+        private ModArmor.Protection visorBonus = ModArmor.Protection.NONE;
         private boolean hoodCompatible;
         private CloakType cloak;
 
@@ -789,6 +1013,7 @@ public final class ModItems {
                 throw new IllegalArgumentException(id + ": .dyeable() и покрытие вместе не бывают");
             }
             this.dye = ModArmor.Dye.CLOTH;
+
             return this;
         }
 
@@ -820,6 +1045,24 @@ public final class ModItems {
             return this;
         }
 
+        /** Подвижное забрало: кость «visor» в модели детали (.armorModel(...)); поднимается клавишей. */
+        public Builder visor() {
+            this.visor = true;
+            return this;
+        }
+
+        /** Забрало, опущенное прибавляет к защите (броня, твёрдость брони); поднятое — защита как в .protection(...). */
+        public Builder visor(double armorBonus, double toughnessBonus) {
+            this.visorBonus = new ModArmor.Protection(armorBonus, toughnessBonus);
+            return visor();
+        }
+
+        /** Защита: броня и твёрдость брони, как у ванильных атрибутов. Временно, до этапа 7 ТЗ брони. */
+        public Builder protection(double armor, double toughness) {
+            this.protection = new ModArmor.Protection(armor, toughness);
+            return this;
+        }
+
         /** Шлем, поверх которого можно надеть капюшон: небольшой, без выступающих деталей. */
         public Builder hoodCompatible() {
             this.hoodCompatible = true;
@@ -839,7 +1082,7 @@ public final class ModItems {
             return this;
         }
 
-        /** Контейнер: рюкзак, сумка, подсумок (надеваются сами) или мешочек. Стакается по 1. */
+        /** Контейнер: рюкзак, сумка, подсумок, колчан (надеваются сами). Стакается по 1. */
         public Builder container(ContainerType type, int capacity) {
             if (capacity < 1 || capacity > type.maxCapacity()) {
                 throw new IllegalArgumentException(id + ": вместимость " + type + " — от 1 до " + type.maxCapacity());
@@ -927,7 +1170,7 @@ public final class ModItems {
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());
             } else if (layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dye != ModArmor.Dye.NONE || !armorModels.isEmpty()
-                    || hoodCompatible || cloak != null) {
+                    || visor || !protection.isNone() || hoodCompatible || cloak != null) {
                 throw new IllegalArgumentException(id + ": свойства брони без .armor(...)");
             }
             return item;
@@ -960,8 +1203,14 @@ public final class ModItems {
             if (dye == ModArmor.Dye.COATED && armorSlot == ArmorSlot.CLOAK) {
                 throw new IllegalArgumentException(id + ": накидка не покрывается эмалью и росписью — только .dyeable()");
             }
+            if (visor && armorModels.isEmpty()) {
+                throw new IllegalArgumentException(id + ": .visor() без .armorModel(...) — забралу нужна модель с костью visor");
+            }
+            if (protection.armor() < 0 || protection.toughness() < 0 || visorBonus.armor() < 0 || visorBonus.toughness() < 0) {
+                throw new IllegalArgumentException(id + ": защита не бывает отрицательной");
+            }
             return new ModArmor.ArmorInfo(armorSlot, layerOrder, dye, List.copyOf(coatings), List.copyOf(armorModels),
-                    hoodCompatible, cloak);
+                    visor, protection, visorBonus, hoodCompatible, cloak);
         }
     }
 }

@@ -121,7 +121,7 @@ public final class ModWeights {
         return stack.getItem() instanceof BlockItem ? DEFAULT_BLOCK_GRAMS : DEFAULT_ITEM_GRAMS;
     }
 
-    /** Вес всего стака, вместе с содержимым шалкеров, сумок и мешочков. */
+    /** Вес всего стака, вместе с содержимым шалкеров, сумок и колчана. */
     public static double stackGrams(ItemStack stack) {
         return stackGrams(stack, 0);
     }

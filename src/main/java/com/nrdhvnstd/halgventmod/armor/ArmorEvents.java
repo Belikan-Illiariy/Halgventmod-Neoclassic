@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Броня на игроке: синхронизация после изменений и выпадение при смерти.
+ * Броня на игроке: синхронизация после изменений, защита (ArmorProtection) и выпадение при смерти.
  * Первую синхронизацию (вход в игру, возрождение, смена измерения, игрок появился в поле зрения)
  * NeoForge делает сам — вложение помечено .sync(...).
  */
@@ -31,8 +31,13 @@ public final class ArmorEvents {
         if (player.level().isClientSide || !player.hasData(ModAttachments.ARMOR)) {
             return;
         }
-        if (player.getData(ModAttachments.ARMOR).consumeDirty()) {
+        ArmorInventory armor = player.getData(ModAttachments.ARMOR);
+        if (armor.consumeDirty()) {
             player.syncData(ModAttachments.ARMOR);
+        }
+        // Защита — после входа, возрождения (новый объект брони) и любой смены, в том числе забрала
+        if (armor.consumeProtectionChange()) {
+            ArmorProtection.apply(player, armor);
         }
     }
 

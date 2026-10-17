@@ -39,6 +39,7 @@ public class ArmorInventory extends ItemStackHandler {
     private boolean dirty; // изменилось с прошлой синхронизации
     private int version;   // растёт при каждом изменении: по нему клиент пересобирает вид брони
     private Object renderCache; // только на клиенте: собранный вид брони (ArmorLook)
+    private int protectionVersion = -1; // только на сервере: version, при которой защита последний раз легла на игрока
 
     public ArmorInventory() {
         super(ArmorSlot.COUNT);
@@ -61,6 +62,13 @@ public class ArmorInventory extends ItemStackHandler {
 
     public int version() {
         return version;
+    }
+
+    /** true — броня изменилась с прошлого пересчёта защиты (или это первый); отметка ставится. */
+    public boolean consumeProtectionChange() {
+        boolean changed = protectionVersion != version;
+        protectionVersion = version;
+        return changed;
     }
 
     public Object renderCache() {
