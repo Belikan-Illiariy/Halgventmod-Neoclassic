@@ -12,8 +12,8 @@ import net.minecraft.world.level.Level;
 
 /**
  * Календарь мира: неделя 8 дней, месяц 4 недели (32 дня), год 12 месяцев (384 дня), сезон 3 месяца.
- * Год начинается с весны. Сутки начинаются на рассвете (06:00 по игровым часам).
- * Мир начинается 1 студня (декабря) 1419 года.
+ * Год начинается 1 декабря, с зимы. Сутки начинаются на рассвете (06:00 по игровым часам).
+ * Мир начинается 1 декабря 1384 года.
  * Здесь только расчёты и названия; номер текущего дня и события хранит WorldCalendar.
  */
 public final class Calendar {
@@ -26,8 +26,8 @@ public final class Calendar {
     public static final int MONTHS_PER_SEASON = 3;
 
     // ===== Начальная дата мира =====
-    public static final int START_YEAR = 1419;
-    public static final int START_MONTH = 10;       // Студень — по-старому декабрь
+    public static final int START_YEAR = 1384;
+    public static final int START_MONTH = 1;        // Декабрь
     public static final int START_DAY_OF_MONTH = 1;
     private static final int START_OFFSET = (START_MONTH - 1) * DAYS_PER_MONTH + (START_DAY_OF_MONTH - 1);
 
@@ -35,34 +35,38 @@ public final class Calendar {
     // Доля суток, которую занимает день в середине лета. 2/3 = 1 ч дня и 30 мин ночи;
     // в середине зимы наоборот, в середине весны и осени поровну.
     public static final double DAY_SHARE_MAX = 2.0 / 3.0;
-    // Середина лета: лето — 4, 5 и 6-й месяцы, середина — 16-й день 5-го месяца
-    public static final int MIDSUMMER = 4 * DAYS_PER_MONTH + DAYS_PER_MONTH / 2;
+    // Середина лета: лето — 7, 8 и 9-й месяцы (Мидеум, Аурум, Аргент), середина — 16-й день 8-го месяца
+    public static final int MIDSUMMER = 7 * DAYS_PER_MONTH + DAYS_PER_MONTH / 2;
 
     /** Единиц игрового времени в сутках — ванильные 24 000, они не меняются, меняется только скорость. */
     public static final int TIME_PER_DAY = 24000;
 
     // ===== Названия — меняйте здесь, переводы сделает runData =====
     public static final String[] WEEKDAYS_RU = {
-            "Первица", "Вторица", "Третица", "Четверица", "Пятица", "Шестица", "Седмица", "Осьмица"};
+            "Зольтаг", "Монтаг", "Блютстаг", "Скинетаг", "Имертаг", "Люметаг", "Веннетаг", "Абентаг"};
     public static final String[] WEEKDAYS_EN = {
-            "Firstday", "Secondday", "Thirdday", "Fourthday", "Fifthday", "Sixthday", "Seventhday", "Eighthday"};
+            "Soltag", "Montag", "Blutstag", "Skinetag", "Imertag", "Lumetag", "Wennetag", "Abentag"};
 
-    // Именительный падеж — для заголовков, родительный — для даты («3 травня»)
+    // Год начинается с Декабря (зима) и кончается Ноябрём (осень).
+    // Именительный — для заголовков, второй список — для даты («3 трент»)
     public static final String[] MONTHS_RU = {
-            "Март", "Апрель", "Май",      // весна
-            "Июнь", "Июль", "Август",        // лето
-            "Сентябрь", "Октябрь", "Ноябрь",     // осень
-            "Декабрь", "Январь", "Февраль"};        // зима
+            "Декабрь", "Примунд", "Секунд",          // зима
+            "Трент", "Кват", "Квинт",                // весна
+            "Мидеум", "Аурум", "Аргент",             // лето
+            "Сентябрь", "Октябрь", "Ноябрь"};        // осень
     public static final String[] MONTHS_RU_OF = {
-            "март", "апрель", "май",
-            "июнь", "июль", "август",
-            "сентябрь", "октябрь", "ноябрь",
-            "декабрь", "январь", "февраль"};
+            "декабрь", "примунд", "секунд",
+            "трент", "кват", "квинт",
+            "мидеум", "аурум", "аргент",
+            "сентябрь", "октябрь", "ноябрь"};
     public static final String[] MONTHS_EN = {
-            "Berezen", "Tsveten", "Traven",
-            "Cherven", "Lipen", "Serpen",
-            "Veresen", "Listopad", "Gruden",
-            "Studen", "Sechen", "Lyuten"};
+            "December", "Primund", "Secund",
+            "Trent", "Quat", "Quint",
+            "Mideum", "Aurum", "Argent",
+            "September", "October", "November"};
+
+    // Сезоны по порядку месяцев года: по три месяца, начиная с зимы
+    private static final Season[] SEASONS_BY_MONTH = {Season.WINTER, Season.SPRING, Season.SUMMER, Season.AUTUMN};
 
 
     private Calendar() {}
@@ -90,7 +94,7 @@ public final class Calendar {
         }
     }
 
-    /** Дата. Год — настоящий (1419...), месяц, число и день недели — с единицы. */
+    /** Дата. Год — настоящий (1384...), месяц, число и день недели — с единицы. */
     public record Date(long day, int year, int month, int dayOfMonth, int weekday, int dayOfYear, Season season) {
         public Component weekdayName() {
             return Component.translatable(weekdayKey(weekday));
@@ -100,7 +104,7 @@ public final class Calendar {
             return Component.translatable(monthKey(month));
         }
 
-        /** «травня» — для даты */
+        /** «трент» — для даты (строчными) */
         public Component monthNameOf() {
             return Component.translatable(monthKey(month) + ".of");
         }
@@ -122,7 +126,12 @@ public final class Calendar {
                 dayOfYear % DAYS_PER_MONTH + 1,
                 (int) (fromYearStart % DAYS_PER_WEEK) + 1,
                 dayOfYear,
-                Season.values()[monthIndex / MONTHS_PER_SEASON]);
+                season(monthIndex + 1));
+    }
+
+    /** Сезон месяца (месяц — с единицы). */
+    public static Season season(int month) {
+        return SEASONS_BY_MONTH[(month - 1) / MONTHS_PER_SEASON];
     }
 
     /** Номер дня с начала мира по дате. Отрицательный — дата раньше начала мира. */
@@ -140,7 +149,7 @@ public final class Calendar {
         return (int) Math.floorMod(day + START_OFFSET, (long) DAYS_PER_YEAR);
     }
 
-    /** «3 травня 1419 г.» */
+    /** «3 трент 1384 г.» */
     public static MutableComponent dateText(long day) {
         Date date = date(day);
         return Component.translatable("calendar." + HalgventMod.MODID + ".date",

@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.lock;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
@@ -23,11 +24,15 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 /**
  * Клики по дверям и сундукам. Работает и в режиме приключения.
  *
- * ПКМ чем угодно          — открыть, если не заперто; иначе «Заперто»
- * ПКМ навесным замком      — повесить замок (если его там ещё нет)
- * Shift + ПКМ ключом       — запереть или отпереть (связкой — тоже)
- * Shift + ПКМ пустой рукой — снять отпертый навесной замок
- * Набор слесаря            — врезной замок, сведения о замке, снятие любого замка (администрация)
+ * Всё — клавишей E (Pickup.isUseKey); ПКМ двери и сундуки не открывает и замков не трогает.
+ *
+ * E чем угодно           — открыть, если не заперто; иначе «Заперто» (в творческом и администрации — тоже)
+ * E навесным замком       — повесить замок (если его там ещё нет)
+ * Shift + E ключом        — запереть или отпереть (связкой — тоже)
+ * Shift + E пустой рукой  — снять отпертый навесной замок
+ * Набор ключника (администрация или творческий режим):
+ *   E                     — открыть и запертое; где замка нет — повесить навесной
+ *   Shift + E             — где замка нет — врезной замок, где есть — снять любой
  *
  * Обработчик срабатывает и на клиенте: там он только отменяет открывание, чтобы дверь не дёргалась,
  * а всё остальное делает сервер.
@@ -45,23 +50,24 @@ public final class LockEvents {
             return;
         }
         Player player = event.getEntity();
-        List<BlockPos> place = Locks.place(level, at, state);
-        LockData lock = Locks.find(level, place);
-
-        // Вторая рука ничего не делает с замком, только не даёт открыть запертое
-        if (event.getHand() == InteractionHand.OFF_HAND) {
-            if (lock != null && lock.locked() && !player.isCreative()) {
-                cancel(event, InteractionResult.FAIL);
-            }
+        // ПКМ блок не использует (Pickup.onRightClickBlock) — замкам делать нечего. E — всегда основной рукой
+        if (event.getHand() != InteractionHand.MAIN_HAND || !Pickup.isUseKey(player)) {
             return;
         }
+        List<BlockPos> place = Locks.place(level, at, state);
+        LockData lock = Locks.find(level, place);
 
         ItemStack main = player.getMainHandItem();
         boolean sneaking = player.isShiftKeyDown();
         ServerLevel server = level instanceof ServerLevel serverLevel ? serverLevel : null;
         ServerPlayer serverPlayer = player instanceof ServerPlayer sp ? sp : null;
 
-        if (main.is(ModItems.LOCKSMITH_KIT.get())) {
+        // Набор ключника: E по замку — открыть как обычно, даже запертое; остальное — LockActions.locksmithKit.
+        // Без прав набор — просто предмет в руке
+        if (main.is(ModItems.LOCKSMITH_KIT.get()) && LockActions.mayUseKit(player)) {
+            if (!sneaking && lock != null) {
+                return;
+            }
             cancel(event, InteractionResult.SUCCESS);
             if (server != null && serverPlayer != null) {
                 LockActions.locksmithKit(server, serverPlayer, at, place, lock, sneaking);
@@ -95,8 +101,8 @@ public final class LockEvents {
             return;
         }
 
-        // Заперто: не открываем. В творческом режиме администрация проходит сквозь замки
-        if (lock.locked() && !player.isCreative()) {
+        // Заперто: не открываем никому — сквозь замки проходит только набор ключника
+        if (lock.locked()) {
             cancel(event, InteractionResult.FAIL);
             if (server != null && serverPlayer != null) {
                 LockActions.denied(server, serverPlayer, at);
@@ -116,6 +122,7 @@ public final class LockEvents {
     }
 
     private static void cancel(PlayerInteractEvent.RightClickBlock event, InteractionResult result) {
+        Pickup.clearUseKey(event.getEntity()); // отменённое событие до Pickup.onRightClickBlock не дойдёт
         event.setCanceled(true);
         event.setCancellationResult(result);
     }

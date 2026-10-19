@@ -1,0 +1,20 @@
+{
+  "radius": 20,
+  "full_radius": 10,
+  "mute_music": false,
+  "layers": [
+    {
+      "type": "loop",
+      "sound": "halgventmod:ambient.market_crowd",
+      "volume": 0.6
+    },
+    {
+      "type": "interval",
+      "sounds": ["halgventmod:ambient.hooves_1", "halgventmod:ambient.hooves_2"],
+      "interval_seconds": 5,
+      "interval_spread": 0,
+      "offset": 8,
+      "volume": 0.8
+    }
+  ]
+}

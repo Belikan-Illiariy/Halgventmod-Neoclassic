@@ -1,7 +1,8 @@
 package com.nrdhvnstd.halgventmod.armor;
 
-/** Вид накидки: капюшон — только голова, плащ — спина и плечи, или и то и другое. */
+/** Вид накидки: капюшон — только голова, плащ — спина и плечи, или и то и другое; без них — сюрко, табард. */
 public enum CloakType {
+    NONE(false, false),
     HOOD(true, false),
     CAPE(false, true),
     HOODED_CAPE(true, true);

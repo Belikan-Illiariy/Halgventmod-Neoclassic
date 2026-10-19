@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
  * Правила надевания поверх «своего слота».
  * Капюшон лежит поверх шлема и совместим только со шлемами, отмеченными .hoodCompatible().
  * Плащ без капюшона совместим с любым шлемом.
+ * Любой шлем надевается только поверх подшлемника; пока шлем на голове, подшлемник не снять.
  */
 public final class ArmorRules {
     private ArmorRules() {}
@@ -28,11 +29,23 @@ public final class ArmorRules {
                 return Component.translatable("message.halgventmod.hood_over_helmet");
             }
         }
+        if (slot == ArmorSlot.HELMET && armor.get(ArmorSlot.ARMING_CAP).isEmpty()) {
+            return Component.translatable("message.halgventmod.arming_cap_first");
+        }
         if (slot == ArmorSlot.HELMET && !info.hoodCompatible()) {
             ModArmor.ArmorInfo cloak = ModArmor.get(armor.get(ArmorSlot.CLOAK));
             if (cloak != null && hasHood(cloak)) {
                 return Component.translatable("message.halgventmod.remove_hood_first");
             }
+        }
+        return null;
+    }
+
+    /** Почему вещь нельзя вынуть из слота, или null, если можно. */
+    @Nullable
+    public static Component takeOffRefusal(ArmorInventory armor, ArmorSlot slot) {
+        if (slot == ArmorSlot.ARMING_CAP && !armor.get(ArmorSlot.HELMET).isEmpty()) {
+            return Component.translatable("message.halgventmod.remove_helmet_first");
         }
         return null;
     }

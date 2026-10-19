@@ -1,0 +1,38 @@
+{
+  "music.test_1": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:music/game/sweden", "stream": true }]
+  },
+  "music.test_2": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:music/game/wet_hands", "stream": true }]
+  },
+  "music.test_3": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:music/game/mice_on_venus", "stream": true }]
+  },
+  "music.menu_1": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:music/menu/mutation", "stream": true }]
+  },
+  "music.menu_2": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:music/menu/moog_city_2", "stream": true }]
+  },
+  "music.bard_1": {
+    "category": "music",
+    "sounds": [{ "name": "minecraft:records/cat", "stream": true }]
+  },
+  "ambient.market_crowd": {
+    "category": "ambient",
+    "sounds": [{ "name": "minecraft:ambient/weather/rain1" }]
+  },
+  "ambient.hooves_1": {
+    "category": "ambient",
+    "sounds": [{ "name": "minecraft:mob/horse/wood1" }]
+  },
+  "ambient.hooves_2": {
+    "category": "ambient",
+    "sounds": [{ "name": "minecraft:mob/horse/wood2" }]
+  }
+}

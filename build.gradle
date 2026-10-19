@@ -28,6 +28,24 @@ sourceSets.main.resources {
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
+    // API LambDynamicLights и его библиотеки
+    maven {
+        name = "Gegy"
+        url = "https://maven.gegy.dev/releases"
+        content {
+            includeGroupAndSubgroups "dev.lambdaurora"
+            includeGroupAndSubgroups "dev.yumi"
+            includeGroupAndSubgroups "io.github.queerbric"
+        }
+    }
+    // Сам LambDynamicLights — для запуска в среде разработки
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 base {
@@ -56,6 +74,10 @@ neoForge {
             client()
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // ./gradlew runClient -PquickPlay="Мир" — сразу войти в одиночный мир (для проверок)
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
+            }
         }
 
         server {
@@ -116,6 +138,13 @@ configurations {
 }
 
 dependencies {
+    // LambDynamicLights — необязательный: без него у игрока всё работает, только фонарь не светит.
+    // API — для компиляции (сборка с ванильными именами — mojmap), сам мод — только в runClient
+    compileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${lambdynamiclights_version}") {
+        attributes { attribute(Attribute.of("net.minecraft.mappings", String), "mojmap") }
+    }
+    localRuntime "maven.modrinth:lambdynamiclights:${lambdynamiclights_version}"
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

@@ -9,7 +9,6 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
  */
 public enum Category {
     //        папка        по-русски         по-английски     в руке как оружие
-    ARMOR    ("armor",     "Доспехи",        "Armor",         false),
     WEAPONS  ("weapons",   "Оружие",         "Weapons",       true),
     TOOLS    ("tools",   "Инструменты",         "Tools",       true),
     FOOD     ("food",      "Пища",           "Food",          false),
@@ -18,7 +17,9 @@ public enum Category {
     METALS   ("metals",    "Металлы",        "Metals",        false),
     MINERALS ("minerals",  "Минералы",       "Minerals",      false),
     MATERIALS("materials", "Материалы",      "Materials",     false),
-    MISC     ("misc",      "Прочее",         "Miscellaneous", false);
+    MISC     ("misc",      "Прочее",         "Miscellaneous", false),
+    ARMOR    ("armor",     "Доспехи",        "Armor",         false),
+    GEAR     ("gear",      "Снаряжение",     "Gear",          false);
 
     private final String folder;
     private final String nameRu;

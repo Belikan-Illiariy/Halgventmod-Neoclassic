@@ -80,11 +80,12 @@ public final class CalendarInput {
         return false;
     }
 
-    // Кнопка над вкладками инвентаря, слева (справа сверху — счётчик веса)
+    // Кнопка внизу панели предмета в окне инвентаря
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
         if (event.getScreen() instanceof ArmorInventoryScreen screen) {
-            event.addListener(new CalendarButton(screen.getGuiLeft(), screen.getGuiTop() - 22));
+            event.addListener(new CalendarButton(screen.getGuiLeft() + ArmorInventoryScreen.CALENDAR_X,
+                    screen.getGuiTop() + ArmorInventoryScreen.CALENDAR_Y));
         }
     }
 }

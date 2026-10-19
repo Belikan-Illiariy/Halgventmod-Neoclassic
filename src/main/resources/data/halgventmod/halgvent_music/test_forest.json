@@ -1,0 +1,5 @@
+{
+  "biomes": ["minecraft:forest", "minecraft:birch_forest", "minecraft:flower_forest"],
+  "tracks": ["halgventmod:music.test_1", "halgventmod:music.test_2"],
+  "pause_seconds": 5
+}

@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Броня на игроке: синхронизация после изменений и выпадение при смерти.
+ * Броня на игроке: синхронизация после изменений, защита (ArmorProtection) и выпадение при смерти.
  * Первую синхронизацию (вход в игру, возрождение, смена измерения, игрок появился в поле зрения)
  * NeoForge делает сам — вложение помечено .sync(...).
  */
@@ -31,8 +31,13 @@ public final class ArmorEvents {
         if (player.level().isClientSide || !player.hasData(ModAttachments.ARMOR)) {
             return;
         }
-        if (player.getData(ModAttachments.ARMOR).consumeDirty()) {
+        ArmorInventory armor = player.getData(ModAttachments.ARMOR);
+        if (armor.consumeDirty()) {
             player.syncData(ModAttachments.ARMOR);
+        }
+        // Защита — после входа, возрождения (новый объект брони) и любой смены, в том числе забрала
+        if (armor.consumeProtectionChange()) {
+            ArmorProtection.apply(player, armor);
         }
     }
 
@@ -56,7 +61,7 @@ public final class ArmorEvents {
     }
 
     // Разлёт во все стороны — как у ванильного выпадения инвентаря
-    private static ItemEntity scattered(Player player, ItemStack stack) {
+    public static ItemEntity scattered(Player player, ItemStack stack) {
         ItemEntity entity = new ItemEntity(player.level(), player.getX(), player.getEyeY() - 0.3, player.getZ(), stack);
         entity.setPickUpDelay(DROP_PICKUP_DELAY);
         float speed = player.getRandom().nextFloat() * 0.5F;

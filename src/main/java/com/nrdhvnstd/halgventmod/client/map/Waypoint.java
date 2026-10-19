@@ -12,6 +12,8 @@ public final class Waypoint {
     public String icon;
     /** Цвет флага — имя красителя; у прочих значков не используется. */
     public String dye;
+    /** Значок виден на компасе вверху экрана (CompassHud). У старых меток — false. */
+    public boolean compass;
     /** Только у меток старого формата (квадратик с буквой): RGB, из него берётся цвет флага. */
     public Integer color;
 

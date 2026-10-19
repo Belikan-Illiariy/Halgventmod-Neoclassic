@@ -39,6 +39,7 @@ public final class ArmorCompositor {
     private static final int ALPHA_CUTOFF = 128;        // пиксель с меньшей прозрачностью считается пустым
     private static final long RELEASE_AFTER_MS = 3 * 60 * 1000; // неиспользуемая склейка живёт 3 минуты
     private static final String OVERLAY_SUFFIX = "_overlay";
+    private static final int PIECE_FALLBACK_SIZE = 16;   // холст детали, если её текстуры нет
     private static final String PNG = ".png";
 
     // Участки развёртки 128×64 (двойная ванильная 64×32) — по ним решается, какая часть тела закрыта
@@ -55,15 +56,23 @@ public final class ArmorCompositor {
     public static final int COVERS_LEGS = 8;
 
     /**
-     * Одна вещь в рецепте: основа, её цвет (ARGB, NO_COLOR — не красится) и неокрашиваемые детали поверх
-     * (null — их нет). Позже сюда добавятся украшения (этап 6) — между основой и overlay.
+     * Одна вещь в рецепте: основа, её цвет (ARGB, NO_COLOR — не окрашена), способ окраски, слой покрытия
+     * (эмаль или роспись, только у COATED) и неокрашиваемые детали поверх (null — их нет).
+     * Позже сюда добавятся украшения (этап 6) — между основой (с покрытием) и overlay.
      */
-    public record Layer(ResourceLocation texture, int color, @Nullable ResourceLocation overlay) {
+    public record Layer(ResourceLocation texture, int color, ModArmor.Dye dye,
+                        @Nullable ResourceLocation coating, @Nullable ResourceLocation overlay) {
         public static final int NO_COLOR = -1;
     }
 
-    /** Рецепт образа одной плоскости — ключ кэша. */
-    public record Recipe(ArmorSlot.Plane plane, List<Layer> layers) {}
+    /** Ключ кэша склеек. */
+    sealed interface Key permits Recipe, PieceRecipe {}
+
+    /** Рецепт образа одной плоскости. */
+    public record Recipe(ArmorSlot.Plane plane, List<Layer> layers) implements Key {}
+
+    /** Текстура окрашенной детали или плаща: основа → покрытие (если покрашена) → overlay. */
+    public record PieceRecipe(Layer layer) implements Key {}
 
     /** Готовая склейка: текстура и закрытые участки тела. */
     public static final class Composite {
@@ -94,7 +103,7 @@ public final class ArmorCompositor {
         }
     }
 
-    private static final Map<Recipe, Composite> CACHE = new HashMap<>();
+    private static final Map<Key, Composite> CACHE = new HashMap<>();
     // Исходные текстуры вещей; Optional.empty() — файла нет (предупреждение уже было)
     private static final Map<ResourceLocation, Optional<NativeImage>> SOURCES = new HashMap<>();
     private static int nextId;
@@ -107,11 +116,11 @@ public final class ArmorCompositor {
         return ArmorLook.of(armor).composite(plane);
     }
 
-    static Composite get(Recipe recipe) {
-        Composite composite = CACHE.get(recipe);
+    static Composite get(Key key) {
+        Composite composite = CACHE.get(key);
         if (composite == null) {
-            composite = build(recipe);
-            CACHE.put(recipe, composite);
+            composite = key instanceof Recipe recipe ? build(recipe) : build((PieceRecipe) key);
+            CACHE.put(key, composite);
         }
         composite.touch();
         return composite;
@@ -137,14 +146,22 @@ public final class ArmorCompositor {
         return new Recipe(plane, List.copyOf(layers));
     }
 
-    // Окрашиваемая вещь: цвет из компонента dyed_color (без него — как нарисована) и файл _overlay
     private static Layer layer(ItemStack stack, ArmorSlot slot) {
-        ResourceLocation texture = texture(stack, slot);
+        return layer(stack, texture(stack, slot));
+    }
+
+    /**
+     * Слой вещи по её текстуре (плоской или выступающей детали). Окрашиваемая вещь: цвет из компонента
+     * dyed_color (без него — не окрашена), файл _overlay, у вещи с покрытием ещё _enamel или _painted.
+     */
+    static Layer layer(ItemStack stack, ResourceLocation texture) {
         ModArmor.ArmorInfo info = ModArmor.get(stack);
         if (info == null || !info.dyeable()) {
-            return new Layer(texture, Layer.NO_COLOR, null);
+            return new Layer(texture, Layer.NO_COLOR, ModArmor.Dye.NONE, null, null);
         }
-        return new Layer(texture, color(stack), withSuffix(texture, OVERLAY_SUFFIX));
+        ModArmor.Coating coating = info.coating(stack);
+        ResourceLocation coatingTexture = coating != null ? withSuffix(texture, coating.suffix()) : null;
+        return new Layer(texture, color(stack), info.dye(), coatingTexture, withSuffix(texture, OVERLAY_SUFFIX));
     }
 
     /** Цвет окрашиваемой вещи (ARGB) или Layer.NO_COLOR, если она не окрашена. */
@@ -173,11 +190,7 @@ public final class ArmorCompositor {
     private static Composite build(Recipe recipe) {
         NativeImage canvas = new NativeImage(WIDTH, HEIGHT, true); // прозрачный холст
         for (Layer layer : recipe.layers()) {
-            // Внутри вещи: основа (окрашенная) → украшения (позже) → _overlay
-            source(layer.texture(), true).ifPresent(image -> paint(canvas, image, layer.color()));
-            if (layer.overlay() != null) {
-                source(layer.overlay(), false).ifPresent(image -> paint(canvas, image, Layer.NO_COLOR));
-            }
+            paintLayer(canvas, layer);
         }
         int covers = 0;
         if (recipe.plane() == ArmorSlot.Plane.OUTER) {
@@ -188,19 +201,48 @@ public final class ArmorCompositor {
             covers |= opaque(canvas, LEG_AREA) ? COVERS_LEGS : 0;
         }
 
+        return register(canvas, covers);
+    }
+
+    // Холст детали — размера её текстуры (у деталей он любой)
+    private static Composite build(PieceRecipe recipe) {
+        NativeImage canvas = source(recipe.layer().texture(), true)
+                .map(image -> new NativeImage(image.getWidth(), image.getHeight(), true))
+                .orElseGet(() -> new NativeImage(PIECE_FALLBACK_SIZE, PIECE_FALLBACK_SIZE, true));
+        paintLayer(canvas, recipe.layer());
+        return register(canvas, 0);
+    }
+
+    // Внутри вещи: основа → покрытие (только если покрашена) → украшения (позже) → _overlay.
+    // CLOTH красит саму основу; у COATED основа в цвете не красится, красится отдельный слой _enamel или _painted.
+    private static void paintLayer(NativeImage canvas, Layer layer) {
+        int baseColor = layer.dye() == ModArmor.Dye.CLOTH ? layer.color() : Layer.NO_COLOR;
+        source(layer.texture(), true).ifPresent(image -> paint(canvas, image, baseColor));
+        if (layer.coating() != null && layer.color() != Layer.NO_COLOR) {
+            source(layer.coating(), true).ifPresent(image -> paint(canvas, image, layer.color()));
+        }
+        if (layer.overlay() != null) {
+            source(layer.overlay(), false).ifPresent(image -> paint(canvas, image, Layer.NO_COLOR));
+        }
+    }
+
+    private static Composite register(NativeImage canvas, int covers) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "armor_composite/" + nextId++);
         Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(canvas));
         return new Composite(id, covers);
     }
 
-    // Непрозрачные пиксели вещи перекрывают холст; размер, отличный от 128×64, масштабируется без сглаживания.
-    // Окраска — умножение: серый пиксель становится оттенком цвета, складки и стёжка сохраняются.
+    // Непрозрачные пиксели вещи перекрывают холст; другой размер масштабируется до холста без сглаживания.
+    // Окраска — «перекрытие» (Overlay), серый слой поверх сплошного цвета:
+    // серый 128 = чистый цвет, темнее — тень, светлее — блик.
     private static void paint(NativeImage canvas, NativeImage image, int color) {
         int width = image.getWidth();
         int height = image.getHeight();
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                int pixel = image.getPixelRGBA(x * width / WIDTH, y * height / HEIGHT);
+        int canvasWidth = canvas.getWidth();
+        int canvasHeight = canvas.getHeight();
+        for (int y = 0; y < canvasHeight; y++) {
+            for (int x = 0; x < canvasWidth; x++) {
+                int pixel = image.getPixelRGBA(x * width / canvasWidth, y * height / canvasHeight);
                 if ((pixel >>> 24) >= ALPHA_CUTOFF) {
                     canvas.setPixelRGBA(x, y, (color == Layer.NO_COLOR ? pixel : tint(pixel, color)) | 0xFF000000);
                 }
@@ -210,10 +252,18 @@ public final class ArmorCompositor {
 
     // Пиксель NativeImage — ABGR (красный в младшем байте), цвет — ARGB
     private static int tint(int abgr, int argb) {
-        int r = (abgr & 0xFF) * ((argb >> 16) & 0xFF) / 255;
-        int g = ((abgr >> 8) & 0xFF) * ((argb >> 8) & 0xFF) / 255;
-        int b = ((abgr >> 16) & 0xFF) * (argb & 0xFF) / 255;
+        int r = blend(abgr & 0xFF, (argb >> 16) & 0xFF);
+        int g = blend((abgr >> 8) & 0xFF, (argb >> 8) & 0xFF);
+        int b = blend((abgr >> 16) & 0xFF, argb & 0xFF);
         return (abgr & 0xFF000000) | (b << 16) | (g << 8) | r;
+    }
+
+    // Один канал: base — серый из текстуры, dye — цвет краски; ветку Overlay выбирает цвет краски
+    private static int blend(int base, int dye) {
+        int result = dye < 128
+                ? 2 * base * dye / 255
+                : 255 - 2 * (255 - base) * (255 - dye) / 255;
+        return Math.min(255, result);
     }
 
     private static boolean opaque(NativeImage canvas, int[] area) {

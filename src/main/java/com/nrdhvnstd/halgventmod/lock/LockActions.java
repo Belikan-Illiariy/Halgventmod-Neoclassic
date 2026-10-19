@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /** Что происходит с замком на сервере. Решение, какое действие выбрать, — в LockEvents. */
@@ -71,7 +72,7 @@ public final class LockActions {
         feedback(level, player, at, "removed", SoundEvents.CHAIN_BREAK, 1.0F);
     }
 
-    // ----- Ключ или связка: Shift + ПКМ — запереть или отпереть -----
+    // ----- Ключ или связка: Shift + E — запереть или отпереть -----
 
     public static void useKey(ServerLevel level, ServerPlayer player, BlockPos at, List<BlockPos> place,
                               LockData lock, ItemStack main) {
@@ -96,29 +97,26 @@ public final class LockActions {
         feedback(level, player, at, "locked", SoundEvents.CHEST_LOCKED, 1.0F);
     }
 
-    // ----- Набор слесаря (администрация) -----
+    // ----- Набор ключника (администрация или творческий режим) -----
+
+    /** Кому набор ключника не просто предмет: администрации (права 2+) и в творческом режиме. */
+    public static boolean mayUseKit(Player player) {
+        return player.hasPermissions(2) || player.isCreative();
+    }
 
     /**
-     * ПКМ по месту без замка — врезной замок (секрет — новый или ключа во второй руке).
-     * ПКМ по замку — сведения о нём. Shift + ПКМ — снять любой замок.
+     * Где замка нет: E — навесной замок, Shift + E — врезной (секрет — новый, с ключом, или ключа во второй руке).
+     * Shift + E по замку — снять любой, навесной или врезной. E по замку сюда не попадает — открывает как обычно.
      */
     public static void locksmithKit(ServerLevel level, ServerPlayer player, BlockPos at, List<BlockPos> place,
                                     LockData lock, boolean sneaking) {
-        if (!player.hasPermissions(2)) {
+        if (!mayUseKit(player)) {
             feedback(level, player, at, "no_permission", null, 1.0F);
             return;
         }
-        if (sneaking) {
-            if (lock == null) {
-                feedback(level, player, at, "no_lock", null, 1.0F);
-                return;
-            }
+        if (lock != null) {
             Locks.put(level, place, null);
             feedback(level, player, at, "removed", SoundEvents.CHAIN_BREAK, 1.0F);
-            return;
-        }
-        if (lock != null) {
-            player.sendSystemMessage(info(lock));
             return;
         }
 
@@ -126,11 +124,15 @@ public final class LockActions {
         Long keySecret = off.is(ModItems.KEY.get()) ? off.get(ModComponents.LOCK_SECRET.get()) : null;
         long secret = keySecret != null ? keySecret : Locks.newId(level.getServer());
 
-        Locks.put(level, place, new LockData(secret, true, false));
+        Locks.put(level, place, new LockData(secret, sneaking, false));
         if (keySecret == null) {
             Locks.give(player, Locks.makeKey(secret, null));
         }
-        feedback(level, player, at, "mortise_installed", SoundEvents.CHAIN_PLACE, 0.8F);
+        if (sneaking) {
+            feedback(level, player, at, "mortise_installed", SoundEvents.CHAIN_PLACE, 0.8F);
+        } else {
+            feedback(level, player, at, "installed", SoundEvents.CHAIN_PLACE, 1.0F);
+        }
     }
 
     /** «Замок: секрет 17, врезной, отперт» */

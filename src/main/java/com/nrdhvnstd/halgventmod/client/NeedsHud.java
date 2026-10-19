@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Шкалы вместо сердец, окорочков и полоски опыта. Над хотбаром, каждая на полширины хотбара,
- * с числами посередине («73/100»).
+ * с числами посередине («73/100»). Прячутся и выезжают вместе с хотбаром (HotbarPopup), в том числе от урона.
  * Слева снизу вверх: здоровье, выносливость.
  * Справа: голод с насыщением, жажда (над ней — пузыри воздуха).
  * Полоски: assets/halgventmod/textures/gui/sprites/hud/bar/<цвет>_background|progress.png (из концепта bars.png)
@@ -97,6 +97,10 @@ public final class NeedsHud {
         int x = graphics.guiWidth() / 2 - 91;
         int y = graphics.guiHeight() - minecraft.gui.leftHeight + shift(player);
         minecraft.gui.leftHeight += ROW;
+        y = slide(graphics, delta, y);
+        if (y >= graphics.guiHeight()) {
+            return; // спрятана вместе с хотбаром
+        }
 
         RenderSystem.enableBlend();
         graphics.blitSprite(HEALTH_BG, x, y, WIDTH, HEIGHT);
@@ -116,6 +120,10 @@ public final class NeedsHud {
         int x = graphics.guiWidth() / 2 - 91;
         int y = graphics.guiHeight() - minecraft.gui.leftHeight + shift(player);
         minecraft.gui.leftHeight += ROW - shift(player); // то, что выше, встаёт сразу над шкалой
+        y = slide(graphics, delta, y);
+        if (y >= graphics.guiHeight()) {
+            return;
+        }
 
         // В изнеможении пустая шкала мигает красным
         boolean blink = Stamina.exhausted(player) && player.tickCount / 4 % 2 == 0;
@@ -135,6 +143,10 @@ public final class NeedsHud {
         int x = graphics.guiWidth() / 2 + 91 - WIDTH;
         int y = graphics.guiHeight() - minecraft.gui.rightHeight + shift(player);
         minecraft.gui.rightHeight += ROW;
+        y = slide(graphics, delta, y);
+        if (y >= graphics.guiHeight()) {
+            return;
+        }
 
         RenderSystem.enableBlend();
         graphics.blitSprite(HUNGER_BG, x, y, WIDTH, HEIGHT);
@@ -156,6 +168,10 @@ public final class NeedsHud {
         int x = graphics.guiWidth() / 2 + 91 - WIDTH;
         int y = graphics.guiHeight() - minecraft.gui.rightHeight + shift(player);
         minecraft.gui.rightHeight += ROW - shift(player); // пузыри воздуха встают сразу над шкалой
+        y = slide(graphics, delta, y);
+        if (y >= graphics.guiHeight()) {
+            return;
+        }
 
         RenderSystem.enableBlend();
         graphics.blitSprite(THIRST_BG, x, y, WIDTH, HEIGHT);
@@ -183,6 +199,13 @@ public final class NeedsHud {
         graphics.blit(FATIGUE_VIGNETTE, 0, 0, width, height, 0, 0, 256, 256, 256, 256);
         graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
+    }
+
+    // Шкалы прячутся вместе с хотбаром (HotbarPopup): каждая уезжает вниз за край экрана.
+    // Место под шкалу (leftHeight / rightHeight) занято всё равно — пузыри воздуха и прочее не прыгают
+    private static int slide(GuiGraphics graphics, DeltaTracker delta, int y) {
+        float hidden = 1 - HotbarPopup.visible(delta);
+        return y + Math.round(hidden * (graphics.guiHeight() - y));
     }
 
     // Верхом на лошади на месте полоски опыта рисуется шкала прыжка — тогда шкалы не опускаем

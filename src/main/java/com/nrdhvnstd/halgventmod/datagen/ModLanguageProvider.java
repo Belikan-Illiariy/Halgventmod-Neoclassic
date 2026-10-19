@@ -4,13 +4,13 @@ import java.util.Map;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
-import com.nrdhvnstd.halgventmod.registry.ModPaintings;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.data.PackOutput;
@@ -19,8 +19,6 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 
 /** Языковые файлы ru_ru и en_us. Все переводы мода живут здесь. */
 public class ModLanguageProvider extends LanguageProvider {
-    private static final String PAINTING_AUTHOR = "Halgvent";
-
     private final boolean russian;
 
     public ModLanguageProvider(PackOutput output, String locale) {
@@ -30,11 +28,10 @@ public class ModLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        // Вкладки: категории и «Искусство»
+        // Вкладки: по одной на категорию
         for (Category category : Category.values()) {
             add(category.langKey(), russian ? category.nameRu() : category.nameEn());
         }
-        add("itemGroup.halgventmod.art", russian ? "Искусство" : "Art");
 
         // Названия предметов мода
         for (ModItems.Definition def : ModItems.definitions()) {
@@ -54,19 +51,20 @@ public class ModLanguageProvider extends LanguageProvider {
             }
         }
 
-        // Картины: название предмета берётся из названия картины
-        for (ModPaintings.Definition def : ModPaintings.definitions()) {
-            var id = def.variant().location();
-            add(id.toLanguageKey("painting", "title"), russian ? def.titleRu() : def.titleEn());
-            add(id.toLanguageKey("painting", "author"), PAINTING_AUTHOR);
-        }
-
         // Вес
         add("weight.halgventmod.grams", russian ? "%s гр" : "%s g");
         add("weight.halgventmod.kilograms", russian ? "%s кг" : "%s kg");
         add("weight.halgventmod.decimal", russian ? "," : ".");
         add("tooltip.halgventmod.weight", russian ? "Вес: %s" : "Weight: %s");
         add("hud.halgventmod.carry", "%s / %s");
+
+        // Компас вверху экрана: стороны света
+        String[] compassRu = {"С", "СВ", "В", "ЮВ", "Ю", "ЮЗ", "З", "СЗ"};
+        String[] compassEn = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+        String[] compassKeys = {"n", "ne", "e", "se", "s", "sw", "w", "nw"};
+        for (int i = 0; i < compassKeys.length; i++) {
+            add("hud.halgventmod.compass." + compassKeys[i], russian ? compassRu[i] : compassEn[i]); // CompassHud.langKey
+        }
         add("attribute.name.halgventmod.carry_capacity", russian ? "Грузоподъёмность" : "Carry Capacity");
 
         // Броня: названия слотов и кнопка каталога в инвентаре
@@ -74,14 +72,175 @@ public class ModLanguageProvider extends LanguageProvider {
             add(slot.langKey(), russian ? slot.nameRu() : slot.nameEn());
         }
         add("gui.halgventmod.catalog", russian ? "Каталог" : "Catalog");
+        add("gui.halgventmod.clear_inventory",
+                russian ? "Shift+щелчок — очистить весь инвентарь" : "Shift+click to clear the whole inventory");
         add("tooltip.halgventmod.armor_slot", russian ? "Слот: %s" : "Slot: %s");
+        add("tooltip.halgventmod.protection", russian ? "Защита: %s, твёрдость %s" : "Protection: %s, toughness %s");
+        add("tooltip.halgventmod.visor_raised", russian ? "Забрало поднято" : "Visor raised");
+        add("tooltip.halgventmod.visor_lowered", russian ? "Забрало опущено" : "Visor lowered");
         add("message.halgventmod.hood_over_helmet",
                 russian ? "Капюшон не надеть поверх этого шлема" : "The hood won't fit over this helmet");
         add("message.halgventmod.remove_hood_first", russian ? "Сначала снимите капюшон" : "Take off the hood first");
+        add("message.halgventmod.arming_cap_first",
+                russian ? "Шлем надевается только поверх подшлемника" : "A helmet goes on only over an arming cap");
+        add("message.halgventmod.remove_helmet_first", russian ? "Сначала снимите шлем" : "Take off the helmet first");
+
+        // Снаряжение и хранилище (концепт инвентаря)
+        for (GearSlot slot : GearSlot.values()) {
+            add(slot.langKey(), russian ? slot.nameRu() : slot.nameEn());
+        }
+        add("gear_slot.halgventmod.pouch", russian ? "Подсумок" : "Pouch"); // подсказка вещи (GearTooltip)
+        add("message.halgventmod.belt_first", russian ? "Сначала наденьте пояс" : "Put on a belt first");
+        add("message.halgventmod.remove_belt_items_first",
+                russian ? "Сначала снимите то, что висит на поясе" : "First take off what hangs from the belt");
+        add("message.halgventmod.no_room", russian ? "Некуда положить" : "No room for it");
+        add("gui.halgventmod.storage.back", russian ? "Спина" : "Back");
+        add("gui.halgventmod.storage.pouch_1", russian ? "Подсумок 1" : "Pouch 1");
+        add("gui.halgventmod.storage.pouch_2", russian ? "Подсумок 2" : "Pouch 2");
+        add("gui.halgventmod.storage.pockets", russian ? "Карманы" : "Pockets");
+        add("gui.halgventmod.storage.locked.back", russian ? "Наденьте рюкзак или сумку" : "Put on a backpack or a bag");
+        add("gui.halgventmod.storage.locked.pouch", russian ? "Наденьте пояс и подсумок" : "Put on a belt and a pouch");
+        add("tooltip.halgventmod.capacity", russian ? "Вместимость: %s" : "Capacity: %s");
+        add("tooltip.halgventmod.contents", russian ? "Внутри: %s из %s" : "Inside: %s of %s");
+        add("tooltip.halgventmod.carry_bonus", russian ? "Грузоподъёмность: +%s, пока надето" : "Carry capacity: +%s while worn");
+        add("tooltip.halgventmod.gear_slot", russian ? "Носится: %s" : "Worn: %s");
+        add("gui.halgventmod.load.none", russian ? "ЛЕГКО" : "LIGHT");
+        add("gui.halgventmod.load.burden", russian ? "ОБУЗА" : "BURDENED");
+        add("gui.halgventmod.load.encumbered", russian ? "СКОВАННОСТЬ" : "ENCUMBERED");
+        add("gui.halgventmod.load.overloaded", russian ? "ТЯЖЕСТЬ" : "OVERLOADED");
+
+        // Отладка: хитбоксы (F3+B) — только администраторам
+        add("debug.halgventmod.hitboxes.no_permission",
+                russian ? "Хитбоксы доступны только администраторам" : "Hitboxes are available to admins only");
+
+        // Ники над головами игроков (/nametags)
+        add("command.halgventmod.nametags.current", russian ? "Ники над головами: %s" : "Name tags: %s");
+        add("command.halgventmod.nametags.set",
+                russian ? "Ники над головами теперь: %s" : "Name tags are now: %s");
+        add("command.halgventmod.nametags.mode.off", russian ? "отключены" : "off");
+        add("command.halgventmod.nametags.mode.admins",
+                russian ? "видны только администраторам" : "visible to admins only");
+        add("command.halgventmod.nametags.mode.all", russian ? "видны всем" : "visible to everyone");
+
+        // Каналы чата
+        add("chat.halgventmod.global", russian ? "[Глобальный] %s: %s" : "[Global] %s: %s");
+        add("chat.halgventmod.local", russian ? "[Локальный] %s: %s" : "[Local] %s: %s");
+        add("chat.halgventmod.emote", russian ? "[Локальный] * %s %s" : "[Local] * %s %s");
+        add("chat.halgventmod.global_admins_only",
+                russian ? "В глобальный чат («!» в начале) пишут только администраторы" : "Only admins can write to the global chat (\"!\" prefix)");
+        add("chat.halgventmod.nobody_heard", russian ? "Рядом никого — вас никто не услышал" : "Nobody is near enough to hear you");
+
+        // Отряды (/squad)
+        squad("none", "Вы не в отряде. Создать: /squad create <название>", "You are not in a squad. Create one: /squad create <name>");
+        squad("info.header", "Отряд «%s»", "Squad \"%s\"");
+        squad("info.leader", "Лидер: %s", "Leader: %s");
+        squad("info.members", "Участники (%s): %s", "Members (%s): %s");
+        squad("already_in", "Вы уже в отряде «%s»", "You are already in squad \"%s\"");
+        squad("name_length", "Название отряда — от %s до %s знаков", "The squad name must be %s to %s characters long");
+        squad("name_characters", "В названии можно использовать буквы (кириллица, латиница), цифры, пробел, дефис и апостроф",
+                "Only letters (Cyrillic, Latin), digits, spaces, hyphens and apostrophes are allowed");
+        squad("name_taken", "Отряд «%s» уже есть", "Squad \"%s\" already exists");
+        squad("not_in", "Вы не в отряде", "You are not in a squad");
+        squad("not_leader", "Это может только лидер отряда", "Only the squad leader can do this");
+        squad("invite_self", "Нельзя пригласить самого себя", "You can't invite yourself");
+        squad("target_in_squad", "%s уже в отряде", "%s is already in a squad");
+        squad("invite_sent", "Приглашение отправлено: %s. Оно действует пять минут", "Invitation sent to %s. It lasts five minutes");
+        squad("invited", "%s приглашает вас в отряд «%s».", "%s invites you to squad \"%s\".");
+        squad("button.accept", "[Принять]", "[Accept]");
+        squad("button.decline", "[Отклонить]", "[Decline]");
+        squad("no_invite", "У вас нет приглашений в отряд", "You have no squad invitations");
+        squad("joined", "%s вступает в отряд «%s»", "%s joins squad \"%s\"");
+        squad("declined", "%s отклоняет приглашение в отряд", "%s declines the squad invitation");
+        squad("leader_cant_leave", "Лидер не может просто уйти: передайте лидерство (/squad leader <игрок>) или распустите отряд (/squad disband)",
+                "The leader can't just leave: pass leadership (/squad leader <player>) or disband the squad (/squad disband)");
+        squad("you_left", "Вы покинули отряд «%s»", "You left squad \"%s\"");
+        squad("left", "%s покидает отряд", "%s leaves the squad");
+        squad("kick_self", "Себя исключить нельзя: /squad leave или /squad disband", "You can't kick yourself: /squad leave or /squad disband");
+        squad("not_member", "В отряде нет игрока %s", "There is no %s in the squad");
+        squad("kicked", "%s исключён из отряда", "%s was kicked from the squad");
+        squad("you_kicked", "Вас исключили из отряда «%s»", "You were kicked from squad \"%s\"");
+        squad("new_leader", "Новый лидер отряда: %s", "New squad leader: %s");
+        squad("disbanded", "Отряд «%s» распущен", "Squad \"%s\" has been disbanded");
+        squad("chat", "[Отряд] %s: %s", "[Squad] %s: %s");
+        squad("chat_not_in", "Вы не в отряде — писать в чат отряда некому", "You are not in a squad — nobody to talk to");
+        squad("created_title", "Создан отряд", "Squad founded");
+        squad("banner_too_many", "На знамени не больше %s узоров", "A banner can have at most %s patterns");
+        squad("player_offline", "Игрок уже не в сети", "The player is no longer online");
+        squad("renamed", "Отряд теперь называется «%s»", "The squad is now called \"%s\"");
+        squad("rank_leader", "Звание лидера — «Лидер»", "The leader's rank is always \"Leader\"");
+        squad("rank_length", "Звание — не длиннее %s знаков", "A rank can be at most %s characters long");
+        squad("friendly_fire_on", "Лидер разрешил урон по своим", "The leader allowed friendly fire");
+        squad("friendly_fire_off", "Лидер запретил урон по своим", "The leader disabled friendly fire");
+        squad("map_mode", "Отображение отряда на карте: %s", "Squad map display: %s");
+        squad("which_invite", "Приглашений несколько — укажите отряд: /squad accept <отряд>", "You have several invitations — name the squad: /squad accept <squad>");
+
+        // Окно «Отряд»
+        squadGui("title", "Отряд", "Squad");
+        squadGui("invites", "Приглашения в отряд", "Squad invitations");
+        squadGui("invites_count", "Приглашения в отряд (%s)", "Squad invitations (%s)");
+        squadGui("create", "Создать отряд", "Create squad");
+        squadGui("column.squad", "Отряд", "Squad");
+        squadGui("column.inviter", "Пригласил", "Invited by");
+        squadGui("no_invites", "Приглашений нет", "No invitations");
+        squadGui("rename", "Переименовать отряд", "Rename squad");
+        squadGui("edit_banner", "Изменить знамя отряда", "Change squad banner");
+        squadGui("members", "Список игроков %s/%s", "Players %s/%s");
+        squadGui("rank.leader", "Лидер", "Leader");
+        squadGui("rank.member", "Участник", "Member");
+        squadGui("friendly_fire.on", "Урон по своим включен", "Friendly fire is on");
+        squadGui("friendly_fire.off", "Урон по своим выключен", "Friendly fire is off");
+        squadGui("invite_members", "Пригласить участников", "Invite players");
+        squadGui("disband", "Распустить отряд", "Disband squad");
+        squadGui("disband.confirm", "Вы уверены, что хотите распустить отряд?", "Are you sure you want to disband the squad?");
+        squadGui("leave", "Покинуть отряд", "Leave squad");
+        squadGui("leave.confirm", "Вы уверены, что хотите покинуть отряд?", "Are you sure you want to leave the squad?");
+        squadGui("menu.rank", "Изменить звание", "Change rank");
+        squadGui("menu.kick", "Выгнать из отряда", "Kick from squad");
+        squadGui("menu.leader", "Сделать лидером", "Make leader");
+        squadGui("kick.confirm", "Выгнать %s из отряда?", "Kick %s from the squad?");
+        squadGui("leader.confirm", "Сделать %s лидером отряда? Вы станете обычным участником", "Make %s the squad leader? You will become a regular member");
+        squadGui("save", "Сохранить", "Save");
+        squadGui("name", "Название отряда", "Squad name");
+        squadGui("banner", "Знамя отряда", "Squad banner");
+        squadGui("banner.hint", "Выберите цвет, затем узор. Щелчок по слою — перекрасить его", "Pick a color, then a pattern. Click a layer to recolor it");
+        squadGui("banner.layers", "Слои %s/%s", "Layers %s/%s");
+        squadGui("banner.base", "Основа: %s", "Base: %s");
+        squadGui("invited", "Приглашён", "Invited");
+        squadGui("invited_mark", "приглашён", "invited");
+        squadGui("invite_to_squad", "Пригласить в отряд", "Invite to squad");
+        squadGui("map.tooltip", "Отображение на карте: %s", "Shown on map: %s");
+        squadGui("map.off", "отключено", "off");
+        squadGui("map.ranks", "включено только для избранных рангов", "only for chosen ranks");
+        squadGui("map.all", "включено для всех", "for everyone");
+        squadGui("map.ranks_list", "Ранги: %s", "Ranks: %s");
+        squadGui("map.ranks.none", "не выбраны", "none chosen");
+        squadGui("map.hint", "ЛКМ — сменить режим, ПКМ — выбрать ранги", "LMB — change mode, RMB — choose ranks");
+        squadGui("map.ranks_title", "Кому видны товарищи на карте", "Who sees squad members on the map");
+        squadGui("map.ranks_hint", "Лидеру видно всегда", "The leader always sees them");
+        squadGui("nobody_to_invite", "Все игроки в сети уже в отрядах", "Everyone online is already in a squad");
+        squadGui("rank_of", "Звание: %s", "Rank: %s");
+        squadGui("rank.hint", "Пустое поле — звание «Участник»", "Leave empty for \"Member\"");
+
+        // RP-имя (/nick)
+        add("command.halgventmod.nick.none",
+                russian ? "У вас нет RP-имени. Задать: /nick <имя>" : "You have no RP name. Set one: /nick <name>");
+        add("command.halgventmod.nick.current", russian ? "Ваше RP-имя: %s" : "Your RP name: %s");
+        add("command.halgventmod.nick.set", russian ? "Теперь вас зовут: %s" : "Your name is now: %s");
+        add("command.halgventmod.nick.reset", russian ? "RP-имя снято, виден настоящий ник" : "RP name removed, your real name is shown");
+        add("command.halgventmod.nick.length",
+                russian ? "Имя должно быть от %s до %s знаков" : "The name must be %s to %s characters long");
+        add("command.halgventmod.nick.characters",
+                russian ? "В имени можно использовать только буквы (кириллица, латиница), пробел, дефис и апостроф; начинаться и заканчиваться оно должно буквой"
+                        : "Only letters (Cyrillic, Latin), spaces, hyphens and apostrophes are allowed; the name must start and end with a letter");
 
         // Срок годности
         add("tooltip.halgventmod.spoils_in", russian ? "Испортится через: %s сут." : "Spoils in: %s d.");
         add("tooltip.halgventmod.spoiled", russian ? "Испорчено" : "Spoiled");
+
+        // Правила фермерства (/gamerule и экран «Правила игры»)
+        add("gamerule.farmlandTrampling", russian ? "Вытаптывание пашни" : "Farmland trampling");
+        add("gamerule.farmlandDriesToDirt", russian ? "Сухая пашня превращается в землю" : "Dry farmland turns to dirt");
+        add("gamerule.cropsNeedWater", russian ? "Растениям нужна сырая пашня" : "Crops need wet farmland");
 
         // Календарь: дни недели, месяцы, сезоны
         for (int i = 0; i < Calendar.DAYS_PER_WEEK; i++) {
@@ -121,12 +280,14 @@ public class ModLanguageProvider extends LanguageProvider {
         add("key.halgventmod.calendar", russian ? "Календарь" : "Calendar");
         add("key.halgventmod.character", russian ? "Персонаж" : "Character");
         add("key.halgventmod.map", russian ? "Карта" : "Map");
+        add("key.halgventmod.squad", russian ? "Отряд" : "Squad");
         add("key.halgventmod.codex", russian ? "Кодекс" : "Codex");
 
         // Вкладки над окнами игрока
         add("gui.halgventmod.tab.inventory", russian ? "Инвентарь" : "Inventory");
         add("gui.halgventmod.tab.character", russian ? "Персонаж" : "Character");
         add("gui.halgventmod.tab.map", russian ? "Карта" : "Map");
+        add("gui.halgventmod.tab.squad", russian ? "Отряд" : "Squad");
         add("gui.halgventmod.tab.codex", russian ? "Кодекс" : "Codex");
         add("gui.halgventmod.tab.hint", "%s (%s)");
         add("gui.halgventmod.tab.wip", russian ? "Раздел в разработке" : "Coming soon");
@@ -189,6 +350,35 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // Метки
         add("key.halgventmod.waypoint", russian ? "Поставить метку" : "Add Waypoint");
+        add("key.halgventmod.pickup", russian ? "Подобрать / использовать" : "Pick Up / Use");
+        add("key.halgventmod.visor", russian ? "Поднять/опустить забрало" : "Raise/Lower Visor");
+        add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
+        add("hud.halgventmod.pickup_equip", russian ? "[Shift+%s] Надеть" : "[Shift+%s] Put on");
+        // Музыка биомов и источники звука
+        add("command.halgventmod.music.biome", russian ? "Биом: %s" : "Biome: %s");
+        add("command.halgventmod.music.tags", russian ? "Теги: %s" : "Tags: %s");
+        add("command.halgventmod.music.no_tags", russian ? "Тегов нет" : "No tags");
+        add("command.halgventmod.music.set", russian ? "Набор: %s" : "Music set: %s");
+        add("command.halgventmod.music.no_set", russian ? "Набора нет — тишина" : "No music set — silence");
+        add("command.halgventmod.music.playing_set", russian
+                ? "Пока играет набор %s (смена через несколько секунд)" : "Still playing %s (switching in a few seconds)");
+        add("command.halgventmod.music.track", russian ? "Трек: %s (%s из %s)" : "Track: %s (%s of %s)");
+        add("command.halgventmod.music.pause", russian ? "Трек: пауза между треками" : "Track: pause between tracks");
+        add("command.halgventmod.music.muted", russian
+                ? "Громкость от источников звука рядом: %s%%" : "Volume from sound sources nearby: %s%%");
+        add("command.halgventmod.music.skipped", russian ? "Следующий трек" : "Next track");
+        add("command.halgventmod.music.nothing", russian ? "Сейчас ничего не играет" : "Nothing is playing");
+        add("gui.halgventmod.sound_emitter.title", russian ? "Источник звука" : "Sound Emitter");
+        add("gui.halgventmod.sound_emitter.scene", russian ? "Сцена" : "Scene");
+        add("gui.halgventmod.sound_emitter.no_scene", russian ? "— без сцены —" : "— no scene —");
+        add("gui.halgventmod.sound_emitter.missing", russian
+                ? "Сцены %s нет — источник молчит" : "No scene %s — the source is silent");
+        add("gui.halgventmod.sound_emitter.radius", russian
+                ? "Радиус 1–64, пусто — из сцены (%s)" : "Radius 1–64, empty — from the scene (%s)");
+        add("hud.halgventmod.use.open", russian ? "Открыть: %s" : "Open: %s");
+        add("hud.halgventmod.use.close", russian ? "Закрыть: %s" : "Close: %s");
+        add("hud.halgventmod.use.use", russian ? "Использовать: %s" : "Use: %s");
+        add("tooltip.halgventmod.arrows", russian ? "Стрел: %s из %s" : "Arrows: %s of %s");
         add("gui.halgventmod.waypoint.new", russian ? "Новая метка" : "New Waypoint");
         add("gui.halgventmod.waypoint.edit", russian ? "Метка" : "Waypoint");
         add("gui.halgventmod.waypoint.name", russian ? "Название" : "Name");
@@ -197,6 +387,39 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.waypoint.delete", russian ? "Удалить" : "Delete");
         add("gui.halgventmod.waypoint.icon", russian ? "Значок: %s" : "Icon: %s");
         add("gui.halgventmod.waypoint.flag_color", russian ? "Цвет флага: %s" : "Flag color: %s");
+        add("gui.halgventmod.waypoint.compass", russian ? "Видимость на компасе" : "Show on compass");
+
+        // Точки карты (ставит администрация, видны всем)
+        add("gui.halgventmod.map.menu.add_point", russian ? "Поставить точку" : "Add Point");
+        add("gui.halgventmod.map.menu.edit_point", russian ? "Изменить точку" : "Edit Point");
+        add("gui.halgventmod.map.menu.edit_point_bounds", russian ? "Изменить границы точки" : "Edit Point Bounds");
+        add("gui.halgventmod.point.new", russian ? "Новая точка" : "New Point");
+        add("gui.halgventmod.point.edit", russian ? "Точка" : "Point");
+        add("gui.halgventmod.point.shape.circle", russian ? "Круг" : "Circle");
+        add("gui.halgventmod.point.shape.polygon", russian ? "Многоугольник" : "Polygon");
+        add("gui.halgventmod.point.next", russian ? "Далее" : "Next");
+        add("gui.halgventmod.point.hint.circle", russian
+                ? "Колёсико или стрелки — радиус · ручку на краю можно тянуть · Shift+колёсико — масштаб"
+                : "Scroll or arrows — radius · drag the handle on the edge · Shift+scroll — zoom");
+        add("gui.halgventmod.point.hint.polygon", russian
+                ? "Тяните углы · кружок на стороне — новый угол · ПКМ по углу — убрать · стрелки — сдвиг угла"
+                : "Drag corners · dot on a side — new corner · right-click a corner — remove · arrows — nudge");
+        add("gui.halgventmod.point.open", russian ? "Открыта" : "Discovered");
+        add("gui.halgventmod.point.hidden", russian ? "Не открыта" : "Undiscovered");
+        add("gui.halgventmod.point.unknown", russian ? "Неизвестное место" : "Unknown Place");
+        add("gui.halgventmod.point.info", russian ? "Сведения" : "Details");
+        add("gui.halgventmod.point.described", russian ? "С описанием" : "With description");
+        add("gui.halgventmod.point.description", russian ? "Описание" : "Description");
+        add("gui.halgventmod.point.hover_text", russian ? "Текст при наведении (пока не открыта)" : "Hover text (while undiscovered)");
+        add("gui.halgventmod.point.icon_hidden", russian ? "Значок до открытия: %s" : "Icon before discovery: %s");
+        add("gui.halgventmod.point.icon_open", russian ? "Значок после открытия: %s" : "Icon after discovery: %s");
+        add("gui.halgventmod.point.icon_unknown", russian ? "Знак вопроса" : "Question mark");
+        add("gui.halgventmod.point.banner", russian ? "Знамя из реестра: %s" : "Registry banner: %s");
+        add("gui.halgventmod.point.no_banner", russian ? "нет" : "none");
+        add("gui.halgventmod.point.missing_banner", russian ? "%s (нет в реестре)" : "%s (not in the registry)");
+        add("gui.halgventmod.point.all_banners", russian ? "Весь реестр" : "All banners");
+        add("gui.halgventmod.point.click_description", russian ? "ЛКМ — описание" : "Left-click: description");
+        add("hud.halgventmod.point.discovered", russian ? "Открытая локация" : "Location discovered");
         add("gui.halgventmod.map.icon.flag", russian ? "Флаг" : "Flag");
         add("gui.halgventmod.map.icon.castle", russian ? "Крепость" : "Fortress");
         add("gui.halgventmod.map.icon.tower", russian ? "Башня" : "Tower");
@@ -273,7 +496,8 @@ public class ModLanguageProvider extends LanguageProvider {
         add("lock.halgventmod.cannot_remove", russian ? "Врезной замок не снять" : "A mortise lock can't be removed");
         add("lock.halgventmod.no_lock", russian ? "Здесь нет замка" : "There is no lock here");
         add("lock.halgventmod.no_permission", russian
-                ? "Набор слесаря — только для администрации" : "The locksmith's kit is for administration only");
+                ? "Набор ключника — только для администрации и творческого режима"
+                : "The locksmith's kit is for administration and creative mode only");
         add("lock.halgventmod.info", russian
                 ? "Замок: секрет %1$s, %2$s, %3$s" : "Lock: secret %1$s, %2$s, %3$s");
         add("lock.halgventmod.type.mortise", russian ? "врезной" : "mortise");
@@ -289,6 +513,78 @@ public class ModLanguageProvider extends LanguageProvider {
         add("lock.halgventmod.command.named", russian ? "Ключ подписан: %s" : "Key named: %s");
         add("lock.halgventmod.command.not_key", russian
                 ? "Возьмите ключ в основную руку" : "Hold a key in your main hand");
+        // Реестр знамён (BannerCommand)
+        add("banner.halgventmod.prefix", russian ? "[Реестр] " : "[Registry] ");
+        add("banner.halgventmod.registered", russian ? "Знамя «%s» внесено под id %s" : "Banner \"%s\" registered as %s");
+        add("banner.halgventmod.updated", russian ? "Рисунок знамени «%s» (%s) обновлён" : "Design of banner \"%s\" (%s) updated");
+        add("banner.halgventmod.renamed", russian ? "Знамя %s теперь называется «%s»" : "Banner %s is now called \"%s\"");
+        add("banner.halgventmod.described", russian ? "Описание знамени «%s» обновлено" : "Description of banner \"%s\" updated");
+        add("banner.halgventmod.given", russian ? "Выдано знамя «%s» ×%s: %s" : "Gave banner \"%s\" ×%s to %s");
+        add("banner.halgventmod.removed", russian ? "Знамя «%s» (%s) убрано из реестра" : "Banner \"%s\" (%s) removed from the registry");
+        add("banner.halgventmod.unknown", russian ? "В реестре нет знамени %s" : "No banner %s in the registry");
+        add("banner.halgventmod.taken", russian
+                ? "id %1$s уже занят. Сменить рисунок: /banner update %1$s"
+                : "id %1$s is taken. To change the design: /banner update %1$s");
+        add("banner.halgventmod.bad_id", russian
+                ? "id — латиница в нижнем регистре, цифры и _, не длиннее %s"
+                : "id: lowercase latin letters, digits and _, at most %s");
+        add("banner.halgventmod.no_banner", russian ? "Возьмите баннер в основную руку" : "Hold a banner in your main hand");
+        add("banner.halgventmod.name_too_long", russian ? "Название длиннее %s символов" : "Name is longer than %s characters");
+        add("banner.halgventmod.description_too_long", russian
+                ? "Описание длиннее %s символов" : "Description is longer than %s characters");
+        add("banner.halgventmod.edited", russian ? "Знамя «%s» исправлено" : "Banner \"%s\" edited");
+        String banners = "gui.halgventmod.banners.";
+        add(banners + "title", russian ? "Реестр знамён" : "Banner Registry");
+        add(banners + "pick", russian ? "Выберите знамя" : "Choose a Banner");
+        add(banners + "hint", russian ? "Внести новое: /banner register <id> <название>" : "Add new: /banner register <id> <name>");
+        add(banners + "pick_hint", russian ? "Щёлкните по знамени" : "Click a banner");
+        add(banners + "search", russian ? "Поиск" : "Search");
+        add(banners + "empty", russian ? "Реестр пуст" : "The registry is empty");
+        add(banners + "not_found", russian ? "Ничего не найдено" : "Nothing found");
+        add(banners + "in_points", russian ? "В точках: %s" : "In points: %s");
+        add(banners + "take",russian ? "Взять" : "Take");
+        add(banners + "edit", russian ? "Править" : "Edit");
+        add(banners + "delete", russian ? "Удалить" : "Delete");
+        add(banners + "delete_title", russian ? "Удалить знамя из реестра?" : "Remove the banner from the registry?");
+        add(banners + "delete_question", russian
+                ? "«%s» (%s) пропадёт из точек и книг. Внесёте снова под тем же id — вернётся."
+                : "\"%s\" (%s) will vanish from points and books. Register it again under the same id to bring it back.");
+        add(banners + "edit_title", russian ? "Знамя" : "Banner");
+        add(banners + "name", russian ? "Название" : "Name");
+        add(banners + "description", russian ? "Описание" : "Description");
+        // Гербовник (ArmorialCommand, ArmorialScreen)
+        String armorial = "armorial.halgventmod.";
+        add(armorial + "prefix", russian ? "[Гербовник] " : "[Armorial] ");
+        add(armorial + "created", russian ? "Книга «%s» создана под id %s" : "Book \"%s\" created as %s");
+        add(armorial + "renamed", russian ? "Книга %s теперь называется «%s»" : "Book %s is now called \"%s\"");
+        add(armorial + "given", russian ? "Выдана книга %s: %s" : "Gave book %s to %s");
+        add(armorial + "removed", russian ? "Книга %s удалена" : "Book %s removed");
+        add(armorial + "missing", russian ? "Книги %s нет" : "There is no book %s");
+        add(armorial + "taken", russian ? "id %s уже занят" : "id %s is taken");
+        add(armorial + "bad_id", russian
+                ? "id — латиница в нижнем регистре, цифры и _, не длиннее %s"
+                : "id: lowercase latin letters, digits and _, at most %s");
+        add(armorial + "title_too_long", russian ? "Название длиннее %s символов" : "Title is longer than %s characters");
+        add(armorial + "list_empty", russian ? "Книг пока нет (общая книга main есть всегда)" : "No books yet (the common book main always exists)");
+        add(armorial + "list_header", russian ? "Книг: %s" : "Books: %s");
+        add(armorial + "list_entry", russian ? "  %s — «%s», страниц: %s" : "  %s — \"%s\", pages: %s");
+        add(armorial + "empty", russian ? "Книга пуста" : "The book is empty");
+        add(armorial + "take_copy", russian ? "ПКМ — взять копию" : "Right-click: take a copy");
+        add(armorial + "edit_title", russian ? "Правка книги «%s»" : "Editing \"%s\"");
+        add(armorial + "add_page", russian ? "+ Страница в конец" : "+ Page at the end");
+        add(armorial + "type_large", russian ? "1 знамя" : "1 banner");
+        add(armorial + "type_grid", russian ? "9 знамён" : "9 banners");
+        add(armorial + "page_title", russian ? "Название страницы" : "Page title");
+        add(armorial + "change_banner", russian ? "Сменить знамя" : "Change banner");
+        add(armorial + "edit_banner", russian ? "Править в реестре" : "Edit in registry");
+        add(armorial + "move_left", russian ? "Сдвинуть страницу назад" : "Move page back");
+        add(armorial + "move_right", russian ? "Сдвинуть страницу вперёд" : "Move page forward");
+        add(armorial + "delete_page", russian ? "Удалить страницу" : "Delete page");
+        add(armorial + "delete_page_question", russian ? "Удалить страницу %s?" : "Delete page %s?");
+        add(armorial + "clear_cell", russian ? "Убрать знамя" : "Remove banner");
+        add(armorial + "save_question", russian ? "Сохранить изменения в книге?" : "Save changes to the book?");
+        add(armorial + "save_hint", russian ? "«Нет» — закрыть без сохранения" : "\"No\" closes without saving");
+        add("tooltip.halgventmod.registry_banner", russian ? "Реестр знамён: %s" : "Banner registry: %s");
         add("lock.halgventmod.name_screen", russian ? "Подпись" : "Label");
         add("lock.halgventmod.ring_count", russian ? "Ключей: %1$s из %2$s" : "Keys: %1$s of %2$s");
         add("lock.halgventmod.ring_unnamed_key", russian ? "ключ без подписи" : "unlabelled key");
@@ -297,5 +593,13 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.BURDEN.get(), russian ? "Обуза" : "Burden");
         add(ModEffects.ENCUMBERED.get(), russian ? "Скованность" : "Encumbered");
         add(ModEffects.OVERLOADED.get(), russian ? "Тяжесть" : "Overloaded");
+    }
+
+    private void squad(String key, String ru, String en) {
+        add("squad.halgventmod." + key, russian ? ru : en);
+    }
+
+    private void squadGui(String key, String ru, String en) {
+        add("gui.halgventmod.squad." + key, russian ? ru : en);
     }
 }

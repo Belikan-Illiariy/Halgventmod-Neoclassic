@@ -2,6 +2,8 @@ package com.nrdhvnstd.halgventmod.client.map;
 
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 import com.nrdhvnstd.halgventmod.HalgventMod;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -59,6 +61,19 @@ public enum MapIcon {
             }
         }
         return FLAG;
+    }
+
+    /** По имени; неизвестное или пустое — null. */
+    @Nullable
+    public static MapIcon find(String id) {
+        if (id != null && !id.isEmpty()) {
+            for (MapIcon icon : values()) {
+                if (icon.id().equals(id)) {
+                    return icon;
+                }
+            }
+        }
+        return null;
     }
 
     /** Нарисовать клетку атласа квадратом size × size с левым верхним углом в x, y. */

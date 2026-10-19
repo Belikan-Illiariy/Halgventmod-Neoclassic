@@ -7,6 +7,8 @@ import java.util.Optional;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.banner.BannerEntry;
+import com.nrdhvnstd.halgventmod.banner.BannerRegistry;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
@@ -49,6 +51,13 @@ public final class ItemTooltipHandler {
         ModLore.Entry lore = ModLore.get(item);
         ArmorSlot armorSlot = ModArmor.slotOf(stack);
 
+        // Баннер из реестра знамён — только пока рисунок совпадает с записью (станок копирует компоненты)
+        BannerEntry banner = BannerRegistry.client(stack.get(ModComponents.REGISTRY_BANNER.get()));
+        if (banner != null && banner.sameDesign(stack)) {
+            event.getToolTip().add(Math.min(1, event.getToolTip().size()), Component.translatable(
+                    "tooltip.halgventmod.registry_banner", banner.name()).withStyle(ChatFormatting.GOLD));
+        }
+
         boolean hasTraits = traits != null && !traits.isEmpty();
         if (!hasTraits && lore == null && armorSlot == null) {
             return;
@@ -71,6 +80,18 @@ public final class ItemTooltipHandler {
         if (armorSlot != null) {
             tooltip.add(index++, Component.translatable("tooltip.halgventmod.armor_slot",
                     Component.translatable(armorSlot.langKey())).withStyle(ChatFormatting.GRAY));
+            ModArmor.ArmorInfo info = ModArmor.get(stack);
+            // Защита этого шлема сейчас: у забрала — в его нынешнем положении
+            ModArmor.Protection protection = info != null ? info.protection(stack) : ModArmor.Protection.NONE;
+            if (!protection.isNone()) {
+                tooltip.add(index++, Component.translatable("tooltip.halgventmod.protection",
+                        WeightText.decimal(protection.armor()), WeightText.decimal(protection.toughness())).withStyle(ChatFormatting.GRAY));
+            }
+            if (info != null && info.visor()) {
+                tooltip.add(index++, Component.translatable(ModArmor.visorRaised(stack)
+                        ? "tooltip.halgventmod.visor_raised" : "tooltip.halgventmod.visor_lowered")
+                        .withStyle(ChatFormatting.GRAY));
+            }
         }
     }
 

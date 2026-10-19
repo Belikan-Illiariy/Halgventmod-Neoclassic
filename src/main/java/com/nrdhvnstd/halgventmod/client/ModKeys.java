@@ -20,17 +20,27 @@ public final class ModKeys {
     public static final KeyMapping CALENDAR = new KeyMapping("key.halgventmod.calendar",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY);
 
-    // Вкладки окон игрока (MenuTabs); инвентарь — ванильная E
+    // Вкладки окон игрока (MenuTabs); инвентарь — ванильная клавиша, переставленная на Tab (KeyMigration)
     public static final KeyMapping CHARACTER = new KeyMapping("key.halgventmod.character",
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, CATEGORY);
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, CATEGORY);
     public static final KeyMapping MAP = new KeyMapping("key.halgventmod.map",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, CATEGORY);
+    public static final KeyMapping SQUAD = new KeyMapping("key.halgventmod.squad",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, CATEGORY);
     public static final KeyMapping CODEX = new KeyMapping("key.halgventmod.codex",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, CATEGORY);
 
     // Новая метка там, где стоит игрок (client/map/WaypointsInWorld)
     public static final KeyMapping WAYPOINT = new KeyMapping("key.halgventmod.waypoint",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY);
+
+    // Подобрать вещь под прицелом (pickup/Pickup); Shift — подобрать и надеть. E освободилась от инвентаря (KeyMigration)
+    public static final KeyMapping PICKUP = new KeyMapping("key.halgventmod.pickup",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E, CATEGORY);
+
+    // Поднять или опустить забрало надетого шлема (network/ToggleVisorPayload); у шлема без забрала ничего не делает
+    public static final KeyMapping VISOR = new KeyMapping("key.halgventmod.visor",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
 
     private ModKeys() {}
 
@@ -39,7 +49,10 @@ public final class ModKeys {
         event.register(CALENDAR);
         event.register(CHARACTER);
         event.register(MAP);
+        event.register(SQUAD);
         event.register(CODEX);
         event.register(WAYPOINT);
+        event.register(PICKUP);
+        event.register(VISOR);
     }
 }

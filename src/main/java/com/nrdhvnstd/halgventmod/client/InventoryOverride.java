@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -30,6 +31,7 @@ public final class InventoryOverride {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.PLAYER_INVENTORY.get(), ArmorInventoryScreen::new);
+        event.register(ModMenus.ARMOR_STAND.get(), ArmorStandScreen::new);
     }
 
     @SubscribeEvent
@@ -43,6 +45,21 @@ public final class InventoryOverride {
     /** Попросить сервер открыть наш инвентарь. */
     public static void requestInventory() {
         PacketDistributor.sendToServer(OpenInventoryPayload.INSTANCE);
+    }
+
+    /**
+     * Из каталога творческого режима: открыть наш инвентарь вместе с вещью на курсоре.
+     * Вещь на курсоре каталога живёт только у клиента — отдаём её серверу, а у себя убираем,
+     * иначе она так и висела бы на курсоре при возврате в каталог.
+     */
+    public static void requestInventoryFromCatalog() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+        ItemStack carried = player.inventoryMenu.getCarried(); // курсор каталога — это курсор inventoryMenu
+        player.inventoryMenu.setCarried(ItemStack.EMPTY);
+        PacketDistributor.sendToServer(new OpenInventoryPayload(carried));
     }
 
     /** Закрыть наш инвентарь и открыть каталог творческого режима. */

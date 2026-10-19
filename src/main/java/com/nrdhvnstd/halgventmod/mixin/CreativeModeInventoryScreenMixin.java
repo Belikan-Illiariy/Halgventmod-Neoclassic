@@ -13,12 +13,12 @@ import net.minecraft.world.item.CreativeModeTab;
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin {
 
-    // Вкладка «Инвентарь» каталога открывает наш инвентарь вместо ванильного
+    // Вкладка «Инвентарь» каталога открывает наш инвентарь вместо ванильного; вещь на курсоре переходит туда же
     @Inject(method = "selectTab", at = @At("HEAD"), cancellable = true)
     private void halgventmod$openOwnInventory(CreativeModeTab tab, CallbackInfo ci) {
         if (tab.getType() == CreativeModeTab.Type.INVENTORY) {
             ci.cancel();
-            InventoryOverride.requestInventory();
+            InventoryOverride.requestInventoryFromCatalog();
         }
     }
 }
