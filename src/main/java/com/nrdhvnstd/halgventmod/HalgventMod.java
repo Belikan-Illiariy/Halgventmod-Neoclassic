@@ -8,6 +8,7 @@ import com.nrdhvnstd.halgventmod.farming.FarmingEvents;
 import com.nrdhvnstd.halgventmod.network.ModNetwork;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModAttributes;
+import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModBlocks;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModCreativeTabs;
@@ -29,6 +30,7 @@ public class HalgventMod {
         ModEffects.register(modEventBus);
         ModComponents.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModMenus.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

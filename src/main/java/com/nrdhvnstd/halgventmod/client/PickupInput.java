@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.network.PickupPayload;
+import com.nrdhvnstd.halgventmod.network.UseKeyPayload;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.weight.ModWeights;
 
@@ -17,12 +18,14 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -39,6 +42,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Ручной подбор на клиенте (ТЗ 6.1): вещь или стрела под прицелом в пределах Pickup.REACH обведена
  * контуром (MinecraftMixin), над ней — «Хлеб ×3 · 0,6 кг», под прицелом — «[E] Подобрать».
  * E — подобрать, удержание E — подбирать по очереди с шагом Pickup.PICKUP_COOLDOWN, Shift+E — подобрать и надеть.
+ * Вещи под прицелом нет — E открывает и использует блок (дверь, сундук, рычаг), как ПКМ пустой рукой.
  * Решает сервер (Pickup.handle); здесь только выбор цели и подсказки.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -64,9 +68,7 @@ public final class PickupInput {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        target = player != null && minecraft.screen == null && !player.isSpectator() && Pickup.manualOnly(player)
-                ? findTarget(player)
-                : null;
+        target = player != null && minecraft.screen == null && !player.isSpectator() ? findTarget(player) : null;
 
         boolean down = ModKeys.PICKUP.isDown();
         while (ModKeys.PICKUP.consumeClick()) {
@@ -79,8 +81,25 @@ public final class PickupInput {
         if (heldTicks % Pickup.PICKUP_COOLDOWN == 0 && target != null) {
             PacketDistributor.sendToServer(new PickupPayload(target.getId(), Screen.hasShiftDown()));
             player.swing(InteractionHand.MAIN_HAND);
+        } else if (heldTicks == 0 && target == null && minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
+            useBlock(minecraft, player, hit);
         }
         heldTicks++;
+    }
+
+    // E по блоку — как ПКМ (с замками и прочими проверками), но без предмета из руки; только по нажатию, не при удержании.
+    // Shift+E — действия с замками (LockEvents)
+    private static void useBlock(Minecraft minecraft, LocalPlayer player, BlockHitResult hit) {
+        if (minecraft.gameMode == null || player.isHandsBusy()) {
+            return;
+        }
+        PacketDistributor.sendToServer(UseKeyPayload.INSTANCE); // до ванильного пакета — сервер обработает их по порядку
+        Pickup.markUseKey(player);
+        InteractionResult result = minecraft.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+        Pickup.clearUseKey(player);
+        if (result.consumesAction() && result.shouldSwing()) {
+            player.swing(InteractionHand.MAIN_HAND);
+        }
     }
 
     // Ближайшая подбираемая вещь на луче взгляда до первого блока

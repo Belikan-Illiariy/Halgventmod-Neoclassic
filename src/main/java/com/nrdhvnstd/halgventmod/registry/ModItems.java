@@ -33,6 +33,7 @@ import com.nrdhvnstd.halgventmod.weight.ModWeights;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
@@ -113,16 +114,30 @@ public final class ModItems {
     public static final DeferredItem<Item> LOCKSMITH_KIT = item("locksmith_kit", "Набор ключника", "Locksmith's kit", Gender.M)
             .traits(ModTraits.LEGENDARY)
             .category(Category.TOOLS)
-            .lore("Для администрации.", "For administration.")
+            .lore("Для администрации. E — открыть и запертое, по месту без замка — повесить навесной; "
+                            + "Shift + E — врезной замок или снять любой.",
+                    "For administration. E opens even locked ones, or hangs a padlock where there is none; "
+                            + "Shift + E fits a mortise lock or removes any lock.")
             .stacksTo(1)
             .register();
     public static final DeferredItem<KeyRingItem> KEY_RING = item("key_ring", "Связка ключей", "Key ring", Gender.F)
             .category(Category.TOOLS)
-            .lore("Shift + ПКМ связкой по замку отпирает его, если на связке есть подходящий ключ.",
-                    "Shift + right-click a lock with the ring to open it if any key on it fits.")
+            .lore("Shift + E со связкой по замку отпирает его, если на связке есть подходящий ключ.",
+                    "Shift + E at a lock with the ring opens it if any key on it fits.")
             .stacksTo(1)
             .grams(20)
             .register(KeyRingItem::new);
+
+    // ----- Невидимый источник звуков места (администрация) -----
+    public static final DeferredItem<BlockItem> SOUND_EMITTER = item("sound_emitter", "Источник звука", "Sound emitter", Gender.M)
+            .traits(ModTraits.LEGENDARY)
+            .category(Category.TOOLS)
+            .draw(DrawType.SMALL) // предмет-блок по умолчанию тяжёлый, а это инструмент администрации
+            .lore("Невидимый источник звуков места, для администрации. С ним в руке источники видны; "
+                            + "E по источнику — настроить.",
+                    "An invisible source of place sounds, for administration. Hold it to see sources; "
+                            + "E at a source to set it up.")
+            .register(properties -> new BlockItem(ModBlocks.SOUND_EMITTER.get(), properties));
 
     // ----- Фермерство -----
     // ----- Гербовник: книга знамён, выдаёт администрация (/armorial give), рецепта нет -----

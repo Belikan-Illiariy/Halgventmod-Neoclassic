@@ -1,0 +1,12 @@
+{
+  "radius": 16,
+  "mute_music": true,
+  "layers": [
+    {
+      "type": "playlist",
+      "sounds": ["halgventmod:music.bard_1"],
+      "pause_seconds": 5,
+      "volume": 1.0
+    }
+  ]
+}

@@ -5,8 +5,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.nrdhvnstd.halgventmod.pickup.Pickup;
-
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 
@@ -19,7 +17,7 @@ public abstract class AbstractArrowMixin {
     @Inject(method = "playerTouch", at = @At("HEAD"), cancellable = true)
     private void halgventmod$manualPickup(Player player, CallbackInfo ci) {
         AbstractArrow self = (AbstractArrow) (Object) this;
-        if (!self.isNoPhysics() && Pickup.manualOnly(player)) {
+        if (!self.isNoPhysics()) {
             ci.cancel();
         }
     }

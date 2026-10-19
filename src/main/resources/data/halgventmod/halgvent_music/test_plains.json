@@ -1,0 +1,5 @@
+{
+  "biomes": ["minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow"],
+  "tracks": ["halgventmod:music.test_3"],
+  "pause_seconds": 5
+}

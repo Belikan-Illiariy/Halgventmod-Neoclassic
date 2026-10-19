@@ -28,10 +28,10 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Полоса азимута вверху экрана, как в Skyrim: видимые VISIBLE_DEGREES из 360 вокруг взгляда игрока.
- * Засечки — каждые 5°, числа — каждые 15°, стороны света — каждые 45° (С, В, Ю, З — крупнее и золотые).
- * Посередине — метка и текущий азимут. Азимут считается по компасу: север 0°, восток 90°.
+ * Засечки — каждые 5° (через 15° — длиннее), стороны света — каждые 45° (С, В, Ю, З — крупнее и золотые).
+ * Посередине — метка взгляда; градусов на компасе нет. Азимут считается по компасу: север 0°, восток 90°.
  * Метки карты с «Видимостью на компасе» (Waypoint.compass) — значками в своей стороне; если взгляд на значке,
- * под полосой вместо азимута — название метки. Точки карты (MapPoint) — всегда; неоткрытые — белым «?» без названия.
+ * под полосой — название метки. Точки карты (MapPoint) — всегда; неоткрытые — белым «?» без названия.
  * К краям полосы всё гаснет. Полоски боссов сдвигаются ниже компаса.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -44,11 +44,9 @@ public final class CompassHud {
     private static final int HEIGHT = 13;
     private static final int TICK_SMALL = 2;          // засечка через 5°
     private static final int TICK_LARGE = 4;          // засечка через 15°
-    private static final float NUMBER_SCALE = 0.6F;
-    private static final float BEARING_SCALE = 0.75F;
     /**
      * На сколько опускаются полоски боссов: имя первой (в ванили — с 3 пикселей) встаёт сразу под строкой
-     * под компасом (азимут или название метки — до 2 + 9 пикселей под полосой) с зазором в пиксель.
+     * под компасом (название метки — до 2 + 9 пикселей под полосой) с зазором в пиксель.
      */
     private static final int SPACE = TOP + HEIGHT + 2 + 9 + 1 - 3;
 
@@ -145,7 +143,6 @@ public final class CompassHud {
                 graphics.drawString(font, letter, x - font.width(letter) / 2 + 1, TOP + 3, color, true);
             } else if (heading % 15 == 0) {
                 graphics.fill(x, bottom - 1 - TICK_LARGE, x + 1, bottom - 1, COLOR_TICK | alpha << 24);
-                small(graphics, font, String.valueOf(heading), x + 1, TOP + 2, NUMBER_SCALE, COLOR_TICK | alpha << 24);
             } else {
                 graphics.fill(x, bottom - 1 - TICK_SMALL, x + 1, bottom - 1, COLOR_TICK | alpha << 24);
             }
@@ -197,12 +194,10 @@ public final class CompassHud {
         RenderSystem.disableBlend();
         graphics.disableScissor();
 
-        // Метка взгляда; под полосой — название метки или точки, на которую смотрят, иначе азимут
+        // Метка взгляда; под полосой — название метки или точки, на которую смотрят
         graphics.fill(center, TOP - 1, center + 1, bottom + 1, COLOR_MARKER);
         if (focused != null) {
             graphics.drawCenteredString(font, focused.name(), focusedX, bottom + 2, COLOR_WAYPOINT);
-        } else {
-            small(graphics, font, Mth.floor(bearing) % 360 + "°", center + 1, bottom + 2, BEARING_SCALE, COLOR_MARKER);
         }
     }
 
@@ -214,14 +209,5 @@ public final class CompassHud {
         float opacity = 1 - edge * edge * edge * edge;
         int alpha = Math.round(255 * Mth.clamp(opacity, 0, 1));
         return alpha < 8 ? 0 : alpha; // шрифт рисует почти прозрачный текст непрозрачным
-    }
-
-    // Уменьшенный текст по центру x, верх — y
-    private static void small(GuiGraphics graphics, Font font, String text, int x, int y, float scale, int color) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
-        graphics.pose().scale(scale, scale, 1);
-        graphics.drawString(font, text, -font.width(text) / 2, 0, color, true);
-        graphics.pose().popPose();
     }
 }

@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -32,12 +33,16 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
- * Ручной подбор (ТЗ 6): касанием вещи не подбираются (кроме творческого режима), только клавишей
+ * Ручной подбор (ТЗ 6): касанием вещи не подбираются ни в каком режиме, только клавишей
  * «Подобрать» (E) по вещи под прицелом. Клиент выбирает цель (PickupInput) и шлёт PickupPayload;
  * сервер проверяет дальность, прямую видимость, задержку между подборами и кладёт вещь через Storage.
  * Shift+E по надеваемой вещи — подобрать и сразу надеть, если ячейка свободна и правила пускают.
+ * E по блоку без вещи под прицелом — ванильное использование блока (дверь, сундук, рычаг), но без
+ * предмета из руки: блок не ставится, предмет не применяется (markUseKey, onRightClickBlock).
+ * ПКМ по блоку, наоборот, блок не использует — только ставит блок и применяет предмет.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Pickup {
@@ -51,21 +56,45 @@ public final class Pickup {
 
     private Pickup() {}
 
-    /** Последний подбор (вложение без сохранения). */
+    /** Последний подбор и последнее нажатие E по блоку (вложение без сохранения). */
     public static final class State {
         private int lastTick = -PICKUP_COOLDOWN;
+        private int useKeyTick = Integer.MIN_VALUE / 2;
     }
 
-    /** Подбирать только вручную — всем, кроме творческого режима. */
-    public static boolean manualOnly(Player player) {
-        return !player.getAbilities().instabuild;
-    }
-
-    // Касанием — нет
+    // Касанием — нет, и в творческом тоже
     @SubscribeEvent
     public static void onTouchPickup(ItemEntityPickupEvent.Pre event) {
-        if (manualOnly(event.getPlayer())) {
-            event.setCanPickup(TriState.FALSE);
+        event.setCanPickup(TriState.FALSE);
+    }
+
+    /** Следующее использование блока — от E (клиент — перед своим вызовом, сервер — по UseKeyPayload). */
+    public static void markUseKey(Player player) {
+        player.getData(ModAttachments.PICKUP).useKeyTick = player.tickCount;
+    }
+
+    /** Текущее использование блока — от E, а не от ПКМ. Отметка живёт тик: пакеты приходят в одном или соседних тиках. */
+    public static boolean isUseKey(Player player) {
+        return player.tickCount - player.getData(ModAttachments.PICKUP).useKeyTick <= 1;
+    }
+
+    public static void clearUseKey(Player player) {
+        player.getData(ModAttachments.PICKUP).useKeyTick = Integer.MIN_VALUE / 2;
+    }
+
+    /**
+     * Блок используется на E, предмет — на ПКМ. E — только блок, без предмета из руки (isUseKey).
+     * ПКМ — только предмет: ставит блок, применяет предмет, но двери, сундуки и рычаги не трогает.
+     * Замки (LockEvents, приоритет выше) отменяют событие раньше.
+     */
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Player player = event.getEntity();
+        if (event.getHand() == InteractionHand.MAIN_HAND && isUseKey(player)) {
+            event.setUseItem(TriState.FALSE);
+            clearUseKey(player);
+        } else {
+            event.setUseBlock(TriState.FALSE);
         }
     }
 

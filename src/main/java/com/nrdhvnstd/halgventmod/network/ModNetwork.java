@@ -29,6 +29,9 @@ public final class ModNetwork {
         registrar.playToServer(ClearInventoryPayload.TYPE, ClearInventoryPayload.STREAM_CODEC, ClearInventoryPayload::handle);
         registrar.playToServer(OpenInventoryPayload.TYPE, OpenInventoryPayload.STREAM_CODEC, OpenInventoryPayload::handle);
         registrar.playToServer(PickupPayload.TYPE, PickupPayload.STREAM_CODEC, PickupPayload::handle);
+        registrar.playToServer(UseKeyPayload.TYPE, UseKeyPayload.STREAM_CODEC, UseKeyPayload::handle);
+        registrar.playToClient(SoundDataPayload.TYPE, SoundDataPayload.STREAM_CODEC, SoundDataPayload::handle);
+        registrar.playToServer(SoundEmitterEditPayload.TYPE, SoundEmitterEditPayload.STREAM_CODEC, SoundEmitterEditPayload::handle);
         registrar.playToServer(ToggleVisorPayload.TYPE, ToggleVisorPayload.STREAM_CODEC, ToggleVisorPayload::handle);
         registrar.playToServer(RenameKeyPayload.TYPE, RenameKeyPayload.STREAM_CODEC, RenameKeyPayload::handle);
         registrar.playToServer(MapTeleportPayload.TYPE, MapTeleportPayload.STREAM_CODEC, MapTeleportPayload::handle);

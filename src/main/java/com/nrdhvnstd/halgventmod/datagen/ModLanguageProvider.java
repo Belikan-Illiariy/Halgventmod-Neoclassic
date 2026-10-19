@@ -350,10 +350,34 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // Метки
         add("key.halgventmod.waypoint", russian ? "Поставить метку" : "Add Waypoint");
-        add("key.halgventmod.pickup", russian ? "Подобрать" : "Pick Up");
+        add("key.halgventmod.pickup", russian ? "Подобрать / использовать" : "Pick Up / Use");
         add("key.halgventmod.visor", russian ? "Поднять/опустить забрало" : "Raise/Lower Visor");
         add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
         add("hud.halgventmod.pickup_equip", russian ? "[Shift+%s] Надеть" : "[Shift+%s] Put on");
+        // Музыка биомов и источники звука
+        add("command.halgventmod.music.biome", russian ? "Биом: %s" : "Biome: %s");
+        add("command.halgventmod.music.tags", russian ? "Теги: %s" : "Tags: %s");
+        add("command.halgventmod.music.no_tags", russian ? "Тегов нет" : "No tags");
+        add("command.halgventmod.music.set", russian ? "Набор: %s" : "Music set: %s");
+        add("command.halgventmod.music.no_set", russian ? "Набора нет — тишина" : "No music set — silence");
+        add("command.halgventmod.music.playing_set", russian
+                ? "Пока играет набор %s (смена через несколько секунд)" : "Still playing %s (switching in a few seconds)");
+        add("command.halgventmod.music.track", russian ? "Трек: %s (%s из %s)" : "Track: %s (%s of %s)");
+        add("command.halgventmod.music.pause", russian ? "Трек: пауза между треками" : "Track: pause between tracks");
+        add("command.halgventmod.music.muted", russian
+                ? "Громкость от источников звука рядом: %s%%" : "Volume from sound sources nearby: %s%%");
+        add("command.halgventmod.music.skipped", russian ? "Следующий трек" : "Next track");
+        add("command.halgventmod.music.nothing", russian ? "Сейчас ничего не играет" : "Nothing is playing");
+        add("gui.halgventmod.sound_emitter.title", russian ? "Источник звука" : "Sound Emitter");
+        add("gui.halgventmod.sound_emitter.scene", russian ? "Сцена" : "Scene");
+        add("gui.halgventmod.sound_emitter.no_scene", russian ? "— без сцены —" : "— no scene —");
+        add("gui.halgventmod.sound_emitter.missing", russian
+                ? "Сцены %s нет — источник молчит" : "No scene %s — the source is silent");
+        add("gui.halgventmod.sound_emitter.radius", russian
+                ? "Радиус 1–64, пусто — из сцены (%s)" : "Radius 1–64, empty — from the scene (%s)");
+        add("hud.halgventmod.use.open", russian ? "Открыть: %s" : "Open: %s");
+        add("hud.halgventmod.use.close", russian ? "Закрыть: %s" : "Close: %s");
+        add("hud.halgventmod.use.use", russian ? "Использовать: %s" : "Use: %s");
         add("tooltip.halgventmod.arrows", russian ? "Стрел: %s из %s" : "Arrows: %s of %s");
         add("gui.halgventmod.waypoint.new", russian ? "Новая метка" : "New Waypoint");
         add("gui.halgventmod.waypoint.edit", russian ? "Метка" : "Waypoint");
@@ -472,7 +496,8 @@ public class ModLanguageProvider extends LanguageProvider {
         add("lock.halgventmod.cannot_remove", russian ? "Врезной замок не снять" : "A mortise lock can't be removed");
         add("lock.halgventmod.no_lock", russian ? "Здесь нет замка" : "There is no lock here");
         add("lock.halgventmod.no_permission", russian
-                ? "Набор слесаря — только для администрации" : "The locksmith's kit is for administration only");
+                ? "Набор ключника — только для администрации и творческого режима"
+                : "The locksmith's kit is for administration and creative mode only");
         add("lock.halgventmod.info", russian
                 ? "Замок: секрет %1$s, %2$s, %3$s" : "Lock: secret %1$s, %2$s, %3$s");
         add("lock.halgventmod.type.mortise", russian ? "врезной" : "mortise");

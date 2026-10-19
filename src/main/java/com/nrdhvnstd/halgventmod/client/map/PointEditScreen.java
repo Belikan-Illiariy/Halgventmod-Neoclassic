@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.mojang.blaze3d.platform.Window;
 import com.nrdhvnstd.halgventmod.banner.BannerEntry;
 import com.nrdhvnstd.halgventmod.banner.BannerRegistry;
 import com.nrdhvnstd.halgventmod.client.banner.BannerDraw;
@@ -32,11 +33,13 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * слева — название и координаты, значок до открытия («?» или любой) и после, цвет флага, текст при наведении;
  * справа — галочка «С описанием», знамя из реестра (ряд последних внесённых, «—», «Весь реестр»), описание, сведения.
  * Галочка выключена — правая колонка неактивна, но её значения не стираются. Сохраняет и удаляет сервер (PointEditPayload).
+ * Не влезает при крупном масштабе интерфейса — на время окна масштаб понижается до влезающего (fitScale).
  */
 public class PointEditScreen extends Screen {
     private static final int WIDTH = 600;
     private static final int HEIGHT = 340;
     private static final int PAD = 10;
+    private static final int MARGIN = 4; // от окна до края экрана
     private static final int COLUMN = 286;
     private static final int COLUMN_GAP = WIDTH - 2 * PAD - 2 * COLUMN;
 
@@ -101,6 +104,7 @@ public class PointEditScreen extends Screen {
     private MultiLineEditBox descriptionBox;
     private MultiLineEditBox infoBox;
     private Button registryButton;
+    private boolean scaled;              // масштаб интерфейса понижен этим окном — при закрытии вернуть
 
     /**
      * draft — точка с уже заданной границей (id 0 — новая, иначе копия существующей).
@@ -119,6 +123,7 @@ public class PointEditScreen extends Screen {
 
     @Override
     protected void init() {
+        fitScale();
         left = (width - WIDTH) / 2;
         top = (height - HEIGHT) / 2;
         int x = left + PAD;
@@ -160,6 +165,36 @@ public class PointEditScreen extends Screen {
         addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose())
                 .bounds(buttonsX + 2 * (BUTTON_WIDTH + FIELD_GAP), buttonsY, BUTTON_WIDTH, 20).build());
         updateDescribed();
+    }
+
+    /**
+     * Наибольший масштаб интерфейса не крупнее выбранного, при котором окно целиком на экране. Дробный:
+     * целый часто падает вдвое (окно 1920 × 1017 при «4» — до «2»), и окно выходит мелким.
+     * pose().scale не годится: в 1.21.1 scissor многострочных полей не учитывает масштаб.
+     */
+    private void fitScale() {
+        Window window = minecraft.getWindow();
+        double scale = window.getGuiScale();
+        double fit = Math.min(scale, Math.min(window.getWidth() / (double) (WIDTH + 2 * MARGIN),
+                window.getHeight() / (double) (HEIGHT + 2 * MARGIN)));
+        fit = Math.max(1, Math.floor(fit * 100) / 100); // до сотых — чуть с запасом
+        if (fit < scale) {
+            window.setGuiScale(fit);
+            width = window.getGuiScaledWidth();
+            height = window.getGuiScaledHeight();
+            scaled = true;
+        }
+    }
+
+    // Окно закрыли или сменили на реестр знамён — масштаб из настроек, как в Minecraft.resizeDisplay
+    @Override
+    public void removed() {
+        if (scaled) {
+            Window window = minecraft.getWindow();
+            window.setGuiScale(window.calculateScale(minecraft.options.guiScale().get(), minecraft.isEnforceUnicode()));
+            scaled = false;
+        }
+        super.removed();
     }
 
     // Пересоздание окна (смена размера, возврат из реестра) — значения берутся из прежних полей
