@@ -23,6 +23,10 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         // Что срезают серп и коса: все ванильные посевы (с их стеблями), а также тыквы и арбузы
+        // Рожь — посев, как пшеница: ванильные правила посевов, серп и коса
+        tag(BlockTags.CROPS).add(ModBlocks.RYE.get());
+        tag(BlockTags.MAINTAINS_FARMLAND).add(ModBlocks.RYE.get());
+
         tag(FarmingRules.HARVESTABLE)
                 .addTag(BlockTags.CROPS)
                 .add(Blocks.PUMPKIN, Blocks.MELON)

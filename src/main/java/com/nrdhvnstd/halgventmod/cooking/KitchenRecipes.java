@@ -67,6 +67,9 @@ public final class KitchenRecipes {
     private static final List<Recipe> ALL = List.of(
             new Recipe("dough", () -> new ItemStack(ModItems.DOUGH.get(), 2), () -> ItemStack.EMPTY, 6, true, true,
                     List.of(FLOUR), List.of()),
+            new Recipe("rye_dough", () -> new ItemStack(ModItems.RYE_DOUGH.get(), 2), () -> ItemStack.EMPTY, 6, true, true,
+                    List.of(new Need(stack -> stack.is(ModItems.RYE_FLOUR.get()), 2, ModItems.RYE_FLOUR::get)),
+                    List.of(HERBS, HONEY)),
             new Recipe("meat_pie", () -> pie("meat"), () -> ItemStack.EMPTY, 3, false, false,
                     List.of(DOUGH, new Need(stack -> stack.is(Cookery.Kind.MEAT.tag()), 1, () -> Items.PORKCHOP)),
                     List.of(CARROT, POTATO, MUSHROOM, HERBS, CHEESE, SALO, EGG)),

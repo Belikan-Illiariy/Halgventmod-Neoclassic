@@ -18,7 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Жёрнов. E пшеницей — засыпать (до {@link #CAPACITY}); E пустой рукой — повернуть камень. Каждые {@link #TURNS}
+ * Жёрнов. E пшеницей или рожью — засыпать (одно зерно за раз) (до {@link #CAPACITY}); E пустой рукой — повернуть камень. Каждые {@link #TURNS}
  * поворота — мука. Крутить надо ровно, дожидаясь замаха: в спешке зерно с шансом {@link #SPILL_CHANCE}
  * просыпается мимо. Shift + E пустой рукой — забрать зерно назад.
  */
@@ -30,6 +30,7 @@ public class QuernBlockEntity extends StationBlockEntity {
 
     private int grain;
     private int turns;
+    private boolean rye; // что засыпано: рожь или пшеница (вместе не засыпают)
 
     public QuernBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.QUERN.get(), pos, state);
@@ -37,16 +38,26 @@ public class QuernBlockEntity extends StationBlockEntity {
 
     @Override
     public List<ItemStack> contents() {
-        return grain > 0 ? List.of(new ItemStack(Items.WHEAT, grain)) : List.of();
+        return grain > 0 ? List.of(new ItemStack(grainItem(), grain)) : List.of();
     }
 
     private static void tell(Player player, String key, Object... args) {
         player.displayClientMessage(Component.translatable("message.halgventmod.cooking." + key, args), true);
     }
 
+    private net.minecraft.world.item.Item grainItem() {
+        return rye ? ModItems.RYE.get() : Items.WHEAT;
+    }
+
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
-        if (stack.is(Items.WHEAT)) {
+        if (stack.is(Items.WHEAT) || stack.is(ModItems.RYE.get())) {
+            boolean isRye = stack.is(ModItems.RYE.get());
+            if (grain > 0 && isRye != rye) {
+                tell(player, "quern_mixed");
+                return true;
+            }
+            rye = isRye;
             int moved = Math.min(CAPACITY - grain, stack.getCount());
             if (moved <= 0) {
                 tell(player, "quern_full");
@@ -66,7 +77,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         }
         if (player.isShiftKeyDown()) {
             if (grain > 0) {
-                give(player, new ItemStack(Items.WHEAT, grain));
+                give(player, new ItemStack(grainItem(), grain));
                 grain = 0;
                 turns = 0;
                 changed();
@@ -79,7 +90,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         }
         boolean steady = strike(player, hand, ItemStack.EMPTY);
         sound(SoundEvents.GRINDSTONE_USE, 0.6F, 0.8F + 0.2F * level.random.nextFloat());
-        crumbs(new ItemStack(Items.WHEAT), 0.7, 3);
+        crumbs(new ItemStack(grainItem()), 0.7, 3);
         if (!steady && level.random.nextFloat() < SPILL_CHANCE) {
             grain--;
             turns = 0;
@@ -90,7 +101,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         if (++turns >= TURNS) {
             turns = 0;
             grain--;
-            give(player, new ItemStack(ModItems.WHEAT_FLOUR.get()));
+            give(player, new ItemStack(rye ? ModItems.RYE_FLOUR.get() : ModItems.WHEAT_FLOUR.get()));
             tell(player, "quern_flour", grain);
         } else {
             tell(player, "quern_turn", turns, TURNS);
@@ -104,6 +115,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         super.saveAdditional(tag, registries);
         tag.putInt("Grain", grain);
         tag.putInt("Turns", turns);
+        tag.putBoolean("Rye", rye);
     }
 
     @Override
@@ -111,5 +123,6 @@ public class QuernBlockEntity extends StationBlockEntity {
         super.loadAdditional(tag, registries);
         grain = tag.getInt("Grain");
         turns = tag.getInt("Turns");
+        rye = tag.getBoolean("Rye");
     }
 }

@@ -197,6 +197,11 @@ public static class Icons {
             F lump = c.Rough(Canvas.Union(Canvas.Cut(Canvas.Ellipse(16, 20, 11, 8.5), Canvas.Box(16, 30, 14, 3)), Canvas.Ellipse(14, 15, 6, 4.5)), 0.7, 0.5, 1);
             c.Fill(lump, Dough, 4.5);
             c.Scatter(lump, "#ffffff", 0.07, 2); c.Line(18, 17, 22, 19, "#bfae86"); } c.Save(Path.Combine(food, "dough.png"));
+        c = new Canvas(59); { // ржаное тесто: тёмный ком, присыпанный мукой
+            Mat ryeDough = new Mat("#4e3a26", "#8e6e4c", "#bc9c76", 0.08, 0.5, 6);
+            F lump = c.Rough(Canvas.Union(Canvas.Cut(Canvas.Ellipse(16, 20, 11, 8.5), Canvas.Box(16, 30, 14, 3)), Canvas.Ellipse(18, 15, 6, 4.5)), 0.7, 0.5, 4);
+            c.Fill(lump, ryeDough, 4.5);
+            c.Scatter(lump, "#e8dcc4", 0.07, 5); c.Line(11, 18, 15, 16, "#6a5036"); } c.Save(Path.Combine(food, "rye_dough.png"));
         c = new Canvas(51); { F top = Bowl(c, Wood, 16, 16, 12, 10); c.Fill(top, Porridge, 2); c.Fill(Canvas.Box(17, 14, 2.5, 1.5, 0, 0.5), Butter, 1); } c.Save(Path.Combine(food, "porridge.png"));
         c = new Canvas(52); { F top = Bowl(c, Wood, 16, 16, 12, 10); c.Fill(top, Broth, 2);
             c.Fill(Canvas.Ellipse(12, 15, 2.6, 1.4), Pelt, 1); c.Fill(Canvas.Ellipse(19, 16.5, 2.4, 1.3), Pelt, 1);

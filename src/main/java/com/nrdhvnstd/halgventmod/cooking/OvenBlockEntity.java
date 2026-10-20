@@ -94,6 +94,9 @@ public class OvenBlockEntity extends StationBlockEntity {
         if (raw.is(ModItems.RAW_BUN.get())) {
             return new ItemStack(ModItems.SWEET_BUN.get());
         }
+        if (raw.is(ModItems.RYE_DOUGH.get())) {
+            return new ItemStack(ModItems.RYE_BREAD.get()); // чёрный хлеб
+        }
         if (raw.is(ModItems.DOUGH.get())) {
             return new ItemStack(ModItems.WHEAT_BREAD.get());
         }

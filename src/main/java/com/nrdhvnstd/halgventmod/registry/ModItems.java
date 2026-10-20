@@ -37,6 +37,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
@@ -1149,6 +1150,37 @@ public final class ModItems {
             .grams(400)
             .shelfLife(2)
             .register();
+    // Рожь: семена с травы, посев на пашне, мука на жёрнове, ржаное тесто — на разделочном столе, в печи — чёрный хлеб
+    public static final DeferredItem<ItemNameBlockItem> RYE_SEEDS = item("rye_seeds", "Семена ржи", "Rye seeds", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Попадаются в траве. ПКМ по пашне — посеять.", "Found in the grass. Right-click farmland to sow.")
+            .stacksTo(64)
+            .grams(5)
+            .register(properties -> new ItemNameBlockItem(ModBlocks.RYE.get(), properties));
+    public static final DeferredItem<Item> RYE = item("rye", "Рожь", "Rye", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Зерно ржи. На жёрнове — ржаная мука, в котелке — каша.", "Rye grain. A quern grinds it into rye flour; a pot makes porridge.")
+            .stacksTo(64)
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> RYE_FLOUR = item("rye_flour", "Ржаная мука", "Rye flour", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Смолота на жёрнове. На разделочном столе с водой — ржаное тесто.", "Ground on a quern. With water at a kitchen table it makes rye dough.")
+            .stacksTo(16)
+            .grams(200)
+            .shelfLife(32)
+            .register();
+    public static final DeferredItem<Item> RYE_DOUGH = item("rye_dough", "Ржаное тесто", "Rye dough", Gender.N)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить: выйдет чёрный хлеб.", "E at a fired oven to bake it into black bread.")
+            .stacksTo(8)
+            .grams(400)
+            .shelfLife(2)
+            .register();
     public static final DeferredItem<Item> RAW_PIE = item("raw_pie", "Сырой пирог", "Raw pie", Gender.M)
             .traits(ModTraits.COMMON, ModTraits.RAW)
             .category(Category.FOOD)
@@ -1318,8 +1350,8 @@ public final class ModItems {
             .register(properties -> new BlockItem(ModBlocks.BAKING_OVEN.get(), properties));
     public static final DeferredItem<BlockItem> QUERN = item("quern", "Жёрнов", "Quern", Gender.M)
             .category(Category.TOOLS)
-            .lore("E пшеницей — засыпать, пустой рукой — крутить. Не спешите — зерно просыпется.",
-                    "E with wheat to fill, an empty hand to turn. Don't rush — the grain spills.")
+            .lore("E пшеницей или рожью — засыпать, пустой рукой — крутить. Не спешите — зерно просыпется.",
+                    "E with wheat or rye to fill, an empty hand to turn. Don't rush — the grain spills.")
             .kg(30)
             .register(properties -> new BlockItem(ModBlocks.QUERN.get(), properties));
     public static final DeferredItem<BlockItem> KITCHEN_TABLE = item("kitchen_table", "Разделочный стол", "Kitchen table", Gender.M)

@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/hanging_sausages",
+  "render_type": "minecraft:cutout"
+}

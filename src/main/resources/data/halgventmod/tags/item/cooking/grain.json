@@ -1,6 +1,8 @@
 {
   "values": [
     "minecraft:wheat",
-    "halgventmod:wheat_flour"
+    "halgventmod:wheat_flour",
+    "halgventmod:rye",
+    "halgventmod:rye_flour"
   ]
 }

@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.beekeeping.SkepBlock;
+import com.nrdhvnstd.halgventmod.farming.RyeCropBlock;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
 import com.nrdhvnstd.halgventmod.cooking.HookBlock;
@@ -14,6 +15,7 @@ import com.nrdhvnstd.halgventmod.leather.LeatherTableBlock;
 import com.nrdhvnstd.halgventmod.leather.TanningVatBlock;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlock;
 
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -47,6 +49,10 @@ public final class ModBlocks {
             () -> new DryingRackBlock(wood()));
     public static final DeferredBlock<LeatherTableBlock> LEATHER_TABLE = BLOCKS.register("leather_table",
             () -> new LeatherTableBlock(wood()));
+
+    // Рожь — посев на пашне, как пшеница
+    public static final DeferredBlock<RyeCropBlock> RYE = BLOCKS.register("rye",
+            () -> new RyeCropBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHEAT)));
 
     // Пчеловодство: плетёный улей Conquest Reforged
     public static final DeferredBlock<SkepBlock> SKEP = BLOCKS.register("skep",

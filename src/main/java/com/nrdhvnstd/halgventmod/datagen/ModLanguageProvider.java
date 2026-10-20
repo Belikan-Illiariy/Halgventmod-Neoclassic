@@ -822,7 +822,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         cooking("quern_full", "Жёрнов полон", "The quern is full");
         cooking("quern_grain", "Засыпано зерна: %s", "Grain in: %s");
-        cooking("quern_empty", "Засыпьте пшеницу", "Pour in some wheat");
+        cooking("quern_empty", "Засыпьте пшеницу или рожь", "Pour in some wheat or rye");
+        cooking("quern_mixed", "Сначала домелите или заберите то зерно", "Finish grinding or take back the other grain first");
         cooking("quern_turn", "%s / %s", "%s / %s");
         cooking("quern_flour", "Смолото! Осталось зерна: %s", "Ground! Grain left: %s");
         cooking("quern_spilled", "Спешка — зерно просыпалось. Осталось: %s", "Too hasty — the grain spilled. Left: %s");
