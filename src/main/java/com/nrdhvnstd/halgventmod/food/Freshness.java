@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.food;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
@@ -104,9 +105,12 @@ public final class Freshness {
             return;
         }
 
+        // У блюда из котелка жажда своя (Dish), у остального — из описания еды
         ModFoods.FoodInfo info = ModFoods.get(used);
-        if (info != null && info.thirst() != 0) {
-            Thirst.add(player, info.thirst());
+        Dish dish = used.get(ModComponents.DISH.get());
+        int thirst = dish != null ? dish.thirst() : info != null ? info.thirst() : 0;
+        if (thirst != 0) {
+            Thirst.add(player, thirst);
         }
 
         if (isSpoiled(used, player.level())) {

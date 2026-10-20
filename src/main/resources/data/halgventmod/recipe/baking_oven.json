@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [ "BBB", "B B", "BBB" ],
+  "key": { "B": { "item": "minecraft:bricks" } },
+  "result": { "id": "halgventmod:baking_oven", "count": 1 }
+}

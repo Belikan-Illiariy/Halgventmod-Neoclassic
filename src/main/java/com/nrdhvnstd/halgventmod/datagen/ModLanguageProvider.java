@@ -609,6 +609,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // ----- Кожевенное дело -----
         leatherTranslations();
+        cookingTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -739,6 +740,87 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void leather(String key, String ru, String en) {
         add("message.halgventmod.leather." + key, russian ? ru : en);
+    }
+
+    /** Готовка: очаг, котелок, жарка, печь, жёрнов, заготовки (cooking/*). */
+    private void cookingTranslations() {
+        add("tooltip.halgventmod.dish_food", russian ? "Сытость %s, жажда %s" : "Nutrition %s, thirst %s");
+        add("tooltip.halgventmod.dish_of", russian ? "Сварено из: %s" : "Made of: %s");
+        add("tooltip.halgventmod.pie_filling.meat", russian ? "Начинка: мясо" : "Filling: meat");
+        add("tooltip.halgventmod.pie_filling.mushroom", russian ? "Начинка: грибы" : "Filling: mushrooms");
+        add("tooltip.halgventmod.pie_filling.berry", russian ? "Начинка: ягоды" : "Filling: berries");
+
+        cooking("diet_bored", "%s приелось: сытость %s%%", "Tired of %s: %s%% as filling");
+        cooking("raw_sick", "Сырое пошло не впрок", "The raw food did not sit well");
+
+        cooking("fuel_full", "Дров хватит: больше не положить", "Enough firewood: no room for more");
+        cooking("fuel_added", "Подложили дров: запас %s%%", "Firewood added: %s%% stocked");
+        cooking("fuel_unlit", "Дрова сложены (%s%%). Разожгите огнивом или факелом", "Firewood stacked (%s%%). Light it with a flint or torch");
+        cooking("already_lit", "Уже горит", "Already burning");
+        cooking("no_fuel", "Нечему гореть: сначала дрова", "Nothing to burn: add firewood first");
+        cooking("fire_status", "Жар %s, дров %s%%", "Heat %s, firewood %s%%");
+        cooking("fire_out", "Огонь не горит (дров %2$s%%)", "The fire is out (firewood %2$s%%)");
+
+        cooking("pot_already", "Котелок уже стоит", "A pot is already on");
+        cooking("grill_busy", "Сначала снимите всё с углей", "Take everything off the coals first");
+        cooking("pot_has_water", "Вода уже налита", "There is water already");
+        cooking("need_water", "Налейте в котелок воды ведром", "Pour water into the pot with a bucket");
+        cooking("pot_water_only", "Одна вода: положите продукты", "Just water: add some food");
+        cooking("pot_full", "Котелок полон", "The pot is full");
+        cooking("pot_serving", "Из котелка уже разливают — сначала доешьте", "The pot is being served — finish it first");
+        cooking("pot_busy", "В котелке варится — не снять", "Something is cooking — can't take it off");
+        cooking("pot_cold", "Положено %s из %s. Огонь не горит", "%s of %s added. The fire is out");
+        cooking("pot_cooking", "Варится: %s%%, положено %s из %s", "Cooking: %s%%, %s of %s added");
+        cooking("pot_stir", "Пригорает! Помешайте половником (%s%%, %s из %s)", "Scorching! Stir it with a ladle (%s%%, %s of %s)");
+        cooking("stirred", "Помешали", "Stirred");
+        cooking("pot_ready", "Готово: %s, порций %s", "Ready: %s, %s portions");
+        cooking("portions_left", "Осталось порций: %s", "Portions left: %s");
+        cooking("need_bowl", "Черпают миской", "Serve it with a bowl");
+        cooking("need_bottle", "Отвар наливают в склянку", "Pour the tea into a bottle");
+        cooking("grill_full", "На углях нет места", "No room on the coals");
+
+        cooking("oven_full", "В печи нет места", "The oven is full");
+        cooking("oven_cold", "Печь не прогрета (%s°): не печётся", "The oven is cold (%s°): nothing bakes");
+        cooking("oven_status", "Жар %s°, дров %s%%. Печётся: %s", "Heat %s°, firewood %s%%. Baking: %s");
+        cooking("oven_status_empty", "Жар %s°, дров %s%%", "Heat %s°, firewood %s%%");
+        cooking("baked_raw", "Ещё сырое", "Still raw");
+        cooking("baked_under", "%s: недопечено", "%s: underbaked");
+        cooking("baked_good", "%s: в самый раз", "%s: just right");
+        cooking("baked_over", "%s: пересушено", "%s: overbaked");
+        cooking("baked_burnt", "Сгорело", "Burnt");
+
+        cooking("quern_full", "Жёрнов полон", "The quern is full");
+        cooking("quern_grain", "Засыпано зерна: %s", "Grain in: %s");
+        cooking("quern_empty", "Засыпьте пшеницу", "Pour in some wheat");
+        cooking("quern_turn", "%s / %s", "%s / %s");
+        cooking("quern_flour", "Смолото! Осталось зерна: %s", "Ground! Grain left: %s");
+        cooking("quern_spilled", "Спешка — зерно просыпалось. Осталось: %s", "Too hasty — the grain spilled. Left: %s");
+
+        cooking("barrel_empty", "Положите сырое мясо или рыбу", "Put in raw meat or fish");
+        cooking("barrel_full", "Бочка полна", "The barrel is full");
+        cooking("barrel_spoiled", "Испорченное не солят", "Spoiled food is not salted");
+        cooking("barrel_salt_enough", "Соли хватает", "Enough salt");
+        cooking("barrel_need_salt", "В бочке %s, соли %s: нужно по соли на кусок", "%s in the barrel, salt %s: one salt per piece");
+        cooking("barrel_salting", "Солится %s, ждать суток: %s", "Salting %s, days left: %s");
+        cooking("barrel_take_first", "Сначала заберите готовое", "Take out what is ready first");
+        cooking("barrel_done", "Засолено: %s", "Salted: %s");
+
+        cooking("hook_empty", "Повесьте сырое мясо или рыбу — коптить, травы или грибы — сушить",
+                "Hang raw meat or fish to smoke, herbs or mushrooms to dry");
+        cooking("hook_full", "На крюке нет места", "No room on the hook");
+        cooking("hook_mixed", "Мясо и травы вместе не вешают", "Meat and herbs don't hang together");
+        cooking("hook_take_first", "Сначала снимите готовое", "Take off what is ready first");
+        cooking("hook_no_smoke", "Внизу нет огня: не коптится. Повесьте над очагом или костром",
+                "No fire below: it won't smoke. Hang it above a hearth or campfire");
+        cooking("hook_no_smoke_status", "Коптится %s%%, но внизу нет огня", "Smoked %s%%, but there is no fire below");
+        cooking("hook_smoking", "Коптится: %s%%", "Smoking: %s%%");
+        cooking("hook_drying", "Сохнет: %s%%", "Drying: %s%%");
+        cooking("hook_smoked", "Прокоптилось: %s", "Smoked: %s");
+        cooking("hook_dried", "Высохло: %s", "Dried: %s");
+    }
+
+    private void cooking(String key, String ru, String en) {
+        add("message.halgventmod.cooking." + key, russian ? ru : en);
     }
 
     private void squad(String key, String ru, String en) {

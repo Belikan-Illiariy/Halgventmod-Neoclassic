@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [ { "item": "halgventmod:dough" }, [ { "item": "minecraft:sweet_berries" }, { "item": "minecraft:glow_berries" }, { "item": "minecraft:apple" } ] ],
+  "result": { "id": "halgventmod:raw_pie", "count": 1, "components": { "halgventmod:pie_filling": "berry" } }
+}

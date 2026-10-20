@@ -1,0 +1,12 @@
+{
+  "values": [
+    "minecraft:cod",
+    "minecraft:salmon",
+    "minecraft:cooked_cod",
+    "minecraft:cooked_salmon",
+    "halgventmod:salted_fish",
+    "halgventmod:smoked_fish",
+    { "id": "#c:foods/raw_fish", "required": false },
+    { "id": "#c:foods/cooked_fish", "required": false }
+  ]
+}

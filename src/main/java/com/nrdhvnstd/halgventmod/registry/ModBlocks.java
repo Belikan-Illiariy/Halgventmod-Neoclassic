@@ -1,6 +1,11 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
+import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
+import com.nrdhvnstd.halgventmod.cooking.HookBlock;
+import com.nrdhvnstd.halgventmod.cooking.OvenBlock;
+import com.nrdhvnstd.halgventmod.cooking.QuernBlock;
 import com.nrdhvnstd.halgventmod.leather.DryingRackBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlock;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlock;
@@ -40,6 +45,32 @@ public final class ModBlocks {
             () -> new DryingRackBlock(wood()));
     public static final DeferredBlock<LeatherTableBlock> LEATHER_TABLE = BLOCKS.register("leather_table",
             () -> new LeatherTableBlock(wood()));
+
+    // Готовка (cooking/*). Модели — из Conquest Reforged, у бочки — ванильная
+    public static final DeferredBlock<HearthBlock> HEARTH = BLOCKS.register("hearth",
+            () -> new HearthBlock(stone().lightLevel(state -> state.getValue(HearthBlock.LIT) ? 13 : 0)));
+    public static final DeferredBlock<OvenBlock> BAKING_OVEN = BLOCKS.register("baking_oven",
+            () -> new OvenBlock(stone().lightLevel(state -> state.getValue(OvenBlock.LIT) ? 12 : 0)));
+    public static final DeferredBlock<QuernBlock> QUERN = BLOCKS.register("quern",
+            () -> new QuernBlock(stone()));
+    public static final DeferredBlock<BrineBarrelBlock> BRINE_BARREL = BLOCKS.register("brine_barrel",
+            () -> new BrineBarrelBlock(wood()));
+    public static final DeferredBlock<HookBlock> SMOKING_HOOK = BLOCKS.register("smoking_hook",
+            () -> new HookBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(1.0F)
+                    .sound(SoundType.CHAIN)
+                    .noCollission()
+                    .noOcclusion()));
+
+    private static BlockBehaviour.Properties stone() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.STONE)
+                .strength(2.5F)
+                .sound(SoundType.STONE)
+                .requiresCorrectToolForDrops()
+                .noOcclusion();
+    }
 
     private static BlockBehaviour.Properties wood() {
         return BlockBehaviour.Properties.of()

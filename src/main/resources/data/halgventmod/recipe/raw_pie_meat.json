@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [ { "item": "halgventmod:dough" }, { "tag": "halgventmod:cooking/meat" } ],
+  "result": { "id": "halgventmod:raw_pie", "count": 1, "components": { "halgventmod:pie_filling": "meat" } }
+}

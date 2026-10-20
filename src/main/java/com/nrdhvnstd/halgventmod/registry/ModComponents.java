@@ -5,6 +5,7 @@ import java.util.List;
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.leather.Hide;
 
 import net.minecraft.core.component.DataComponentType;
@@ -126,6 +127,27 @@ public final class ModComponents {
             COMPONENTS.register("dried_out", () -> DataComponentType.<Boolean>builder()
                     .persistent(Codec.BOOL)
                     .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // Готовка (cooking/*): качество еды 0–4 (FoodQuality), видно признаком редкости
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FOOD_QUALITY =
+            COMPONENTS.register("food_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 4))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Порция из котелка: сытость, жажда и состав (Dish)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Dish>> DISH =
+            COMPONENTS.register("dish", () -> DataComponentType.<Dish>builder()
+                    .persistent(Dish.CODEC)
+                    .networkSynchronized(Dish.STREAM_CODEC)
+                    .build());
+
+    // Начинка сырого пирога: meat, mushroom, berry
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PIE_FILLING =
+            COMPONENTS.register("pie_filling", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
                     .build());
 
     private ModComponents() {}

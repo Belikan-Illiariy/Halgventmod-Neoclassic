@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
 
 import net.minecraft.client.DeltaTracker;
@@ -101,6 +102,24 @@ public final class UseHint {
         return null;
     }
 
+    /**
+     * Нужен ли прицел вместо надписи: на колоде со шкурой с инструментом кожевника в руке (бить по клочкам мездры)
+     * и на очаге с кусками на углях (переворачивать нужный).
+     */
+    private static boolean aiming(Minecraft minecraft, BlockPos pos) {
+        if (minecraft.level.getBlockEntity(pos) instanceof FleshingBeamBlockEntity beam) {
+            return !beam.hide().isEmpty() && FleshingBeamBlockEntity.isLeatherTool(minecraft.player.getMainHandItem());
+        }
+        if (minecraft.level.getBlockEntity(pos) instanceof HearthBlockEntity hearth && !hearth.hasPot()) {
+            for (int cell = 0; cell < HearthBlockEntity.CELLS; cell++) {
+                if (!hearth.piece(cell).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui) {
@@ -116,8 +135,7 @@ public final class UseHint {
         int x = graphics.guiWidth() / 2;
         int y = graphics.guiHeight() / 2;
         // Колода со шкурой и инструмент кожевника в руке: вместо надписи — прицел, чтобы попадать по клочкам мездры
-        if (minecraft.level.getBlockEntity(pos) instanceof FleshingBeamBlockEntity beam && !beam.hide().isEmpty()
-                && FleshingBeamBlockEntity.isLeatherTool(minecraft.player.getMainHandItem())) {
+        if (aiming(minecraft, pos)) {
             // Как ванильный прицел: инверсия цвета под ним, без чёрного фона спрайта
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north,load=empty": { "model": "minecraft:block/chain" },
+    "facing=north,load=smoking": { "model": "conquest:block/hanging_sausages" },
+    "facing=north,load=drying": { "model": "conquest:block/hanging_herbs" },
+    "facing=east,load=empty": { "model": "minecraft:block/chain" },
+    "facing=east,load=smoking": { "model": "conquest:block/hanging_sausages" },
+    "facing=east,load=drying": { "model": "conquest:block/hanging_herbs" },
+    "facing=south,load=empty": { "model": "minecraft:block/chain" },
+    "facing=south,load=smoking": { "model": "conquest:block/hanging_sausages" },
+    "facing=south,load=drying": { "model": "conquest:block/hanging_herbs" },
+    "facing=west,load=empty": { "model": "minecraft:block/chain" },
+    "facing=west,load=smoking": { "model": "conquest:block/hanging_sausages" },
+    "facing=west,load=drying": { "model": "conquest:block/hanging_herbs" }
+  }
+}
