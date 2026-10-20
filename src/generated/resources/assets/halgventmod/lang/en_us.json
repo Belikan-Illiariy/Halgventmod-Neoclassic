@@ -513,6 +513,8 @@
   "item.halgventmod.dried_mushrooms": "Dried mushrooms",
   "item.halgventmod.dried_mushrooms.lore": "Dried on a hook. Good in a soup.",
   "item.halgventmod.fine_cloak": "Fine cloak",
+  "item.halgventmod.firewood": "Firewood",
+  "item.halgventmod.firewood.lore": "Split logs. E at a hearth or oven to add them; they burn longer than planks.",
   "item.halgventmod.fish_soup": "Fish soup",
   "item.halgventmod.fish_soup.lore": "Fish boiled in a pot.",
   "item.halgventmod.flesh": "Flesh scrapings",

@@ -304,6 +304,9 @@ public class HearthBlockEntity extends StationBlockEntity {
 
     /** Сколько тиков горения даёт предмет; 0 — не топливо. Общее для очага и печи. */
     public static int fuelValue(ItemStack stack) {
+        if (stack.is(ModItems.FIREWOOD.get())) {
+            return 2000; // дрова — основное топливо
+        }
         if (stack.is(ItemTags.LOGS_THAT_BURN)) {
             return 1600;
         }

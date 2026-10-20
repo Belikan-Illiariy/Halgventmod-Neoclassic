@@ -1282,6 +1282,14 @@ public final class ModItems {
             .register();
 
     // Посуда и станции
+    public static final DeferredItem<Item> FIREWOOD = item("firewood", "Дрова", "Firewood", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Колотые поленья. E по очагу или печи — подложить; горят дольше досок.",
+                    "Split logs. E at a hearth or oven to add them; they burn longer than planks.")
+            .stacksTo(16)
+            .kg(1.5)
+            .register();
     public static final DeferredItem<Item> LADLE = item("ladle", "Половник", "Ladle", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
