@@ -41,7 +41,7 @@ public class KitchenScreen extends Screen {
     private static final int RECIPE = 22;          // клетка выкройки
     private static final int SLOT = 18;            // слот ингредиента и инструмента
     private static final int GRID = 3;             // ингредиенты 3×3
-    private static final int TOOL_COLUMNS = 1;
+    private static final int TOOL_COLUMNS = 3;     // добавки — до трёх столбцов по три
     private static final int TOP = 32;
     private static final int RECIPES_X = PAD;
     private static final int GRID_X = RECIPES_X + RECIPE_COLUMNS * RECIPE + 14;
@@ -148,28 +148,29 @@ public class KitchenScreen extends Screen {
         return n;
     }
 
+    /** Продукты — только обязательное: что по рецепту и вода (у теста). */
     private static List<Ghost> ingredients(KitchenRecipes.Recipe recipe, @Nullable Inventory inventory) {
         List<Ghost> list = new ArrayList<>();
         for (KitchenRecipes.Need need : recipe.needs()) {
             list.add(new Ghost(new ItemStack(need.icon().get()), need.count(), count(inventory, need) >= need.count()));
         }
-        for (KitchenRecipes.Extra extra : recipe.extras()) {
-            KitchenRecipes.Need asNeed = new KitchenRecipes.Need(extra.matches(), 1, extra.icon());
-            list.add(new Ghost(new ItemStack(extra.icon().get()), 1, count(inventory, asNeed) > 0, true));
-        }
-        return list;
-    }
-
-    /** Добавки: ведро воды (у теста), соль — по желанию, +качество. */
-    private static List<Ghost> tools(KitchenRecipes.Recipe recipe, @Nullable Inventory inventory) {
-        List<Ghost> list = new ArrayList<>();
         if (recipe.water()) {
             list.add(new Ghost(new ItemStack(Items.WATER_BUCKET), 1,
                     inventory != null && inventory.countItem(Items.WATER_BUCKET) > 0));
         }
+        return list;
+    }
+
+    /** Добавки — всё необязательное, с «+»: соль (у теста, +качество) и добавки в начинку (+насыщение). */
+    private static List<Ghost> tools(KitchenRecipes.Recipe recipe, @Nullable Inventory inventory) {
+        List<Ghost> list = new ArrayList<>();
         if (recipe.salted()) {
             list.add(new Ghost(new ItemStack(ModItems.SALT.get()), 1,
-                    inventory != null && inventory.countItem(ModItems.SALT.get()) > 0));
+                    inventory != null && inventory.countItem(ModItems.SALT.get()) > 0, true));
+        }
+        for (KitchenRecipes.Extra extra : recipe.extras()) {
+            KitchenRecipes.Need asNeed = new KitchenRecipes.Need(extra.matches(), 1, extra.icon());
+            list.add(new Ghost(new ItemStack(extra.icon().get()), 1, count(inventory, asNeed) > 0, true));
         }
         return list;
     }
@@ -241,9 +242,10 @@ public class KitchenScreen extends Screen {
             hoveredStack = result;
         }
 
-        // Добавки — один столбик: вода, соль
+        // Добавки: столбцами по три сверху вниз, сколько нужно (у пирога с мясом — семь)
         List<Ghost> tools = tools(pattern, inventory);
-        for (int i = 0; i < TOOL_COLUMNS * GRID; i++) {
+        int toolSlots = Math.max(GRID, Math.min(TOOL_COLUMNS * GRID, Mth.positiveCeilDiv(tools.size(), GRID) * GRID));
+        for (int i = 0; i < toolSlots; i++) {
             int sx = x + TOOLS_SLOT_X + (i / GRID) * SLOT;
             int sy = y + TOP + (i % GRID) * SLOT;
             Ghost ghost = i < tools.size() ? tools.get(i) : null;
