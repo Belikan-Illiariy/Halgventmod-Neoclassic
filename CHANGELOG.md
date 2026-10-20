@@ -27,6 +27,9 @@
 
 ### Что нового
 
+#### Иконки в стиле Conquest Reforged
+- Все 31 иконка кожевенного дела, готовки и пчеловодства перерисованы под Conquest: 32×32, предмет меньше клетки, инструменты по диагонали, свет сверху слева, ступенчатая светотень, фактура материала и тёмный цветной контур. Иконки художника (броня, украшения, снаряжение) не тронуты.
+
 #### Пчеловодство (начало)
 - **Улей** — плетёная колода (модель Conquest). Поставьте у цветов: весной или летом, если рядом (радиус 5) не меньше 4 цветов, в него за сутки с шансом 35% заселяется рой. Живые пчёлы роятся у летка и жужжат днём ⚠️.
 - **Мёд копится** раз в сутки до 6: весной и осенью +1, летом +2, от 12 цветов рядом — ещё +1; зимой — ничего, а без цветов — ничего вовсе.
@@ -108,6 +111,7 @@
 - `cooking/KitchenRecipes.java`, `KitchenTableBlock(Entity).java`, `client/cooking/KitchenScreen.java`, `network/KitchenOpenPayload.java`, `KitchenChoosePayload.java` (новое) — разделочный стол и его окно рецептов; `client/cooking/CookingRenderers.java` — продукты на доске; `network/ModNetwork.java` — версия 17. `cooking/OvenBlockEntity.java` — качество теста переходит в выпечку. Рецепты станций, инструментов, теста и пирогов убраны из `data/halgventmod/recipe/`.
 - `food/ModFoods.java` — таблица ванильной еды, `shelfLife(stack)` со сроком по умолчанию для чужой еды; `food/Freshness.java`, `client/FoodTooltip.java` — срок через неё, порча молока. `client/leather/PatternScreen.java`, `client/cooking/KitchenScreen.java` — один столбик инструментов.
 - `beekeeping/SkepBlock(Entity).java` (новое) — улей: заселение, мёд по сезону и цветам, зимовка, дымарь, сбор ножом. `cooking/FoodExtras.java` (новое) — компонент `food_extras`; `cooking/KitchenRecipes.java` — добавки, булочки, отжим сот (второй выход — воск); `cooking/KitchenTableBlockEntity.java` — выкладка добавок; `client/cooking/KitchenScreen.java` — добавки в сетке; `food/Hunger.java` — насыщение добавок; `cooking/OvenBlockEntity.java` — булочки, добавки переходят в выпечку; `cooking/Cookery.java` — сладость (`cooking/sweet`). `registry/ModItems.java` — мёд, медовые соты, воск, дымарь, улей, сырая и сладкая булочка. Воск — в смазке кожи (`DryingRackBlockEntity`, `LeatherTableBlockEntity`).
+- `tools/icon_painter/` (новое) — генератор этих иконок: `Painter.cs` (формы, светотень, контур), `Icons.cs` (описание каждой иконки), `render.ps1` — перерисовать.
 - `gradle.properties` — версия 0.0.9.
 
 ---

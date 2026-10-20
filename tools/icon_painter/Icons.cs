@@ -1,0 +1,153 @@
+using System;
+using System.IO;
+using F = System.Func<double, double, double>;
+
+public static class Icons {
+    // Палитры: тень, основа, свет, сила шума, масштаб шума, ступеней
+    static Mat RawRed = new Mat("#3e1610", "#8a3426", "#c86a50", 0.16, 0.55, 6);
+    static Mat SaltRed = new Mat("#3a1a16", "#7e3a30", "#b8705c", 0.14, 0.55, 6);
+    static Mat Lime = new Mat("#4e4b44", "#a29e90", "#dcd8c8", 0.14, 0.5, 6);
+    static Mat Pelt = new Mat("#6e5a44", "#c8b090", "#f0e0c2", 0.08, 0.4, 6);
+    static Mat Wet = new Mat("#22140a", "#583418", "#9a6436", 0.10, 0.45, 7);
+    static Mat Leather = new Mat("#341e0e", "#744424", "#ae7444", 0.10, 0.5, 6);
+    static Mat Tan = new Mat("#4e3016", "#a06c38", "#d8a666", 0.08, 0.45, 6);
+    static Mat Rawhide = new Mat("#5e3e14", "#b88a40", "#ecc880", 0.12, 0.35, 6);
+    static Mat Fur = new Mat("#2e2014", "#6e5236", "#b8946a", 0.36, 1.1, 6);
+    static Mat Boiled = new Mat("#1e120a", "#4e3018", "#80552e", 0.10, 0.5, 6);
+    static Mat Flesh = new Mat("#6a3430", "#c47e70", "#eebcaa", 0.16, 0.6, 6);
+    static Mat Wood = new Mat("#30200e", "#70482a", "#a87848", 0.14, 0.9, 6);
+    static Mat DarkWood = new Mat("#24160a", "#5a381c", "#8a5c34", 0.12, 0.9, 6);
+    static Mat Bark = new Mat("#24180e", "#5e4028", "#8e6a48", 0.30, 1.3, 6);
+    static Mat Steel = new Mat("#262a30", "#7c8692", "#dce4ec", 0.04, 0.5, 6);
+    static Mat Iron = new Mat("#1e2024", "#565c64", "#9aa2aa", 0.08, 0.6, 6);
+    static Mat Salt = new Mat("#7a8a98", "#d6dee6", "#ffffff", 0.10, 1.2, 5);
+    static Mat Ash = new Mat("#2e2c2a", "#6e6a66", "#aaa6a0", 0.22, 1.2, 6);
+    static Mat Alum = new Mat("#7a6c8c", "#d0c4e0", "#fbf6ff", 0.04, 0.5, 5);
+    static Mat Wax = new Mat("#6e4a0c", "#d29a2c", "#f6d676", 0.08, 0.5, 6);
+    static Mat Amber = new Mat("#5a3006", "#b8701c", "#f0b24c", 0.06, 0.5, 6);
+    static Mat Porridge = new Mat("#8e7448", "#dcc48a", "#f8ecc6", 0.12, 0.9, 5);
+    static Mat Broth = new Mat("#6e5424", "#b89650", "#e8cc88", 0.08, 0.6, 5);
+    static Mat Crust = new Mat("#5e3210", "#b07030", "#e6b268", 0.10, 0.7, 6);
+    static Mat MushFill = new Mat("#30200f", "#6a4c34", "#a07c5a", 0.20, 1.0, 5);
+    static Mat Char = new Mat("#0c0a08", "#26211e", "#4a4036", 0.20, 1.0, 5);
+    static Mat Dough = new Mat("#857454", "#dccca2", "#faf0d4", 0.06, 0.5, 6);
+    static Mat Bun = new Mat("#5e2c0c", "#bc722a", "#eeb25c", 0.06, 0.5, 6);
+    static Mat Glaze = new Mat("#b8ae9a", "#f0e8d6", "#ffffff", 0.0, 0.5, 4);
+    static Mat Butter = new Mat("#a07a14", "#ecc23c", "#fff08a", 0.0, 0.5, 4);
+
+    static F Rot(F f, double cx, double cy, double deg) {
+        double a = deg * Math.PI / 180, c = Math.Cos(a), s = Math.Sin(a);
+        return (x, y) => { double dx = x - cx, dy = y - cy; return f(cx + dx * c + dy * s, cy - dx * s + dy * c); };
+    }
+
+    /** Распластанная шкура: тело, четыре лапы, шея и хвост. */
+    static F Hide(Canvas c, double cx, double cy, double sc, double rot, double rough, int s) {
+        F shape = Canvas.Union(
+            Canvas.Ellipse(cx, cy, 7.5 * sc, 6.0 * sc),
+            Canvas.Capsule(cx - 4 * sc, cy - 3 * sc, cx - 10.5 * sc, cy - 8 * sc, 2.6 * sc, 1.3 * sc),
+            Canvas.Capsule(cx + 4 * sc, cy - 3 * sc, cx + 10.5 * sc, cy - 8 * sc, 2.6 * sc, 1.3 * sc),
+            Canvas.Capsule(cx - 4 * sc, cy + 3 * sc, cx - 10 * sc, cy + 9 * sc, 2.6 * sc, 1.3 * sc),
+            Canvas.Capsule(cx + 4 * sc, cy + 3 * sc, cx + 10 * sc, cy + 9 * sc, 2.6 * sc, 1.3 * sc),
+            Canvas.Capsule(cx, cy - 5 * sc, cx, cy - 10 * sc, 2.2 * sc, 1.6 * sc),
+            Canvas.Capsule(cx, cy + 5 * sc, cx + 1 * sc, cy + 11 * sc, 1.4 * sc, 0.8 * sc));
+        return c.Rough(Rot(shape, cx, cy, rot), rough, 0.45, s);
+    }
+
+    /** Миска сбоку-сверху: тело и обод; возвращает форму верха содержимого. */
+    static F Bowl(Canvas c, Mat bowl, double cx, double cy, double rx, double depth) {
+        F rim = Canvas.Ellipse(cx, cy, rx, rx * 0.38);
+        F body = Canvas.Union(rim, Canvas.Cut(Canvas.Ellipse(cx, cy, rx, depth), Canvas.Box(cx, cy - depth, rx + 1, depth)));
+        c.Fill(body, bowl, 2.5);
+        return Canvas.Ellipse(cx, cy, rx - 1.6, rx * 0.38 - 1.0);
+    }
+
+    public static void Run(string root) {
+        string mat = Path.Combine(root, "materials"), min = Path.Combine(root, "minerals"), tools = Path.Combine(root, "tools"), food = Path.Combine(root, "food");
+        Canvas c;
+
+        // ---------- шкуры и кожа
+        c = new Canvas(11); { F h = Hide(c, 16, 16, 1.0, -12, 0.8, 1); c.Fill(h, RawRed, 3); c.Scatter(h, "#d88a76", 0.06, 2); } c.Save(Path.Combine(mat, "raw_hide.png"));
+        c = new Canvas(12); { F h = Hide(c, 16, 16, 1.0, 14, 0.8, 1); c.Fill(h, SaltRed, 3); c.Scatter(h, "#f4f6f8", 0.16, 3); c.Scatter(h, "#c8d2da", 0.06, 4); } c.Save(Path.Combine(mat, "salted_hide.png"));
+        c = new Canvas(13); { F h = Hide(c, 16, 16, 1.0, -8, 0.8, 1); c.Fill(h, Lime, 3); c.Scatter(h, "#f2f0e6", 0.10, 3); } c.Save(Path.Combine(mat, "limed_hide.png"));
+        c = new Canvas(14); { F h = Hide(c, 16, 16, 0.95, 10, 0.5, 1); c.Fill(h, Pelt, 3.5); } c.Save(Path.Combine(mat, "pelt.png"));
+        c = new Canvas(15); { F h = Hide(c, 16, 16, 0.95, -15, 0.6, 1); c.Fill(h, Wet, 3); c.Line(10, 12, 15, 9, "#b88050"); c.Line(17, 20, 21, 17, "#a87040"); } c.Save(Path.Combine(mat, "wet_leather.png"));
+        c = new Canvas(16); { F piece = c.Rough(Canvas.Box(16, 17, 9, 7, -18, 2), 0.5, 0.5, 2); c.Fill(piece, Leather, 3);
+            F fold = Canvas.Poly(20, 9, 25.5, 13, 21.5, 15.5); c.Fill(fold, Tan, 1.5); } c.Save(Path.Combine(mat, "tanned_leather.png"));
+        c = new Canvas(17); { F piece = c.Rough(Canvas.Box(16, 17, 9, 7, 16, 3), 0.7, 0.45, 3); c.Fill(piece, Tan, 4);
+            F fold = Canvas.Poly(8, 12, 13.5, 9, 12, 15); c.Fill(fold, Pelt, 1.5); } c.Save(Path.Combine(mat, "soft_leather.png"));
+        c = new Canvas(18); { F h = Hide(c, 16, 16, 0.85, 20, 0.9, 1); c.Fill(h, Rawhide, 2); c.Scatter(h, "#f4dca0", 0.05, 2); } c.Save(Path.Combine(mat, "rawhide.png"));
+        c = new Canvas(19); { F h = Hide(c, 16, 16, 1.0, -10, 1.4, 1); c.Fill(h, Fur, 3); c.Scatter(h, "#d4b48a", 0.07, 2); } c.Save(Path.Combine(mat, "dressed_fur.png"));
+        c = new Canvas(20); { F plate = Canvas.Box(16, 16, 8.5, 10, -10, 4); c.Fill(plate, Boiled, 3.5);
+            int[] rivets = { 11, 10, 21, 8, 12, 23, 22, 21 };
+            for (int i = 0; i < rivets.Length; i += 2) { c.Dot(rivets[i], rivets[i + 1], "#c8ccd0"); c.Dot(rivets[i] + 1, rivets[i + 1] + 1, "#40444a"); } } c.Save(Path.Combine(mat, "boiled_leather.png"));
+        c = new Canvas(21); { c.Fill(c.Rough(Canvas.Box(11, 12, 5, 3.5, -25, 1), 0.6, 0.6, 1), Leather, 2);
+            c.Fill(c.Rough(Canvas.Box(21, 14, 4.5, 3, 30, 1), 0.6, 0.6, 2), Tan, 2);
+            c.Fill(c.Rough(Canvas.Box(15, 22, 5.5, 3, 8, 1), 0.6, 0.6, 3), Leather, 2); } c.Save(Path.Combine(mat, "leather_scraps.png"));
+        c = new Canvas(22); { F ring = Canvas.Cut(Canvas.Ellipse(15, 16, 10, 8), Canvas.Ellipse(15, 16, 6, 4.2));
+            c.Fill(ring, Leather, 2); c.Fill(Canvas.Capsule(23, 19, 28, 25, 2.2, 1.8), Leather, 2);
+            c.Line(8, 13, 11, 10, "#ae7444"); } c.Save(Path.Combine(mat, "leather_strap.png"));
+        c = new Canvas(23); { F pile = c.Rough(Canvas.Union(Canvas.Ellipse(12, 19, 6.5, 4.5), Canvas.Ellipse(20, 18, 6, 5), Canvas.Ellipse(16, 13, 5, 4)), 0.8, 0.6, 1);
+            c.Fill(pile, Flesh, 2.5); c.Scatter(pile, "#f8e0d4", 0.10, 2); } c.Save(Path.Combine(mat, "flesh.png"));
+        c = new Canvas(24); { F top = Bowl(c, Wood, 16, 17, 10, 9); c.Fill(top, Amber, 2); c.Line(13, 16, 18, 15, "#fcd486"); } c.Save(Path.Combine(mat, "hide_glue.png"));
+        c = new Canvas(25); { F a = c.Rough(Canvas.Capsule(7, 22, 24, 9, 3.3), 0.7, 0.8, 1); c.Fill(a, Bark, 2);
+            F b = c.Rough(Canvas.Capsule(11, 26, 26, 17, 2.6), 0.6, 0.8, 2); c.Fill(b, Bark, 2);
+            c.Line(9, 21, 22, 11, "#1e140a"); c.Line(13, 25, 24, 18, "#1e140a"); } c.Save(Path.Combine(mat, "bark.png"));
+        c = new Canvas(26); { F body = Canvas.Union(Canvas.Box(16, 19, 9, 5), Canvas.Ellipse(16, 24, 9, 3.4)); c.Fill(body, Wax, 2);
+            c.Fill(Canvas.Ellipse(16, 14, 9, 3.4), Wax, 2.5); c.Line(11, 13, 15, 12, "#fff0b0"); } c.Save(Path.Combine(mat, "beeswax.png"));
+
+        // ---------- минералы
+        c = new Canvas(31); { F pile = c.Rough(Canvas.Cut(Canvas.Ellipse(16, 23, 12, 11), Canvas.Box(16, 30, 14, 5)), 0.8, 0.7, 1);
+            c.Fill(pile, Salt, 3); c.Scatter(pile, "#9aaab6", 0.06, 2); c.Scatter(pile, "#ffffff", 0.10, 3); } c.Save(Path.Combine(min, "salt.png"));
+        c = new Canvas(32); { F pile = c.Rough(Canvas.Cut(Canvas.Ellipse(16, 23, 12, 10), Canvas.Box(16, 30, 14, 5)), 1.0, 0.7, 1);
+            c.Fill(pile, Ash, 3); c.Scatter(pile, "#1c1a18", 0.08, 2); c.Scatter(pile, "#c8c4be", 0.05, 3); } c.Save(Path.Combine(min, "ash.png"));
+        c = new Canvas(33); {
+            c.Fill(Canvas.Poly(9, 24, 12, 11, 16, 9, 17, 24), Alum, 1.5);
+            c.Fill(Canvas.Poly(15, 25, 18, 7, 22, 5, 24, 25), Alum, 1.5);
+            c.Fill(Canvas.Poly(21, 26, 24, 15, 27, 14, 27, 26), Alum, 1.5);
+            c.Line(13, 12, 14, 22, "#ffffff"); c.Line(19, 9, 20, 22, "#ffffff"); } c.Save(Path.Combine(min, "alum.png"));
+
+        // ---------- инструменты (по диагонали, рукоять внизу слева)
+        c = new Canvas(41); {
+            c.Fill(Canvas.Capsule(6, 26, 12, 20, 2.0), Wood, 2);
+            c.Fill(Canvas.Capsule(11, 22, 14, 18, 1.4), Iron, 1.5);
+            c.Fill(Canvas.Poly(13, 18, 15, 16, 27, 5, 25.5, 9.5), Steel, 1.5);
+            c.Line(15, 17, 26, 6, "#f4f8fc"); } c.Save(Path.Combine(tools, "knife.png"));
+        c = new Canvas(42); { // мездряк: дугой изогнутый клинок с двумя рукоятями
+            F arc = Canvas.Cut(Canvas.Cut(Canvas.Ellipse(16, 22, 11, 10), Canvas.Ellipse(16, 23, 9, 8)), Canvas.Box(16, 28, 14, 6));
+            c.Fill(arc, Steel, 1.2);
+            c.Fill(Canvas.Capsule(5, 22, 4, 28, 1.8), Wood, 2); c.Fill(Canvas.Capsule(27, 22, 28, 28, 1.8), Wood, 2); } c.Save(Path.Combine(tools, "fleshing_knife.png"));
+        c = new Canvas(43); { // струг: прямое широкое лезвие и рукояти вверх
+            c.Fill(Canvas.Box(16, 18, 10, 2.2, -8), Iron, 1.5);
+            c.Line(7, 20, 25, 17, "#c8d0d8");
+            c.Fill(Canvas.Capsule(6, 20, 4, 11, 1.9), Wood, 2); c.Fill(Canvas.Capsule(26, 17, 28, 8, 1.9), Wood, 2); } c.Save(Path.Combine(tools, "scraper.png"));
+        c = new Canvas(44); {
+            c.Fill(Canvas.Capsule(7, 26, 18, 15, 1.6), Wood, 2);
+            c.Fill(Canvas.Box(21, 11, 7, 4.2, -45, 1.5), Rawhide, 3); } c.Save(Path.Combine(tools, "leather_mallet.png"));
+        c = new Canvas(45); {
+            c.Fill(Canvas.Capsule(14, 18, 26, 5, 1.5), Wood, 2);
+            c.Fill(Canvas.Ellipse(10, 22, 6.5, 5.5, -20), Wood, 3);
+            c.Fill(Canvas.Ellipse(9.5, 21.5, 4.2, 3.2, -20), DarkWood, 2); } c.Save(Path.Combine(tools, "ladle.png"));
+        c = new Canvas(46); { // дымарь: жестяная банка с носиком и кожаные меха сбоку
+            c.Fill(Canvas.Box(13, 18, 5.5, 8, 0, 1.5), Iron, 2.5);
+            c.Fill(Canvas.Poly(9, 10, 17, 10, 14.5, 5, 11.5, 5), Steel, 1.5);
+            c.Fill(Canvas.Poly(19, 13, 28, 18, 28, 24, 19, 24), Leather, 2);
+            c.Fill(Canvas.Box(24, 26, 4, 1.2), Wood, 1); c.Line(20, 15, 27, 19, "#ae7444"); } c.Save(Path.Combine(tools, "bee_smoker.png"));
+
+        // ---------- еда
+        c = new Canvas(51); { F top = Bowl(c, Wood, 16, 16, 12, 10); c.Fill(top, Porridge, 2); c.Fill(Canvas.Box(17, 14, 2.5, 1.5, 0, 0.5), Butter, 1); } c.Save(Path.Combine(food, "porridge.png"));
+        c = new Canvas(52); { F top = Bowl(c, Wood, 16, 16, 12, 10); c.Fill(top, Broth, 2);
+            c.Fill(Canvas.Ellipse(12, 15, 2.6, 1.4), Pelt, 1); c.Fill(Canvas.Ellipse(19, 16.5, 2.4, 1.3), Pelt, 1);
+            c.Dot(15, 13, "#e06a24"); c.Dot(21, 14, "#e06a24"); c.Dot(10, 17, "#4e7a28"); c.Dot(17, 18, "#4e7a28"); } c.Save(Path.Combine(food, "fish_soup.png"));
+        c = new Canvas(53); { F pie = Canvas.Ellipse(16, 17, 13, 9.5); c.Fill(pie, Crust, 3);
+            F fill = Canvas.Ellipse(16, 16.5, 10, 6.8); c.Fill(fill, MushFill, 2);
+            for (int i = -2; i <= 2; i++) { c.Line(11 + i * 3, 10.5, 15 + i * 3, 22.5, "#d8a058"); }
+            c.Line(7, 14, 25, 14, "#d8a058"); c.Line(7, 19, 25, 19, "#d8a058"); } c.Save(Path.Combine(food, "mushroom_pie.png"));
+        c = new Canvas(54); { F lump = c.Rough(Canvas.Union(Canvas.Ellipse(15, 18, 10, 7), Canvas.Ellipse(19, 14, 6, 5)), 1.2, 0.6, 1);
+            c.Fill(lump, Char, 3); c.Scatter(lump, "#d0601c", 0.05, 2); c.Scatter(lump, "#f09030", 0.02, 3); } c.Save(Path.Combine(food, "burnt_food.png"));
+        c = new Canvas(55); { F bun = Canvas.Cut(Canvas.Ellipse(16, 20, 11, 9), Canvas.Box(16, 30, 14, 5)); c.Fill(bun, Dough, 4);
+            c.Line(11, 15, 14, 13, "#c8b688"); } c.Save(Path.Combine(food, "raw_bun.png"));
+        c = new Canvas(56); { F bun = Canvas.Cut(Canvas.Ellipse(16, 20, 11, 9), Canvas.Box(16, 30, 14, 5)); c.Fill(bun, Bun, 4);
+            F glaze = c.Rough(Canvas.Ellipse(16, 14.5, 6.5, 3.2), 0.6, 0.8, 2); c.Fill(glaze, Glaze, 1.5);
+            c.Dot(14, 14, "#b02840"); c.Dot(18, 15, "#b02840"); } c.Save(Path.Combine(food, "sweet_bun.png"));
+    }
+}
