@@ -1,12 +1,20 @@
 {
   "variants": {
-    "facing=north,full=false": { "model": "conquest:block/cast_iron_cauldron" },
-    "facing=north,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
-    "facing=east,full=false": { "model": "conquest:block/cast_iron_cauldron" },
-    "facing=east,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
-    "facing=south,full=false": { "model": "conquest:block/cast_iron_cauldron" },
-    "facing=south,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
-    "facing=west,full=false": { "model": "conquest:block/cast_iron_cauldron" },
-    "facing=west,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" }
+    "facing=north,full=false,on_hearth=false": { "model": "halgventmod:block/still" },
+    "facing=north,full=false,on_hearth=true": { "model": "halgventmod:block/still_on_hearth" },
+    "facing=north,full=true,on_hearth=false": { "model": "halgventmod:block/still" },
+    "facing=north,full=true,on_hearth=true": { "model": "halgventmod:block/still_on_hearth" },
+    "facing=east,full=false,on_hearth=false": { "model": "halgventmod:block/still", "y": 90 },
+    "facing=east,full=false,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 90 },
+    "facing=east,full=true,on_hearth=false": { "model": "halgventmod:block/still", "y": 90 },
+    "facing=east,full=true,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 90 },
+    "facing=south,full=false,on_hearth=false": { "model": "halgventmod:block/still", "y": 180 },
+    "facing=south,full=false,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 180 },
+    "facing=south,full=true,on_hearth=false": { "model": "halgventmod:block/still", "y": 180 },
+    "facing=south,full=true,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 180 },
+    "facing=west,full=false,on_hearth=false": { "model": "halgventmod:block/still", "y": 270 },
+    "facing=west,full=false,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 270 },
+    "facing=west,full=true,on_hearth=false": { "model": "halgventmod:block/still", "y": 270 },
+    "facing=west,full=true,on_hearth=true": { "model": "halgventmod:block/still_on_hearth", "y": 270 }
   }
 }

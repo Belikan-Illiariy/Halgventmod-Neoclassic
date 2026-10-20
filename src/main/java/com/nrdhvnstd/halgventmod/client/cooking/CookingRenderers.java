@@ -79,9 +79,9 @@ public final class CookingRenderers {
         }
     }
 
-    /** Разделочный стол: выложенное на доске сеткой и готовое посередине. */
+    /** Кухонный стол: выложенное на доске сеткой и готовое посередине. */
     static final class KitchenRenderer implements BlockEntityRenderer<KitchenTableBlockEntity> {
-        private static final float TOP = 1.0F;
+        private static final float TOP = 17.0F / 16.0F; // поверх доски на столе
         private final ItemRenderer items;
 
         KitchenRenderer(BlockEntityRendererProvider.Context context) {

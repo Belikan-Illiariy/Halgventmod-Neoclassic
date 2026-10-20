@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
+import com.nrdhvnstd.halgventmod.registry.ModBlocks;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
@@ -273,6 +274,13 @@ public class HearthBlockEntity extends StationBlockEntity {
             changed();
             return true;
         }
+        if (stack.is(ModItems.STILL.get())) {
+            return placeStill(player, stack);
+        }
+        // Над очагом перегонный куб: его низ стоит в огне, поэтому щелчок по нему приходит сюда — отдаём кубу
+        if (level.getBlockEntity(worldPosition.above()) instanceof com.nrdhvnstd.halgventmod.brewing.StillBlockEntity still) {
+            return still.use(player, hand, stack, hit);
+        }
         if (stack.is(ModItems.COOKING_POT.get())) {
             return placePot(player, stack);
         }
@@ -326,6 +334,32 @@ public class HearthBlockEntity extends StationBlockEntity {
     }
 
     // ---------------------------------------------------------------- котелок
+
+    /** E перегонным кубом — поставить его на очаг (блок над очагом, модель опущена на огонь). */
+    private boolean placeStill(Player player, ItemStack stack) {
+        if (hasPot()) {
+            tell(player, "still_pot");
+            return true;
+        }
+        for (ItemStack piece : pieces) {
+            if (!piece.isEmpty()) {
+                tell(player, "grill_busy");
+                return true;
+            }
+        }
+        BlockPos above = worldPosition.above();
+        if (!level.getBlockState(above).canBeReplaced()) {
+            tell(player, "still_blocked");
+            return true;
+        }
+        BlockState still = ModBlocks.STILL.get().defaultBlockState()
+                .setValue(com.nrdhvnstd.halgventmod.brewing.StillBlock.FACING, player.getDirection().getOpposite())
+                .setValue(com.nrdhvnstd.halgventmod.brewing.StillBlock.ON_HEARTH, true);
+        level.setBlock(above, still, 3);
+        consumeOne(player, stack);
+        sound(SoundEvents.LANTERN_PLACE, 1.0F, 0.7F);
+        return true;
+    }
 
     private boolean placePot(Player player, ItemStack stack) {
         if (hasPot()) {

@@ -251,7 +251,7 @@ public class OvenBlockEntity extends StationBlockEntity {
                 result.set(ModComponents.FOOD_EXTRAS.get(), extras); // добавки остаются в начинке
             }
             int quality = done < 1.0F ? 1 : done < OVERBAKED ? 3 : 1;
-            // Тесто с разделочного стола несёт своё качество: хорошо замешанное — лучше хлеб
+            // Тесто с кухонного стола несёт своё качество: хорошо замешанное — лучше хлеб
             if (FoodQuality.has(raw)) {
                 quality += FoodQuality.get(raw) - FoodQuality.NORMAL;
             }

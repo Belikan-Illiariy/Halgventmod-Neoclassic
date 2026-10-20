@@ -795,6 +795,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         cooking("pot_already", "Котелок уже стоит", "A pot is already on");
         cooking("grill_busy", "Сначала снимите всё с углей", "Take everything off the coals first");
+        cooking("still_pot", "Сначала снимите котелок", "Take the pot off first");
+        cooking("still_blocked", "Над очагом нет места для куба", "No room above the hearth for the still");
         cooking("pot_has_water", "Вода уже налита", "There is water already");
         cooking("need_water", "Налейте в котелок воды ведром", "Pour water into the pot with a bucket");
         cooking("pot_water_only", "Одна вода: положите продукты", "Just water: add some food");

@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * Сервер → клиент: открыть окно рецептов разделочного стола. current — выбранный сейчас (−1 — никакой).
+ * Сервер → клиент: открыть окно рецептов кухонного стола. current — выбранный сейчас (−1 — никакой).
  * Обработчик зовётся только на клиенте.
  */
 public record KitchenOpenPayload(BlockPos pos, int current) implements CustomPacketPayload {

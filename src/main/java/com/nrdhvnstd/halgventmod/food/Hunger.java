@@ -90,7 +90,7 @@ public final class Hunger {
             nutrition = food.nutrition() * VANILLA_SCALE;
             saturation = food.saturation() * VANILLA_SCALE;
         }
-        // Добавки в пирог или булочку с разделочного стола — прибавка к насыщению
+        // Добавки в пирог или булочку с кухонного стола — прибавка к насыщению
         FoodExtras extras = stack.get(ModComponents.FOOD_EXTRAS.get());
         if (extras != null) {
             saturation += extras.saturation();

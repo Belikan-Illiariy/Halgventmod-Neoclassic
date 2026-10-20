@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Разделочный стол (деревенский стол Conquest Reforged): месят тесто и лепят пироги. */
+/** Кухонный стол (деревенский стол Conquest Reforged): месят тесто и лепят пироги. */
 public class KitchenTableBlock extends StationBlock {
     public static final MapCodec<KitchenTableBlock> CODEC = simpleCodec(KitchenTableBlock::new);
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);

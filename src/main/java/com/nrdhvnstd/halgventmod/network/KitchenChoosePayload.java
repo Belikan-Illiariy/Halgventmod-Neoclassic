@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Клиент → сервер: на разделочном столе выбран рецепт index. Сервер проверяет дальность и что стол свободен. */
+/** Клиент → сервер: на кухонном столе выбран рецепт index. Сервер проверяет дальность и что стол свободен. */
 public record KitchenChoosePayload(BlockPos pos, int index) implements CustomPacketPayload {
     public static final Type<KitchenChoosePayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "kitchen_choose"));

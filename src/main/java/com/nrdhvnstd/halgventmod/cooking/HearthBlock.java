@@ -35,6 +35,7 @@ public class HearthBlock extends StationBlock {
     public static final BooleanProperty POT = BooleanProperty.create("pot");
     private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 6, 14);
     private static final VoxelShape SHAPE_POT = Block.box(2, 0, 2, 14, 11, 14);
+    private static final VoxelShape SHAPE_STILL = Block.box(1, 0, 1, 15, 16, 15); // низ перегонного куба стоит в огне
 
     public HearthBlock(Properties properties) {
         super(properties);
@@ -54,6 +55,9 @@ public class HearthBlock extends StationBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (level.getBlockState(pos.above()).getBlock() instanceof com.nrdhvnstd.halgventmod.brewing.StillBlock) {
+            return SHAPE_STILL;
+        }
         return state.getValue(POT) ? SHAPE_POT : SHAPE;
     }
 
