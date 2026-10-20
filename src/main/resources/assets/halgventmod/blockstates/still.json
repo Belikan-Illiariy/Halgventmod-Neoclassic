@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,full=false": { "model": "conquest:block/cast_iron_cauldron" },
+    "facing=north,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
+    "facing=east,full=false": { "model": "conquest:block/cast_iron_cauldron" },
+    "facing=east,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
+    "facing=south,full=false": { "model": "conquest:block/cast_iron_cauldron" },
+    "facing=south,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" },
+    "facing=west,full=false": { "model": "conquest:block/cast_iron_cauldron" },
+    "facing=west,full=true": { "model": "conquest:block/cast_iron_cauldron_filled" }
+  }
+}

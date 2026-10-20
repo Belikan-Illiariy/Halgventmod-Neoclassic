@@ -68,12 +68,16 @@ public class HookBlockEntity extends StationBlockEntity {
     }
 
     private static boolean dryable(ItemStack stack) {
-        return stack.is(ModItems.HERBS.get()) || (stack.is(Cookery.Kind.MUSHROOM.tag()) && !stack.is(ModItems.DRIED_MUSHROOMS.get()));
+        return stack.is(ModItems.HERBS.get()) || stack.is(ModItems.WET_GRAIN.get())
+                || (stack.is(Cookery.Kind.MUSHROOM.tag()) && !stack.is(ModItems.DRIED_MUSHROOMS.get()));
     }
 
     private static ItemStack result(ItemStack raw) {
         if (smokable(raw)) {
             return new ItemStack(raw.is(Cookery.Kind.FISH.tag()) ? ModItems.SMOKED_FISH.get() : ModItems.SMOKED_MEAT.get());
+        }
+        if (raw.is(ModItems.WET_GRAIN.get())) {
+            return new ItemStack(ModItems.GREEN_MALT.get()); // проросло
         }
         return new ItemStack(raw.is(ModItems.HERBS.get()) ? ModItems.DRIED_HERBS.get() : ModItems.DRIED_MUSHROOMS.get());
     }

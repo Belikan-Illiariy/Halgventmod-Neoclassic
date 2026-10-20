@@ -46,6 +46,8 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModBlocks.HEARTH.get(), ModBlocks.BAKING_OVEN.get(), ModBlocks.QUERN.get(), ModBlocks.SMOKING_HOOK.get());
         tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get());
+                .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get(),
+                        ModBlocks.WINE_PRESS.get(), ModBlocks.FERMENTING_BARREL.get(), ModBlocks.AGING_CASK.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STILL.get());
     }
 }

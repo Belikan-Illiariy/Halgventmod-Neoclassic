@@ -6,6 +6,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.Cookery;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.QuernBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -32,6 +33,7 @@ public final class CookingRenderers {
     public static void register(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.HEARTH.get(), HearthRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.KITCHEN_TABLE.get(), KitchenRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.QUERN.get(), QuernRenderer::new);
     }
 
     static final class HearthRenderer implements BlockEntityRenderer<HearthBlockEntity> {
@@ -114,6 +116,46 @@ public final class CookingRenderers {
             pose.scale(scale, scale, scale);
             items.renderStatic(stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers, level, seed);
             pose.popPose();
+        }
+    }
+
+    /** Жёрнов: модель Conquest крупнее (×{@link #SCALE}) и поворачивается при каждом повороте камня. */
+    static final class QuernRenderer implements BlockEntityRenderer<QuernBlockEntity> {
+        static final float SCALE = 1.45F;
+        // Ось камня в модели Conquest (до поворота по сторонам света)
+        private static final float AXIS_X = 0.468F;
+        private static final float AXIS_Z = 0.443F;
+
+        QuernRenderer(BlockEntityRendererProvider.Context context) {}
+
+        @Override
+        public void render(QuernBlockEntity quern, float partialTick, PoseStack pose, MultiBufferSource buffers,
+                           int packedLight, int packedOverlay) {
+            net.minecraft.world.level.block.state.BlockState state = quern.getBlockState();
+            var dispatcher = net.minecraft.client.Minecraft.getInstance().getBlockRenderer();
+            var model = dispatcher.getBlockModel(state);
+            // Ось камня после поворота модели по сторонам света
+            double yaw = Math.toRadians(state.getValue(com.nrdhvnstd.halgventmod.leather.StationBlock.FACING).toYRot() + 180);
+            float dx = AXIS_X - 0.5F, dz = AXIS_Z - 0.5F;
+            float px = 0.5F + (float) (dx * Math.cos(yaw) - dz * Math.sin(yaw));
+            float pz = 0.5F + (float) (dx * Math.sin(yaw) + dz * Math.cos(yaw));
+            pose.pushPose();
+            pose.translate(0.5F, 0.0F, 0.5F);
+            pose.scale(SCALE, SCALE, SCALE);
+            pose.translate(-0.5F, 0.0F, -0.5F);
+            pose.translate(px, 0.0F, pz);
+            pose.mulPose(Axis.YP.rotationDegrees(-quern.angle(partialTick)));
+            pose.translate(-px, 0.0F, -pz);
+            dispatcher.getModelRenderer().renderModel(pose.last(),
+                    buffers.getBuffer(net.minecraft.client.renderer.RenderType.cutout()), state, model, 1.0F, 1.0F, 1.0F,
+                    packedLight, packedOverlay, net.neoforged.neoforge.client.model.data.ModelData.EMPTY,
+                    net.minecraft.client.renderer.RenderType.cutout());
+            pose.popPose();
+        }
+
+        @Override
+        public net.minecraft.world.phys.AABB getRenderBoundingBox(QuernBlockEntity quern) {
+            return new net.minecraft.world.phys.AABB(quern.getBlockPos()).inflate(0.5);
         }
     }
 }

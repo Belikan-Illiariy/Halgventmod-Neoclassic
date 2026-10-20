@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /** Ручной жёрнов (модель Conquest Reforged): мелет зерно в муку. */
 public class QuernBlock extends StationBlock {
     public static final MapCodec<QuernBlock> CODEC = simpleCodec(QuernBlock::new);
-    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 9, 14);
+    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 12, 15);
 
     public QuernBlock(Properties properties) {
         super(properties);
@@ -29,6 +29,12 @@ public class QuernBlock extends StationBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    // Модель рисует CookingRenderers (крупнее и с вращением), а не статичная модель блока
+    @Override
+    protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
+        return net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override

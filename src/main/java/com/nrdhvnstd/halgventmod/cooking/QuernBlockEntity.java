@@ -27,10 +27,13 @@ public class QuernBlockEntity extends StationBlockEntity {
     public static final int CAPACITY = 16;
     public static final int TURNS = 4;
     public static final float SPILL_CHANCE = 0.3F;
+    public static final int SPIN_TICKS = 8;
 
     private int grain;
     private int turns;
     private boolean rye; // что засыпано: рожь или пшеница (вместе не засыпают)
+    private int spins;                // сколько раз повернули камень — для анимации у клиента
+    private long spinStart = -100;    // клиент: когда начался последний поворот
 
     public QuernBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.QUERN.get(), pos, state);
@@ -43,6 +46,12 @@ public class QuernBlockEntity extends StationBlockEntity {
 
     private static void tell(Player player, String key, Object... args) {
         player.displayClientMessage(Component.translatable("message.halgventmod.cooking." + key, args), true);
+    }
+
+    /** Угол камня для отрисовки: четверть оборота за поворот, плавно за {@link #SPIN_TICKS} тиков. */
+    public float angle(float partialTick) {
+        float t = Math.min(1.0F, (level.getGameTime() - spinStart + partialTick) / SPIN_TICKS);
+        return (spins - 1 + t) * 90.0F;
     }
 
     private net.minecraft.world.item.Item grainItem() {
@@ -89,6 +98,7 @@ public class QuernBlockEntity extends StationBlockEntity {
             return true;
         }
         boolean steady = strike(player, hand, ItemStack.EMPTY);
+        spins++;
         sound(SoundEvents.GRINDSTONE_USE, 0.6F, 0.8F + 0.2F * level.random.nextFloat());
         crumbs(new ItemStack(grainItem()), 0.7, 3);
         if (!steady && level.random.nextFloat() < SPILL_CHANCE) {
@@ -116,6 +126,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         tag.putInt("Grain", grain);
         tag.putInt("Turns", turns);
         tag.putBoolean("Rye", rye);
+        tag.putInt("Spins", spins);
     }
 
     @Override
@@ -124,5 +135,10 @@ public class QuernBlockEntity extends StationBlockEntity {
         grain = tag.getInt("Grain");
         turns = tag.getInt("Turns");
         rye = tag.getBoolean("Rye");
+        int newSpins = tag.getInt("Spins");
+        if (level != null && level.isClientSide && newSpins != spins) {
+            spinStart = level.getGameTime();
+        }
+        spins = newSpins;
     }
 }

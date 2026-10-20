@@ -611,6 +611,7 @@ public class ModLanguageProvider extends LanguageProvider {
         leatherTranslations();
         cookingTranslations();
         qualityTranslations();
+        brewingTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -853,6 +854,96 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void cooking(String key, String ru, String en) {
         add("message.halgventmod.cooking." + key, russian ? ru : en);
+    }
+
+    /** Алкоголь (brewing/*): сообщения станций, опьянение, названия напитков по составу. */
+    private void brewingTranslations() {
+        brewing("press_mixed", "Разные плоды вместе не давят", "Different fruit can't be pressed together");
+        brewing("press_take_juice", "Сначала наберите сок склянкой", "Draw the juice with a bottle first");
+        brewing("press_full", "Давильня полна", "The press is full");
+        brewing("press_fruit", "Плодов: %s, сока: %s", "Fruit: %s, juice: %s");
+        brewing("press_no_juice", "Сока мало: %s из %s на склянку", "Not enough juice: %s of %s per bottle");
+        brewing("press_empty", "Засыпьте яблоки или ягоды. Сока: %s", "Fill it with apples or berries. Juice: %s");
+        brewing("press_spilled", "Неровно — плод раздавлен мимо. Осталось: %s", "Uneven — a fruit got squashed to waste. Left: %s");
+        brewing("press_juice", "Сока: %s, плодов осталось: %s", "Juice: %s, fruit left: %s");
+        brewing("press_turn", "Давите: %s/%s", "Pressing: %s/%s");
+        brewing("barrel_pour_first", "Сначала разлейте готовое", "Draw what is ready first");
+        brewing("barrel_mixed", "Разное в одну бочку не льют", "Different liquids don't go in one barrel");
+        brewing("barrel_full", "Бочка полна", "The barrel is full");
+        brewing("barrel_flavour_twice", "Эта добавка уже есть", "This extra is already in");
+        brewing("barrel_flavours_full", "Добавок не больше %s", "No more than %s extras");
+        brewing("barrel_flavour", "Добавлено: %s", "Added: %s");
+        brewing("barrel_empty", "Влейте сусло или крепкое", "Pour in must or a spirit");
+        brewing("barrel_poured_out", "Бочка вылита", "The barrel is emptied");
+        brewing("barrel_tincture_needs", "Крепкого: %s. Для настойки добавьте ягоды, травы или мёд",
+                "Spirit: %s. Add berries, herbs or honey for a tincture");
+        brewing("barrel_sour", "Передержано — уксус (%s)", "Kept too long — vinegar (%s)");
+        brewing("barrel_ready", "Перебродило: %s склянок. Скиснет через %s сут.", "Fermented: %s bottles. Sours in %s days");
+        brewing("barrel_ready_tincture", "Настоялось: %s склянок. Перестоит через %s сут.", "Steeped: %s bottles. Overdone in %s days");
+        brewing("barrel_fermenting", "Бродит: %s склянок, ещё %s сут.", "Fermenting: %s bottles, %s days left");
+        brewing("still_mixed", "Разное в куб не льют", "Different drinks don't go in the still together");
+        brewing("still_take_first", "Сначала наберите готовое крепкое", "Draw the finished spirit first");
+        brewing("still_full", "Куб полон", "The still is full");
+        brewing("still_cold", "Внизу нет огня. Залито: %s, крепкого: %s (из %s склянок — одна)",
+                "No fire below. Poured: %s, spirit: %s (one from %s bottles)");
+        brewing("still_status", "Гонит. Залито: %s, крепкого: %s (из %s склянок — одна)",
+                "Distilling. Poured: %s, spirit: %s (one from %s bottles)");
+        brewing("still_hot", "Слишком жарко — крепкое выйдет хуже. Залито: %s, крепкого: %s (из %s — одна)",
+                "Too hot — the spirit will be worse. Poured: %s, spirit: %s (one from %s)");
+        brewing("cask_full", "В бочке нет места", "No room in the cask");
+        brewing("cask_no_beer", "Пиво не выдерживают — пейте свежим", "Beer isn't aged — drink it fresh");
+        brewing("cask_empty", "Положите вино, медовуху, сидр, крепкое или настойку", "Put in wine, mead, cider, a spirit or a tincture");
+        brewing("cask_cellar", "Погреб: %s склянок, качество растёт каждые %s сут.", "Cellar: %s bottles, quality rises every %s days");
+        brewing("cask_house", "%s склянок, качество растёт каждые %s сут. В погребе — быстрее",
+                "%s bottles, quality rises every %s days. Faster in a cellar");
+        brewing("cask_exposed", "Под открытым небом не выдерживается (%s склянок)", "Doesn't age under the open sky (%s bottles)");
+        cooking("baked_malt", "Высушено: %s", "Dried: %s");
+
+        drunk("tipsy", "Вы навеселе", "You are tipsy");
+        drunk("drunk", "Вы пьяны", "You are drunk");
+        drunk("wasted", "Вы мертвецки пьяны", "You are wasted");
+        drunk("sober", "Вы протрезвели", "You are sober");
+        drunk("hangover", "Похмелье: тяжёлая голова и жажда", "Hangover: a heavy head and thirst");
+        drunk("cured", "Полегчало", "That's better");
+        add("gamerule.drunkChat", russian ? "Пьяные путают буквы в чате" : "Drunk players slur in chat");
+
+        drink("must.apple", "Яблочный сок", "Apple juice");
+        drink("must.berry", "Ягодный сок", "Berry juice");
+        drink("must.glowberry", "Сок светящихся ягод", "Glow berry juice");
+        drink("must.honey", "Медовый взвар", "Honey must");
+        drink("must.wort_pale", "Светлое сусло", "Pale wort");
+        drink("must.wort_amber", "Янтарное сусло", "Amber wort");
+        drink("must.wort_dark", "Тёмное сусло", "Dark wort");
+        drink("beer.wort_pale", "Светлое пиво", "Pale beer");
+        drink("beer.wort_amber", "Янтарное пиво", "Amber beer");
+        drink("beer.wort_dark", "Тёмное пиво", "Dark beer");
+        drink("cider.apple", "Сидр", "Cider");
+        drink("wine.berry", "Ягодное вино", "Berry wine");
+        drink("wine.glowberry", "Светящееся вино", "Glow wine");
+        drink("mead.honey", "Медовуха", "Mead");
+        drink("spirit.bread", "Хлебное вино", "Grain spirit");
+        drink("spirit.brandy", "Бренди", "Brandy");
+        drink("spirit.apple", "Яблочная водка", "Apple brandy");
+        drink("spirit.mead", "Медовая водка", "Honey spirit");
+        drink("tincture.bread", "Хлебная настойка", "Grain tincture");
+        drink("tincture.brandy", "Настойка на бренди", "Brandy tincture");
+        drink("tincture.apple", "Яблочная настойка", "Apple tincture");
+        drink("tincture.mead", "Медовая настойка", "Honey tincture");
+        drink("flag.honey", " с мёдом", " with honey");
+        drink("flag.herbs", " на травах", " with herbs");
+        drink("flag.berry", " с ягодами", " with berries");
+    }
+
+    private void brewing(String key, String ru, String en) {
+        add("message.halgventmod.brewing." + key, russian ? ru : en);
+    }
+
+    private void drunk(String key, String ru, String en) {
+        add("message.halgventmod.drunk." + key, russian ? ru : en);
+    }
+
+    private void drink(String key, String ru, String en) {
+        add("drink.halgventmod." + key, russian ? ru : en);
     }
 
     /** Качество снаряжения и типы урона (quality/*). Сами признаки качества — из ModTraits. */

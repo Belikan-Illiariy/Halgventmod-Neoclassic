@@ -92,8 +92,31 @@ public static class Icons {
         c.Save(path);
     }
 
+    /** Склянка: стекло, жидкость своего цвета, пробка; tall — высокая бутыль (вино, крепкое). */
+    static void Bottle(Canvas c, Mat glass, Mat liquid, bool tall, string path) {
+        F body = tall ? Canvas.Union(Canvas.Box(16, 20, 6, 8, 0, 2.5), Canvas.Box(16, 9, 2.4, 4.5))
+                      : Canvas.Union(Canvas.Ellipse(16, 21, 7.5, 7.5), Canvas.Box(16, 11, 2.6, 4));
+        c.Fill(body, glass, 2);
+        F fill = tall ? Canvas.Box(16, 22, 4.6, 5.5, 0, 1.5) : Canvas.Cut(Canvas.Ellipse(16, 21, 6, 6), Canvas.Box(16, 15, 8, 2.5));
+        c.Fill(fill, liquid, 2);
+        c.Fill(Canvas.Box(16, tall ? 4.5 : 6.5, 2.2, 1.8, 0, 0.6), Wood, 1);
+        c.Line(tall ? 11.5 : 12, tall ? 16 : 18, tall ? 11.5 : 13, tall ? 24 : 22, "#ffffff");
+        c.Save(path);
+    }
+
+    /** Горсть зерна: кучка и отдельные зёрна сверху. */
+    static void Grains(Canvas c, Mat grain, string speck, bool sprouts, string path) {
+        F pile = c.Rough(Canvas.Cut(Canvas.Ellipse(16, 23, 12, 9), Canvas.Box(16, 30, 14, 4)), 0.8, 0.8, 1);
+        c.Fill(pile, grain, 2.5);
+        for (int i = 0; i < 9; i++) { double x = 8 + (i * 37 % 17), y = 17 + (i * 23 % 8); c.Fill(Canvas.Ellipse(x, y, 1.6, 1.0, 30 + i * 20), grain, 1); }
+        c.Scatter(pile, speck, 0.08, 3);
+        if (sprouts) { c.Line(10, 18, 9, 14, "#8cc25c"); c.Line(17, 16, 18, 12, "#8cc25c"); c.Line(22, 18, 24, 15, "#8cc25c"); }
+        c.Save(path);
+    }
+
     public static void Run(string root) {
         string mat = Path.Combine(root, "materials"), min = Path.Combine(root, "minerals"), tools = Path.Combine(root, "tools"), food = Path.Combine(root, "food");
+        string alc = Path.Combine(root, "alcohol"); Directory.CreateDirectory(alc);
         Canvas c;
 
         // ---------- шкуры и кожа
@@ -275,5 +298,25 @@ public static class Icons {
                 int x = 9 + col * 4 + (row % 2) * 2, y = 11 + row * 4;
                 c.Dot(x, y, "#8a5a10"); c.Dot(x + 1, y, "#8a5a10"); c.Dot(x, y + 1, "#a8701a");
             } } c.Save(Path.Combine(food, "honeycomb_full.png"));
+
+        // ---------- алкоголь: склянки разного цвета
+        Mat clear = new Mat("#3c5a5a", "#94c0bc", "#e8fffc", 0.0, 0.5, 5);
+        Mat brown = new Mat("#2a1a0c", "#5e3c1c", "#9a6a38", 0.0, 0.5, 5);
+        Mat bottleGreen = new Mat("#16301c", "#2e6038", "#6aa070", 0.0, 0.5, 5);
+        Bottle(new Canvas(81), clear, new Mat("#5e4a2a", "#a88a58", "#d8bc88", 0.10, 0.9, 5), false, Path.Combine(food, "must.png"));
+        Bottle(new Canvas(82), brown, new Mat("#5a3a0c", "#c08a2c", "#f0c060", 0.04, 0.6, 5), false, Path.Combine(alc, "beer.png"));
+        Bottle(new Canvas(83), clear, new Mat("#6a4a10", "#d4a43c", "#f6d878", 0.04, 0.6, 5), false, Path.Combine(alc, "cider.png"));
+        Bottle(new Canvas(84), bottleGreen, new Mat("#2a0610", "#6a1426", "#a83448", 0.04, 0.6, 5), true, Path.Combine(alc, "wine.png"));
+        Bottle(new Canvas(85), clear, new Mat("#6a400a", "#d89426", "#f8c858", 0.04, 0.6, 5), false, Path.Combine(alc, "mead.png"));
+        Bottle(new Canvas(86), clear, new Mat("#8aa0a4", "#d8e8ec", "#ffffff", 0.0, 0.6, 4), true, Path.Combine(alc, "spirit.png"));
+        Bottle(new Canvas(87), clear, new Mat("#4a0a10", "#a02030", "#e05a64", 0.04, 0.6, 5), true, Path.Combine(alc, "tincture.png"));
+        Bottle(new Canvas(88), clear, new Mat("#7a7448", "#cfc89a", "#f2eccc", 0.04, 0.6, 5), false, Path.Combine(food, "vinegar.png"));
+        // ---------- солод
+        Mat wheat = new Mat("#6a4e1c", "#c8a050", "#f0d48a", 0.10, 1.2, 5);
+        Grains(new Canvas(89), new Mat("#4e3c1c", "#9a8048", "#c8b07a", 0.12, 1.2, 5), "#5a4628", false, Path.Combine(mat, "wet_grain.png"));
+        Grains(new Canvas(90), wheat, "#e6d6a0", true, Path.Combine(mat, "green_malt.png"));
+        Grains(new Canvas(91), wheat, "#fff0c0", false, Path.Combine(mat, "pale_malt.png"));
+        Grains(new Canvas(92), new Mat("#5a3410", "#a8682a", "#d89a54", 0.10, 1.2, 5), "#e0a868", false, Path.Combine(mat, "amber_malt.png"));
+        Grains(new Canvas(93), new Mat("#1e120a", "#4a2c16", "#7a4e2c", 0.10, 1.2, 5), "#8a5a34", false, Path.Combine(mat, "dark_malt.png"));
     }
 }

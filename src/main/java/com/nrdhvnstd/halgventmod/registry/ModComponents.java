@@ -5,6 +5,7 @@ import java.util.List;
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.brewing.Brew;
 import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
 import com.nrdhvnstd.halgventmod.leather.Hide;
@@ -163,6 +164,13 @@ public final class ModComponents {
             COMPONENTS.register("food_extras", () -> DataComponentType.<FoodExtras>builder()
                     .persistent(FoodExtras.CODEC)
                     .networkSynchronized(FoodExtras.STREAM_CODEC)
+                    .build());
+
+    // Состав напитка или сусла: основа и приметы (brewing/Brew)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Brew>> BREW =
+            COMPONENTS.register("brew", () -> DataComponentType.<Brew>builder()
+                    .persistent(Brew.CODEC)
+                    .networkSynchronized(Brew.STREAM_CODEC)
                     .build());
 
     private ModComponents() {}

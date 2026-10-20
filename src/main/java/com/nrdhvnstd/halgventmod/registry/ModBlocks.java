@@ -2,6 +2,10 @@ package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.beekeeping.SkepBlock;
+import com.nrdhvnstd.halgventmod.brewing.AgingCaskBlock;
+import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlock;
+import com.nrdhvnstd.halgventmod.brewing.StillBlock;
+import com.nrdhvnstd.halgventmod.brewing.WinePressBlock;
 import com.nrdhvnstd.halgventmod.farming.RyeCropBlock;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
@@ -53,6 +57,14 @@ public final class ModBlocks {
     // Рожь — посев на пашне, как пшеница
     public static final DeferredBlock<RyeCropBlock> RYE = BLOCKS.register("rye",
             () -> new RyeCropBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHEAT)));
+
+    // Алкоголь (brewing/*): давильня, бродильная бочка, перегонный куб, бочка для выдержки
+    public static final DeferredBlock<WinePressBlock> WINE_PRESS = BLOCKS.register("wine_press", () -> new WinePressBlock(wood()));
+    public static final DeferredBlock<FermentingBarrelBlock> FERMENTING_BARREL = BLOCKS.register("fermenting_barrel",
+            () -> new FermentingBarrelBlock(wood()));
+    public static final DeferredBlock<StillBlock> STILL = BLOCKS.register("still", () -> new StillBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL).strength(3.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final DeferredBlock<AgingCaskBlock> AGING_CASK = BLOCKS.register("aging_cask", () -> new AgingCaskBlock(wood()));
 
     // Пчеловодство: плетёный улей Conquest Reforged
     public static final DeferredBlock<SkepBlock> SKEP = BLOCKS.register("skep",

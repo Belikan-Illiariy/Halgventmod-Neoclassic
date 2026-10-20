@@ -6,6 +6,9 @@
     "halgventmod:leather_table",
     "halgventmod:brine_barrel",
     "halgventmod:kitchen_table",
-    "halgventmod:skep"
+    "halgventmod:skep",
+    "halgventmod:wine_press",
+    "halgventmod:fermenting_barrel",
+    "halgventmod:aging_cask"
   ]
 }

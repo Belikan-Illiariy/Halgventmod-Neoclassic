@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 import com.nrdhvnstd.halgventmod.datagen.DataGenerators;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.farming.FarmingEvents;
 import com.nrdhvnstd.halgventmod.network.ModNetwork;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -38,6 +39,7 @@ public class HalgventMod {
         ModCreativeTabs.register(modEventBus);
         ModNetwork.register(modEventBus);
         FarmingEvents.register(modEventBus);
+        Intoxication.init(); // правило drunkChat — до загрузки мира
 
         // Генерация JSON-файлов (задача runData)
         modEventBus.addListener(DataGenerators::gatherData);

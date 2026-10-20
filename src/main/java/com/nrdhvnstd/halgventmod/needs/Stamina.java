@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.needs;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.sound.PlayerVoice;
 import com.nrdhvnstd.halgventmod.sound.Voices;
@@ -125,7 +126,7 @@ public final class Stamina {
         if (data.regenDelay > 0) {
             data.regenDelay--;
         } else if (data.level < MAX) {
-            data.level = Math.min(data.level + REGEN_PER_TICK, MAX);
+            data.level = Math.min(data.level + REGEN_PER_TICK * Intoxication.staminaFactor(player), MAX); // навеселе — быстрее
         }
     }
 

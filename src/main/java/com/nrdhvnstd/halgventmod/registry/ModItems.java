@@ -25,6 +25,7 @@ import com.nrdhvnstd.halgventmod.gear.ModGear;
 import com.nrdhvnstd.halgventmod.storage.ContainerType;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
+import com.nrdhvnstd.halgventmod.brewing.AlcoholItem;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
@@ -1414,6 +1415,108 @@ public final class ModItems {
                     "Place it near flowers: a swarm settles in during spring or summer. It stores honey; in winter the bees eat it — leave them some.")
             .kg(3)
             .register(properties -> new BlockItem(ModBlocks.SKEP.get(), properties));
+
+    // ----- Алкоголь (brewing/*) -----
+    // Сусло и напитки: что именно — из состава (компонент halgventmod:brew), название собирает AlcoholItem
+    public static final DeferredItem<AlcoholItem> MUST = item("must", "Сусло", "Must", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сок с давильни, пивное сусло или медовый взвар из котелка. Влейте в бродильную бочку.",
+                    "Juice from a press, beer wort or honey must from a pot. Pour it into a fermenting barrel.")
+            .stacksTo(8).grams(400)
+            .drink().food(4, 2.0F).thirst(10).returns(Items.GLASS_BOTTLE).shelfLife(3)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> BEER = item("beer", "Пиво", "Beer", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Слабое и сытное, хорошо утоляет жажду. Пьют свежим — скисает за неделю. Снимает похмелье.",
+                    "Weak and filling, quenches thirst well. Drunk fresh — sours within a week. Cures a hangover.")
+            .stacksTo(8).grams(500)
+            .drink().food(10, 5.0F).thirst(15).returns(Items.GLASS_BOTTLE).shelfLife(7)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> CIDER = item("cider", "Сидр", "Cider", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Яблочный, лёгкий. В бочке для выдержки становится лучше.", "Light, made of apples. Improves in an aging cask.")
+            .stacksTo(8).grams(500)
+            .drink().food(6, 3.0F).thirst(12).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> WINE = item("wine", "Вино", "Wine", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Ягодное или «болотное». Выдержанное — лучше.", "Berry or marsh wine. Better when aged.")
+            .stacksTo(8).grams(500)
+            .drink().food(6, 3.0F).thirst(6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> MEAD = item("mead", "Медовуха", "Mead", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Медовый взвар, перебродивший неделю. Выдержанная — лучше.", "Honey must fermented for a week. Better when aged.")
+            .stacksTo(8).grams(500)
+            .drink().food(8, 4.0F).thirst(6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> SPIRIT = item("spirit", "Крепкое", "Spirit", Gender.N)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ALCOHOL)
+            .lore("Из перегонного куба. Валит с ног быстро; с ягодами, травами или мёдом в бродильной бочке — настойка.",
+                    "From a still. Knocks you down fast; with berries, herbs or honey in a fermenting barrel it becomes a tincture.")
+            .stacksTo(8).grams(400)
+            .drink().food(0, 0.0F).thirst(-10).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> TINCTURE = item("tincture", "Настойка", "Tincture", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ALCOHOL)
+            .lore("Крепкое, настоянное на ягодах, травах или мёде. Мягче крепкого.", "A spirit steeped with berries, herbs or honey. Gentler than a plain spirit.")
+            .stacksTo(8).grams(400)
+            .drink().food(2, 1.0F).thirst(-6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> VINEGAR = item("vinegar", "Уксус", "Vinegar", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Так бывает, если передержать брожение. Пить не стоит.", "What happens when fermentation goes too long. Better not to drink it.")
+            .stacksTo(8).grams(400)
+            .drink().food(0, 0.0F).thirst(-4).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    // Солод: замочить на разделочном столе, прорастить на крюке, высушить в печи
+    public static final DeferredItem<Item> WET_GRAIN = item("wet_grain", "Замоченное зерно", "Soaked grain", Gender.N)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("Повесьте на крюк — прорастёт.", "Hang it on a hook to sprout.")
+            .stacksTo(16).grams(60).shelfLife(4).register();
+    public static final DeferredItem<Item> GREEN_MALT = item("green_malt", "Пророщенное зерно", "Green malt", Gender.N)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("Высушите в хлебной печи: недолго — светлый солод, дольше — янтарный, ещё дольше — тёмный.",
+                    "Dry it in a baking oven: briefly for pale malt, longer for amber, longer still for dark.")
+            .stacksTo(16).grams(50).shelfLife(4).register();
+    public static final DeferredItem<Item> PALE_MALT = item("pale_malt", "Светлый солод", "Pale malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — пивное сусло.", "Into a pot with water for beer wort.").stacksTo(16).grams(40).register();
+    public static final DeferredItem<Item> AMBER_MALT = item("amber_malt", "Янтарный солод", "Amber malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — сусло для янтарного пива.", "Into a pot with water for amber beer wort.").stacksTo(16).grams(40).register();
+    public static final DeferredItem<Item> DARK_MALT = item("dark_malt", "Тёмный солод", "Dark malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — сусло для тёмного пива.", "Into a pot with water for dark beer wort.").stacksTo(16).grams(40).register();
+    // Станции
+    public static final DeferredItem<BlockItem> WINE_PRESS = item("wine_press", "Давильня", "Wine press", Gender.F)
+            .category(Category.TOOLS)
+            .lore("E яблоками или ягодами — засыпать, пустой рукой — давить, склянкой — набрать сусло.",
+                    "E with apples or berries to fill, an empty hand to press, a bottle to draw the must.")
+            .kg(40).register(properties -> new BlockItem(ModBlocks.WINE_PRESS.get(), properties));
+    public static final DeferredItem<BlockItem> FERMENTING_BARREL = item("fermenting_barrel", "Бродильная бочка", "Fermenting barrel", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Передержите — уксус.",
+                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Too long and it is vinegar.")
+            .kg(15).register(properties -> new BlockItem(ModBlocks.FERMENTING_BARREL.get(), properties));
+    public static final DeferredItem<BlockItem> STILL = item("still", "Перегонный куб", "Still", Gender.M)
+            .category(Category.TOOLS)
+            .lore("Поставьте над огнём. Пиво, вино, сидр, медовуха — залить; из четырёх склянок одна крепкого.",
+                    "Place it above a fire. Pour in beer, wine, cider or mead; four bottles make one spirit.")
+            .kg(30).register(properties -> new BlockItem(ModBlocks.STILL.get(), properties));
+    public static final DeferredItem<BlockItem> AGING_CASK = item("aging_cask", "Бочка для выдержки", "Aging cask", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Вино, медовуха, сидр, крепкое и настойки становятся лучше с каждой неделей. В погребе — быстрее.",
+                    "Wine, mead, cider, spirits and tinctures get better every week. Faster in a cellar.")
+            .kg(25).register(properties -> new BlockItem(ModBlocks.AGING_CASK.get(), properties));
 
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)

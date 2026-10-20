@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.brewing.Brew;
+import com.nrdhvnstd.halgventmod.brewing.Brewing;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
@@ -57,7 +59,7 @@ public final class Cookery {
 
     /** Чем считается положенное в котелок. */
     public enum Kind {
-        MEAT, FISH, GRAIN, MUSHROOM, VEGETABLE, MILK, SALT, HERB, SWEET;
+        MEAT, FISH, GRAIN, MUSHROOM, VEGETABLE, MILK, SALT, HERB, SWEET, MALT;
 
         public boolean main() {
             return ordinal() <= VEGETABLE.ordinal();
@@ -71,7 +73,7 @@ public final class Cookery {
 
     /** Что выходит из котелка. */
     public enum Result {
-        MEAT_STEW, FISH_SOUP, PORRIDGE, MUSHROOM_SOUP, VEGETABLE_SOUP, HERBAL_TEA;
+        MEAT_STEW, FISH_SOUP, PORRIDGE, MUSHROOM_SOUP, VEGETABLE_SOUP, HERBAL_TEA, WORT, HONEY_MUST;
 
         public Item item() {
             return switch (this) {
@@ -81,12 +83,13 @@ public final class Cookery {
                 case MUSHROOM_SOUP -> ModItems.MUSHROOM_SOUP.get();
                 case VEGETABLE_SOUP -> ModItems.VEGETABLE_SOUP.get();
                 case HERBAL_TEA -> ModItems.HERBAL_TEA.get();
+                case WORT, HONEY_MUST -> ModItems.MUST.get(); // сусло для бродильной бочки
             };
         }
 
         /** Чем черпают: миской или склянкой. */
         public Item container() {
-            return this == HERBAL_TEA ? Items.GLASS_BOTTLE : Items.BOWL;
+            return this == HERBAL_TEA || this == WORT || this == HONEY_MUST ? Items.GLASS_BOTTLE : Items.BOWL;
         }
     }
 
@@ -172,10 +175,38 @@ public final class Cookery {
             quality -= 1;
         }
 
+        // Солод с водой — пивное сусло (по самому тёмному солоду); травы — «на травах», мёд — «с мёдом»
+        int malts = counts.getOrDefault(Kind.MALT, 0);
+        if (malts > 0) {
+            String kind = "wort_pale";
+            for (ItemStack stack : contents) {
+                if (stack.is(ModItems.DARK_MALT.get())) {
+                    kind = "wort_dark";
+                } else if (stack.is(ModItems.AMBER_MALT.get()) && !kind.equals("wort_dark")) {
+                    kind = "wort_amber";
+                }
+            }
+            Brew brew = Brew.of(kind);
+            if (counts.containsKey(Kind.HERB)) {
+                brew = brew.withFlag("herbs");
+            }
+            if (counts.containsKey(Kind.SWEET)) {
+                brew = brew.withFlag("honey");
+            }
+            ItemStack wort = Brewing.make(ModItems.MUST.get(), brew);
+            return new Outcome(Result.WORT, malts * 2, FoodQuality.set(wort, quality));
+        }
+
         if (mains == 0) {
             int herbs = counts.getOrDefault(Kind.HERB, 0);
             if (herbs == 0) {
-                return null;
+                int honey = counts.getOrDefault(Kind.SWEET, 0);
+                if (honey == 0) {
+                    return null;
+                }
+                // Мёд с водой — медовый взвар для медовухи
+                return new Outcome(Result.HONEY_MUST, honey * 2,
+                        FoodQuality.set(Brewing.make(ModItems.MUST.get(), Brew.of("honey")), quality));
             }
             if (counts.containsKey(Kind.SWEET)) {
                 quality++; // отвар с мёдом

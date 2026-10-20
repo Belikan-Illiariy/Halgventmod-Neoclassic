@@ -47,6 +47,7 @@ public class OvenBlockEntity extends StationBlockEntity {
     public static final float UNDERBAKED = 0.7F;
     public static final float OVERBAKED = 1.3F;
     public static final float BURNT = 1.6F;
+    public static final float MALT_BURNT = 2.2F;  // солод терпит дольше: 1,3–1,6 — янтарный, 1,6–2,2 — тёмный
 
     public static final int BAND_RAW = 0;
     public static final int BAND_GOOD = 1;
@@ -91,6 +92,9 @@ public class OvenBlockEntity extends StationBlockEntity {
 
     /** Что выходит из этого: тесто — хлеб, сырой пирог — пирог по начинке, сырая булочка — сладкая. Пусто — не печётся. */
     public static ItemStack baked(ItemStack raw) {
+        if (raw.is(ModItems.GREEN_MALT.get())) {
+            return new ItemStack(ModItems.PALE_MALT.get()); // по пропечённости — светлый, янтарный или тёмный (takeOut)
+        }
         if (raw.is(ModItems.RAW_BUN.get())) {
             return new ItemStack(ModItems.SWEET_BUN.get());
         }
@@ -223,6 +227,16 @@ public class OvenBlockEntity extends StationBlockEntity {
         }
         ItemStack raw = items.remove(best);
         float done = progress.remove(best);
+        if (raw.is(ModItems.GREEN_MALT.get()) && done >= UNDERBAKED && done < MALT_BURNT) {
+            // Солод: чем дольше в печи, тем темнее
+            ItemStack malt = new ItemStack(done < OVERBAKED ? ModItems.PALE_MALT.get()
+                    : done < BURNT ? ModItems.AMBER_MALT.get() : ModItems.DARK_MALT.get());
+            tell(player, "baked_malt", malt.getHoverName());
+            give(player, malt);
+            sound(SoundEvents.WOOD_HIT, 0.6F, 1.2F);
+            changed();
+            return;
+        }
         ItemStack result;
         if (done < UNDERBAKED) {
             result = raw;
