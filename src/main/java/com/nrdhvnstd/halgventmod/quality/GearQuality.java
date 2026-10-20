@@ -23,7 +23,7 @@ import net.minecraft.world.item.TridentItem;
 
 /**
  * Качество снаряжения — признак вроде редкости, но про то, как вещь сделана: Ужасный, Плохой, Посредственный,
- * Добротный, Отменный, Шедевр. Склоняется по роду предмета («Добротная кираса», «Добротный меч»), «Шедевр» —
+ * Добротный, Отменный, Шедевр — отдельная плашка рядом с редкостью, на редкость не влияет. Склоняется по роду предмета («Добротная кираса», «Добротный меч»), «Шедевр» —
  * нет. Хранится компонентом halgventmod:gear_quality (0–5); вещь без него считается Посредственной.
  *
  * <p>Только у оружия и брони. Что меняет — таблица {@link Grade}: урон оружия, защиту брони, пробитие (доля брони
@@ -142,13 +142,19 @@ public final class GearQuality {
         return value == null ? Grade.MEDIOCRE : Grade.values()[Math.clamp(value, 0, Grade.values().length - 1)];
     }
 
-    /** Задать качество: компонент и признак (прочие признаки, например редкость, остаются). */
+    /**
+     * Задать качество — только компонент: признаки (редкость и прочие) не трогаются. В подсказке качество —
+     * отдельная плашка рядом с признаками (QualityBadge). Признак качества, оставшийся у вещи от 0.0.9-первой
+     * сборки, убирается.
+     */
     public static ItemStack set(ItemStack stack, Grade grade) {
         stack.set(ModComponents.GEAR_QUALITY.get(), grade.ordinal());
-        List<String> traits = new ArrayList<>(stack.getOrDefault(ModComponents.TRAITS.get(), List.of()));
-        traits.removeIf(QUALITY_TRAITS::contains);
-        traits.add(grade.id());
-        stack.set(ModComponents.TRAITS.get(), List.copyOf(traits));
+        List<String> traits = stack.get(ModComponents.TRAITS.get());
+        if (traits != null && traits.stream().anyMatch(QUALITY_TRAITS::contains)) {
+            List<String> cleaned = new ArrayList<>(traits);
+            cleaned.removeIf(QUALITY_TRAITS::contains);
+            stack.set(ModComponents.TRAITS.get(), List.copyOf(cleaned));
+        }
         return stack;
     }
 

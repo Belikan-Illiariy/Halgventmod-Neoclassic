@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import com.nrdhvnstd.halgventmod.menu.ArmorEquipSlot;
 import com.nrdhvnstd.halgventmod.menu.GearEquipSlot;
 import com.nrdhvnstd.halgventmod.menu.PlayerArmorMenu;
+import com.nrdhvnstd.halgventmod.quality.GearQuality;
 import com.nrdhvnstd.halgventmod.menu.StorageSlot;
 import com.nrdhvnstd.halgventmod.weight.Encumbrance;
 import com.nrdhvnstd.halgventmod.weight.ModWeights;
@@ -196,19 +197,33 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
         graphics.pose().popPose();
 
         // Имя, признаки, описание, характеристики — те же строки, что в обычной подсказке
+        // Строка признаков с качеством — с плашкой качества справа (QualityBadge)
         List<FormattedCharSequence> lines = new ArrayList<>();
+        int badgeLine = -1;
+        GearQuality.Grade badge = null;
         for (Component line : getTooltipFromContainerItem(stack)) {
+            GearQuality.Grade grade = QualityBadge.gradeFor(line);
+            if (grade != null) {
+                badge = grade;
+                badgeLine = lines.size();
+            }
             List<FormattedCharSequence> wrapped = font.split(line, width);
             lines.addAll(wrapped.isEmpty() ? List.of(FormattedCharSequence.EMPTY) : wrapped);
         }
         int y = iconY + ICON_SIZE + PANEL_PADDING;
         graphics.enableScissor(left, top, right, bottom);
-        for (FormattedCharSequence line : lines) {
+        for (int i = 0; i < lines.size(); i++) {
+            FormattedCharSequence line = lines.get(i);
             if (y + font.lineHeight > topPos + BUTTONS_Y) {
                 break;
             }
             graphics.drawString(font, line, left + PANEL_PADDING, y, 0xFFFFFF, true);
-            y += font.lineHeight + 1;
+            if (i == badgeLine) {
+                int text = font.width(line);
+                QualityBadge.render(graphics, font, left + PANEL_PADDING + text + (text > 0 ? 4 : 0), y,
+                        QualityBadge.label(stack, badge), badge);
+            }
+            y += font.lineHeight + (i == badgeLine ? 3 : 1);
         }
         graphics.disableScissor();
     }
