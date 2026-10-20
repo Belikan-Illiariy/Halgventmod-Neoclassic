@@ -61,6 +61,37 @@ public static class Icons {
         return Canvas.Ellipse(cx, cy, rx - 1.6, rx * 0.38 - 1.0);
     }
 
+    static void Pie(Canvas c, Mat crust, Mat filling, string lattice, string path) {
+        c.Fill(Canvas.Ellipse(16, 17, 13, 9.5), crust, 3);
+        c.Fill(Canvas.Ellipse(16, 16.5, 10, 6.8), filling, 2);
+        for (int i = -2; i <= 2; i++) { c.Line(11 + i * 3, 10.5, 15 + i * 3, 22.5, lattice); }
+        c.Line(7, 14, 25, 14, lattice); c.Line(7, 19, 25, 19, lattice);
+        c.Save(path);
+    }
+
+    static void Fish(Canvas c, Mat body, string speck, double specks, string path) {
+        F fish = Canvas.Union(Canvas.Ellipse(14, 17, 10, 5, -20), Canvas.Poly(23, 12, 29, 7, 28, 15, 30, 19, 24, 15));
+        c.Fill(fish, body, 2.5);
+        c.Fill(Canvas.Poly(11, 12, 15, 9, 17, 13), body, 1);
+        if (specks > 0) { c.Scatter(fish, speck, specks, 2); } else { c.Line(8, 19, 18, 15, speck); }
+        c.Dot(7, 18, "#101010"); c.Save(path);
+    }
+
+    static void Herbs(Canvas c, Mat leaf, string path) {
+        Mat stem = new Mat("#24300e", "#56702c", "#88a050", 0.1, 1.0, 5);
+        for (int i = 0; i < 5; i++) { double tx = 9 + i * 3.5, ty = 6 + (i % 2) * 2; c.Fill(Canvas.Capsule(16, 26, tx, ty, 0.8), stem, 1); }
+        for (int i = 0; i < 7; i++) { double lx = 8 + i * 2.6, ly = 9 + (i % 3) * 3; c.Fill(c.Rough(Canvas.Ellipse(lx, ly, 3, 1.7, 40 - i * 15), 0.4, 1.0, i), leaf, 1.5); }
+        c.Fill(Canvas.Box(16, 21, 3.2, 1.4, 0, 0.5), new Mat("#5a3a1a", "#a8743e", "#d8a666", 0.05, 0.6, 4), 1);
+        c.Save(path);
+    }
+
+    static void Soup(Canvas c, Mat broth, string chunkA, string chunkB, string path) {
+        F top = Bowl(c, Wood, 16, 16, 12, 10); c.Fill(top, broth, 2);
+        c.Dot(12, 15, chunkA); c.Dot(13, 15, chunkA); c.Dot(11, 15, chunkA); c.Dot(18, 17, chunkA); c.Dot(19, 17, chunkA);
+        c.Dot(16, 13, chunkB); c.Dot(21, 15, chunkB); c.Dot(10, 17, chunkB); c.Dot(15, 18, chunkB);
+        c.Save(path);
+    }
+
     public static void Run(string root) {
         string mat = Path.Combine(root, "materials"), min = Path.Combine(root, "minerals"), tools = Path.Combine(root, "tools"), food = Path.Combine(root, "food");
         Canvas c;
@@ -140,6 +171,20 @@ public static class Icons {
             c.Fill(Canvas.Poly(19, 13, 28, 18, 28, 24, 19, 24), Leather, 2);
             c.Fill(Canvas.Box(24, 26, 4, 1.2), Wood, 1); c.Line(20, 15, 27, 19, "#ae7444"); } c.Save(Path.Combine(tools, "bee_smoker.png"));
 
+        c = new Canvas(47); { // серп: короткая рукоять и серповидный клинок
+            c.Fill(Canvas.Capsule(6, 27, 12, 21, 1.9), Wood, 2);
+            F blade = Canvas.Cut(Canvas.Cut(Canvas.Ellipse(19, 14, 10, 9), Canvas.Ellipse(20.5, 16, 8.5, 7.5)), Canvas.Box(9, 22, 6, 5));
+            c.Fill(blade, Steel, 1.2); c.Fill(Canvas.Capsule(11, 22, 13, 20, 1.3), Iron, 1); } c.Save(Path.Combine(tools, "sickle.png"));
+        c = new Canvas(48); { // коса: длинное косовище с ручкой и лезвие сверху
+            c.Fill(Canvas.Capsule(6, 29, 20, 5, 1.3), Wood, 1.5);
+            c.Fill(Canvas.Capsule(10, 20, 14, 22, 1.2), Wood, 1);
+            F blade = Canvas.Cut(Canvas.Cut(Canvas.Ellipse(16, 13, 13, 9), Canvas.Ellipse(15, 15.5, 12.5, 8)), Canvas.Box(16, 20, 16, 6));
+            c.Fill(Canvas.Cut(blade, Canvas.Box(27, 8, 6, 8)), Steel, 1.2); } c.Save(Path.Combine(tools, "scythe.png"));
+        c = new Canvas(49); { // набор ключника: кожаный свёрток с отмычками
+            c.Fill(Canvas.Box(15, 19, 10, 6.5, -10, 2.5), Leather, 3);
+            for (int i = 0; i < 4; i++) { double x = 10 + i * 3.5; c.Fill(Canvas.Capsule(x, 16, x + 2, 6 + (i % 2) * 2, 0.8), Steel, 1); c.Dot((int)(x + 2), 5 + (i % 2) * 2, "#9aa2aa"); }
+            c.Fill(Canvas.Box(15, 18, 10.5, 1.2, -10), Tan, 1); } c.Save(Path.Combine(tools, "locksmith_kit.png"));
+
         // ---------- еда
         c = new Canvas(57); { // мёд: глиняный горшок, медовая шапка и потёк по боку
             Mat clay = new Mat("#4a2414", "#9a5a36", "#d08c5c", 0.10, 0.8, 6);
@@ -167,5 +212,63 @@ public static class Icons {
         c = new Canvas(56); { F bun = Canvas.Cut(Canvas.Ellipse(16, 20, 11, 9), Canvas.Box(16, 30, 14, 5)); c.Fill(bun, Bun, 4);
             F glaze = c.Rough(Canvas.Ellipse(16, 14.5, 6.5, 3.2), 0.6, 0.8, 2); c.Fill(glaze, Glaze, 1.5);
             c.Dot(14, 14, "#b02840"); c.Dot(18, 15, "#b02840"); } c.Save(Path.Combine(food, "sweet_bun.png"));
+        // ---------- выпечка: общая форма пирога — круглый, сверху решётка из теста
+        Mat rawCrust = new Mat("#857454", "#d8c69a", "#f6ead0", 0.06, 0.6, 6);
+        Mat meatFill = new Mat("#3e140c", "#7e3020", "#b05a3c", 0.18, 1.0, 5);
+        Mat berryFill = new Mat("#2a0a1a", "#6a1a36", "#a83a5a", 0.14, 1.0, 5);
+        Pie(new Canvas(61), rawCrust, meatFill, "#efe0bc", Path.Combine(food, "raw_pie.png"));
+        Pie(new Canvas(62), Crust, meatFill, "#d8a058", Path.Combine(food, "meat_pie.png"));
+        Pie(new Canvas(63), Crust, berryFill, "#d8a058", Path.Combine(food, "berry_pie.png"));
+
+        // ---------- мука: завязанный мешочек, сверху мука
+        c = new Canvas(64); { Mat burlap = new Mat("#4e3a20", "#9a7e52", "#ccb284", 0.18, 1.2, 6);
+            F sack = Canvas.Union(Canvas.Ellipse(16, 21, 9.5, 8), Canvas.Box(16, 12, 5, 4, 0, 2));
+            c.Fill(sack, burlap, 3); c.Fill(Canvas.Box(16, 13.5, 6, 1.2), Wood, 1);
+            c.Fill(Canvas.Ellipse(16, 9, 4.5, 2.2), Salt, 1.5); c.Scatter(sack, "#7a6240", 0.05, 2); } c.Save(Path.Combine(food, "wheat_flour.png"));
+
+        // ---------- мясо и рыба
+        Mat meat = new Mat("#4a160e", "#963828", "#d06c50", 0.14, 0.9, 6);
+        Mat smoked = new Mat("#2a1208", "#6a3018", "#a85e30", 0.16, 0.9, 6);
+        Mat fat = new Mat("#a89880", "#ece0cc", "#ffffff", 0.04, 0.6, 4);
+        c = new Canvas(65); { F slab = c.Rough(Canvas.Box(16, 17, 10, 6.5, -14, 2.5), 0.5, 0.6, 1); c.Fill(slab, meat, 3);
+            c.Fill(c.Rough(Canvas.Box(15, 11.5, 9.5, 1.5, -14, 1), 0.3, 0.8, 2), fat, 1);
+            c.Scatter(slab, "#f6f8fa", 0.12, 3); } c.Save(Path.Combine(food, "salted_meat.png"));
+        c = new Canvas(66); { F ham = c.Rough(Canvas.Ellipse(14, 19, 9, 7.5, -30), 0.5, 0.6, 1); c.Fill(ham, smoked, 3);
+            c.Fill(Canvas.Capsule(20, 13, 26, 7, 1.6), fat, 1.5); c.Fill(Canvas.Ellipse(26.5, 6.5, 2.2, 2.0), fat, 1);
+            c.Line(9, 16, 14, 13, "#c07a44"); } c.Save(Path.Combine(food, "smoked_meat.png"));
+        Mat silver = new Mat("#363e46", "#8a96a2", "#e2eaf0", 0.06, 0.8, 6);
+        Mat gold = new Mat("#4e2c0c", "#a8702a", "#e6b45a", 0.08, 0.8, 6);
+        Fish(new Canvas(67), silver, "#f6f8fa", 0.10, Path.Combine(food, "salted_fish.png"));
+        Fish(new Canvas(68), gold, "#f0c878", 0.0, Path.Combine(food, "smoked_fish.png"));
+
+        // ---------- грибы и травы
+        c = new Canvas(69); { Mat cap = new Mat("#24160c", "#5a3a22", "#8e6a46", 0.18, 1.0, 5);
+            c.Line(5, 9, 27, 13, "#c8b088");
+            c.Fill(c.Rough(Canvas.Ellipse(9, 14, 4.5, 3.6), 0.6, 0.9, 1), cap, 2);
+            c.Fill(c.Rough(Canvas.Ellipse(17, 17, 4.8, 3.8), 0.6, 0.9, 2), cap, 2);
+            c.Fill(c.Rough(Canvas.Ellipse(24, 20, 4.2, 3.4), 0.6, 0.9, 3), cap, 2); } c.Save(Path.Combine(food, "dried_mushrooms.png"));
+        Mat green = new Mat("#1a3410", "#4a7e2c", "#8cc25c", 0.16, 1.2, 6);
+        Mat olive = new Mat("#34320e", "#76723a", "#aca462", 0.16, 1.2, 6);
+        Herbs(new Canvas(70), green, Path.Combine(food, "herbs.png"));
+        Herbs(new Canvas(71), olive, Path.Combine(food, "dried_herbs.png"));
+
+        // ---------- отвар: склянка с пробкой
+        c = new Canvas(72); { Mat glass = new Mat("#3c5a5a", "#94c0bc", "#e8fffc", 0.0, 0.5, 5);
+            Mat tea = new Mat("#3e3a0c", "#8a8228", "#c8be56", 0.04, 0.6, 5);
+            c.Fill(Canvas.Union(Canvas.Ellipse(16, 21, 7.5, 7.5), Canvas.Box(16, 11, 2.6, 4)), glass, 2);
+            c.Fill(Canvas.Cut(Canvas.Ellipse(16, 21, 6, 6), Canvas.Box(16, 15, 8, 2.5)), tea, 2);
+            c.Fill(Canvas.Box(16, 6.5, 2.2, 1.8, 0, 0.6), Wood, 1); c.Line(12, 18, 13, 22, "#ffffff"); } c.Save(Path.Combine(food, "herbal_tea.png"));
+
+        // ---------- похлёбки в той же миске, что каша и уха
+        Soup(new Canvas(73), new Mat("#5a1410", "#a43828", "#dc6c54", 0.06, 0.6, 5), "#e88a30", "#5a8a30", Path.Combine(food, "vegetable_soup.png"));
+        Soup(new Canvas(74), new Mat("#4a3018", "#8a6038", "#c09060", 0.06, 0.6, 5), "#d8c4a0", "#6a4a2a", Path.Combine(food, "mushroom_soup.png"));
+        Soup(new Canvas(75), new Mat("#3e2410", "#7a4a24", "#b07a44", 0.06, 0.6, 5), "#8a3a28", "#e07a2a", Path.Combine(food, "meat_stew.png"));
+
+        // ---------- медовые соты: шестигранные ячейки
+        c = new Canvas(76); { F comb = c.Rough(Canvas.Box(16, 17, 10, 8, -10, 3), 0.5, 0.6, 1); c.Fill(comb, Wax, 3);
+            for (int row = 0; row < 4; row++) for (int col = 0; col < 5; col++) {
+                int x = 9 + col * 4 + (row % 2) * 2, y = 11 + row * 4;
+                c.Dot(x, y, "#8a5a10"); c.Dot(x + 1, y, "#8a5a10"); c.Dot(x, y + 1, "#a8701a");
+            } } c.Save(Path.Combine(food, "honeycomb_full.png"));
     }
 }

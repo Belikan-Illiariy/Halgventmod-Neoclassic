@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "halgventmod:item/tools/locksmith_kit"
+  }
+}
