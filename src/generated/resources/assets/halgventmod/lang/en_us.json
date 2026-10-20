@@ -1011,6 +1011,7 @@
   "tooltip.halgventmod.pie_filling.mushroom": "Filling: mushrooms",
   "tooltip.halgventmod.protection": "Protection: %s, toughness %s",
   "tooltip.halgventmod.quality.armor": "Protection ×%s, resistance ×%s",
+  "tooltip.halgventmod.quality.food": "Nutrition and saturation ×%s",
   "tooltip.halgventmod.quality.weapon": "Damage ×%s, penetration %s%% (%s)",
   "tooltip.halgventmod.registry_banner": "Banner registry: %s",
   "tooltip.halgventmod.spoiled": "Spoiled",

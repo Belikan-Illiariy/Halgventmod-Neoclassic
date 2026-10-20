@@ -133,7 +133,7 @@ public final class ModComponents {
     // Готовка (cooking/*): качество еды 0–4 (FoodQuality), видно признаком редкости
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FOOD_QUALITY =
             COMPONENTS.register("food_quality", () -> DataComponentType.<Integer>builder()
-                    .persistent(Codec.intRange(0, 4))
+                    .persistent(Codec.intRange(0, 5))
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
                     .build());
 

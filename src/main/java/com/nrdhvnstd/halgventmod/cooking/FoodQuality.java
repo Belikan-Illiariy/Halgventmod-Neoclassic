@@ -4,27 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.quality.QualityDisplay;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Качество приготовленной еды 0–4: Обычное, Необычное, Редкое, Уникальное, Легендарное. Хранится компонентом
- * {@link ModComponents#FOOD_QUALITY} и показывается признаком редкости, как у кожи.
+ * Качество приготовленной еды 0–5 по общей шкале: Ужасное, Плохое, Посредственное, Добротное, Отменное, Шедевр.
+ * Хранится компонентом {@link ModComponents#FOOD_QUALITY}, в подсказке — плашка рядом с признаками; редкость не трогает.
  *
- * <p>Сытость и насыщение еды умножаются на {@link #factor}: Обычное — ×0,8, Редкое — ×1,0, Легендарное — ×1,2.
+ * <p>Сытость и насыщение еды умножаются на {@link #factor}: Ужасное — ×0,8, Посредственное — ×1,0, Шедевр — ×1,3.
  * Еда без компонента (сырая, чужих модов) — ×1,0.
  */
 public final class FoodQuality {
-    public static final int MAX = 4;
+    public static final int MAX = 5;
     public static final int NORMAL = 2;
 
     // Меняйте здесь
     public static final float FACTOR_PER_LEVEL = 0.1F;
-
-    private static final List<String> RARITY = List.of(
-            ModTraits.COMMON.id(), ModTraits.UNCOMMON.id(), ModTraits.RARE.id(), ModTraits.UNIQUE.id(),
-            ModTraits.LEGENDARY.id());
 
     private FoodQuality() {}
 
@@ -37,14 +34,10 @@ public final class FoodQuality {
         return quality == null ? NORMAL : quality;
     }
 
-    /** Задать качество: компонент и признак редкости (остальные признаки, например «Сырое», остаются). */
+    /** Задать качество — только компонент: редкость не трогается, в подсказке — плашка качества (QualityBadge). */
     public static ItemStack set(ItemStack stack, int quality) {
-        int q = Math.clamp(quality, 0, MAX);
-        stack.set(ModComponents.FOOD_QUALITY.get(), q);
-        List<String> traits = new ArrayList<>(stack.getOrDefault(ModComponents.TRAITS.get(), List.of()));
-        traits.removeIf(RARITY::contains);
-        traits.add(0, RARITY.get(q));
-        stack.set(ModComponents.TRAITS.get(), List.copyOf(traits));
+        stack.set(ModComponents.FOOD_QUALITY.get(), Math.clamp(quality, 0, MAX));
+        QualityDisplay.restoreRarity(stack);
         return stack;
     }
 

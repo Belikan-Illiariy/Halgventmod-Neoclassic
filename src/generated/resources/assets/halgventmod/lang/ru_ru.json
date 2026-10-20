@@ -1011,6 +1011,7 @@
   "tooltip.halgventmod.pie_filling.mushroom": "Начинка: грибы",
   "tooltip.halgventmod.protection": "Защита: %s, твёрдость %s",
   "tooltip.halgventmod.quality.armor": "Защита ×%s, стойкость ×%s",
+  "tooltip.halgventmod.quality.food": "Сытость и насыщение ×%s",
   "tooltip.halgventmod.quality.weapon": "Урон ×%s, пробитие %s%% (%s)",
   "tooltip.halgventmod.registry_banner": "Реестр знамён: %s",
   "tooltip.halgventmod.spoiled": "Испорчено",

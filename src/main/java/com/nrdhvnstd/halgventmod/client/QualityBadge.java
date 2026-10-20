@@ -6,6 +6,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.quality.QualityDisplay;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.client.gui.Font;
@@ -50,7 +51,7 @@ public final class QualityBadge {
     /** Эта ли строка — строка признаков вещи с качеством. */
     @Nullable
     static GearQuality.Grade gradeFor(Object line) {
-        return line == host && hostStack != null ? GearQuality.get(hostStack) : null;
+        return line == host && hostStack != null ? QualityDisplay.of(hostStack) : null;
     }
 
     static Component label(ItemStack stack, GearQuality.Grade grade) {

@@ -857,6 +857,7 @@ public class ModLanguageProvider extends LanguageProvider {
     /** Качество снаряжения и типы урона (quality/*). Сами признаки качества — из ModTraits. */
     private void qualityTranslations() {
         add("tooltip.halgventmod.quality.weapon", russian ? "Урон ×%s, пробитие %s%% (%s)" : "Damage ×%s, penetration %s%% (%s)");
+        add("tooltip.halgventmod.quality.food", russian ? "Сытость и насыщение ×%s" : "Nutrition and saturation ×%s");
         add("tooltip.halgventmod.quality.armor", russian ? "Защита ×%s, стойкость ×%s" : "Protection ×%s, resistance ×%s");
         add("damage_kind.halgventmod.chopping", russian ? "рубящий" : "chopping");
         add("damage_kind.halgventmod.piercing", russian ? "колющий" : "piercing");

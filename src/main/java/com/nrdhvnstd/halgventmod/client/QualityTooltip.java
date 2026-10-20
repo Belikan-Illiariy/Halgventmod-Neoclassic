@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.client;
 import java.util.Locale;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
 
@@ -22,6 +23,11 @@ public final class QualityTooltip {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
+        if (FoodQuality.has(stack)) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.food", times(FoodQuality.factor(stack)))
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
         if (!GearQuality.applies(stack)) {
             return;
         }

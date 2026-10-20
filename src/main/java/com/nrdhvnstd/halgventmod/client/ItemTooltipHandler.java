@@ -13,6 +13,7 @@ import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.quality.QualityDisplay;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -53,7 +54,10 @@ public final class ItemTooltipHandler {
         if (traits != null) {
             traits = traits.stream().filter(id -> GearQuality.Grade.byId(id) == null).toList();
         }
-        boolean quality = GearQuality.has(stack);
+        boolean quality = QualityDisplay.of(stack) != null; // снаряжение, еда, кожа — плашкой (QualityBadge)
+        if (traits != null && (stack.has(ModComponents.FOOD_QUALITY.get()) || stack.has(ModComponents.LEATHER_QUALITY.get()))) {
+            traits = QualityDisplay.ownRarity(stack, traits); // у старых вещей качество было записано в редкость
+        }
         ModLore.Entry lore = ModLore.get(item);
         ArmorSlot armorSlot = ModArmor.slotOf(stack);
 
