@@ -1,0 +1,103 @@
+tablitsa_id,mod_id,name_ru,name_en,tablitsa_group,tablitsa_type,material,equip_event,rattles_on_steps
+hood,,Худ,Hood,Голова / Подшлемник · 1 слой,Ткань,PADDED,armor.equip.padded,
+cale,,Каль,Cale,Голова / Подшлемник · 1 слой,Ткань,PADDED,armor.equip.padded,
+chaperon,,Шаперон,Chaperon,Голова / Подшлемник · 1 слой,Ткань,PADDED,armor.equip.padded,
+mail_coif,,Кольчужный капюшон,Mail Coif,Голова / Койф · 2 слой,Кольчуга,MAIL,armor.equip.mail,
+ventail_coif,,Мантельер,Ventail Coif,Голова / Койф · 2 слой,Кольчуга,MAIL,armor.equip.mail,
+ventail_coif_nasal,,Мантельер с наносником,Ventail Coif with Nasal,Голова / Койф · 2 слой,Кольчуга,MAIL,armor.equip.mail,
+cervelliere,cervelliere,Цервельер,Cervelliere,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+kettle_hat,kettle_hat,Шапель,Kettle Hat,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+kettle_hat_bevor,,Шапель с бувигером,Kettle Hat with Bevor,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+barbute,,Барбют,Barbute,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+gilded_barbute,,Позолоченный барбют,Gilded barbute,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+bascinet,bascinet,Бацинет,Bascinet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+klappvisor_bascinet,,Бацинет с клапвизором,Klappvisor Bascinet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+hundsgugel_bascinet,bascinet_hounskull,Бацинет с хундсгугелем,Hundsgugel Bascinet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+schweinsgugel_bascinet,,Бацинет с швайнгугелем,Schweinsgugel Bascinet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+great_bascinet,,Гросс-бацинет,Great Bascinet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+infantry_sallet,,Пехотный саллет,Infantry Sallet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+knight_sallet,,Рыцарский саллет,Knight Sallet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+armet,,Армет,Armet,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+kubelhelm,,Кубельхельм,Kubelhelm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+light_topfhelm,,Лёгкий топфхельм,Light Topfhelm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+heavy_topfhelm,,Тяжелый топфхельм,Heavy Topfhelm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+allendoric_helmet,,Аллендорский шлем (норманнский),Allendoric Helm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+wendish_helmet,,Вендский шлем (шпангенхельм),Wendish Helm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+halgvent_helm,halgvent_helmet,Хальгвентский шлем,Halgvent Helm,Голова / Шлем · 3 слой,Сталь,PLATE,armor.equip.plate,
+simple_surcoat,,Простое сюрко,Simple surcoat,Голова / Накидка,Ткань,PADDED,armor.equip.padded,
+surcoat,,Сюрко,Surcoat,Голова / Накидка,Ткань,PADDED,armor.equip.padded,
+woolen_cloak,,Суконный плащ,Woolen Cloak,Голова / Накидка,Ткань,PADDED,armor.equip.padded,
+fine_cloak,,Изящный плащ,Fine Cloak,Голова / Накидка,Ткань,PADDED,armor.equip.padded,
+fur_cloak,,Меховой плащ,Fur Cloak,Голова / Накидка,Ткань,PADDED,armor.equip.padded,
+simple_aketon,,Простой акетон,Simple Aketon,Туловище / Поддоспех · 1 слой,Ткань,PADDED,armor.equip.padded,
+gambeson,,Гамбезон,Gambeson,Туловище / Поддоспех · 1 слой,Ткань,PADDED,armor.equip.padded,
+pourpoint,,Пурпуэн,Pourpoint,Туловище / Поддоспех · 1 слой,Ткань,PADDED,armor.equip.padded,
+padded_jack,padded_jacket,Жакет,Padded Jack,Туловище / Поддоспех · 1 слой,Ткань,PADDED,armor.equip.padded,
+mail_vest,,Кольчужный жилет,Mail Vest,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+haubergeon,,Хаубергеон,Haubergeon,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+hauberk,,Хауберк,Hauberk,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+salvar_mail,,Сальварская кольчуга,Salvar Mail,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+light_mail,,Облегченная кольчуга,Light Mail,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+plated_mail,,Кольчуга с пластинами,Plated Mail,Туловище / Кольчуга · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+lamellar_armor,,Ламеллярный доспех,Lamellar Armor,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+light_brigandine,,Легкая бригантина,Light Brigandine,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+heavy_brigandine,,Тяжелая бригантина,Heavy Brigandine,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+leather_brigandine,,Кожаная бригантина,Leather Brigandine,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+noble_brigandine,,Дворянская бригантина,Noble Brigandine,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+simple_cuirass,,Простая кираса,Simple Cuirass,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+kastenbrust,,Кастенбруст,Kastenbrust,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+marinikian_cuirass,,Мариникийская кираса,Marinikian Cuirass,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+gwalden_cuirass,,Гвальденская кираса,Gwalden Cuirass,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+parade_cuirass,,Парадная кираса,Parade Cuirass,Туловище / Нагрудник · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+rawhide_mittens,,Голицы,Rawhide Mittens,Туловище / Кисти · 1 слой,Ткань,LEATHER,armor.equip.leather,
+padded_mittens,,Стеганые рукавицы,Padded Mittens,Туловище / Кисти · 1 слой,Ткань,PADDED,armor.equip.padded,
+archer_gloves,,Стрелковые перчатки,Archer's Gloves,Туловище / Кисти · 1 слой,Ткань,LEATHER,armor.equip.leather,
+woolen_mittens,,Шерстяные рукавицы,Woolen Mittens,Туловище / Кисти · 1 слой,Ткань,PADDED,armor.equip.padded,
+cloth_gauntlets,,Тканевые краги,Cloth Gauntlets,Туловище / Кисти · 1 слой,Ткань,PADDED,armor.equip.padded,
+leather_gauntlets,,Кожаные краги,Leather Gauntlets,Туловище / Кисти · 1 слой,Ткань,LEATHER,armor.equip.leather,
+mufflers,,Маффлеры,Mufflers,Туловище / Кисти · 2 слой,Кольчуга,MAIL,armor.equip.mail,
+mail_gloves,,Пятипалые кольчужные перчатки,Mail Gloves,Туловище / Кисти · 2 слой,Кольчуга,MAIL,armor.equip.mail,
+splinted_gauntlets,,Шинные рукавицы,Splinted Gauntlets,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+vambraces,,Вамбрасы,Vambraces,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+simple_plate_gauntlets,,Простые латные рукавицы,Simple Plate Gauntlets,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+marinikian_gauntlets,,Мариникийские латные перчатки,Marinikian Gauntlets,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+gwalden_gauntlets,,Гвальденские латные перчатки,Gwalden Gauntlets,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+lamellar_gauntlets,,Ламеллярные рукавицы,Lamellar Gauntlets,Туловище / Кисти · 3 слой,Сталь,PLATE,armor.equip.plate,
+braies,,Брэ,Braies,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+split_hose,,Раздельные шоссы,Split Hose,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+joined_hose,,Слитые шоссы,Joined Hose,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+padded_hose,,Стеганые шоссы,Padded Hose,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+heavy_infantry_hose,,Тяжелые пехотные шоссы,Heavy Infantry Hose,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+wendish_leg_wraps,,Вендские шерстяные обмотки с ноговицами,Wendish Leg Wraps,Ноги / Штаны и шоссы · 1 слой,Ткань,PADDED,armor.equip.padded,
+mail_chausses,,Кольчужные шоссы,Mail Chausses,Ноги / Кольчужные шоссы · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+mail_gussets,,Подлатные гассеты,Mail Gussets,Ноги / Кольчужные шоссы · 2 слой,Кольчуга,MAIL,armor.equip.mail,armor.move.mail
+splinted_greaves,,Шинные поножи,Splinted Greaves,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+greaves,greaves,Грейвы,Greaves,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+simple_leg_harness,,Простые латные поножи,Simple Leg Harness,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+marinikian_leg_harness,,Мариникийские латные поножи,Marinikian Leg Harness,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+gwalden_leg_harness,,Гвальденские латные поножи,Gwalden Leg Harness,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+eberart_leg_harness,,Эберартовы латные поножи,Eberart's Leg Harness,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+parade_leg_harness,,Парадные поножи,Parade Leg Harness,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+simple_poleyns,,Простые наколенники,Simple Poleyns,Ноги / Поножи · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+turnshoes,,Постолы,Turnshoes,Ноги / Обувь · 1 слой,Ткань,LEATHER,armor.equip.leather,
+poulaines,,Пулены,Poulaines,Ноги / Обувь · 1 слой,Ткань,LEATHER,armor.equip.leather,
+ankle_boots,,Низкие сапоги,Ankle Boots,Ноги / Обувь · 1 слой,Ткань,LEATHER,armor.equip.leather,
+huntsman_boots,,Егерские сапоги,Huntsman Boots,Ноги / Обувь · 1 слой,Ткань,LEATHER,armor.equip.leather,
+fur_boots,,Меховые сапоги,Fur Boots,Ноги / Обувь · 1 слой,Ткань,LEATHER,armor.equip.leather,
+simple_sabatons,,Простые сабатоны,Simple Sabatons,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+gwalden_poulaines,,Гвальденские пулены,Gwalden Poulaines,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+bearpaw_sabatons,,Медвежьи сабатоны,Bear-Paw Sabatons,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+duckbill_sabatons,,Утиные сабатоны,Duckbill Sabatons,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+eberart_sabatons,,Эберартовы сабатоны,Eberart's Sabatons,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+parade_sabatons,,Парадные сабатоны,Parade Sabatons,Ноги / Латная обувь · 3 слой,Сталь,PLATE,armor.equip.plate,armor.move.plate
+pheasant_plume,,Фазаньи перья,Pheasant Plume,Украшения / Плюмажи и бурлет,—,PADDED,armor.equip.padded,
+griffin_plume,,Грифоньи перья,Griffin Plume,Украшения / Плюмажи и бурлет,—,PADDED,armor.equip.padded,
+dyed_goose_plume,,Крашеные гусиные перья,Dyed Goose Plume,Украшения / Плюмажи и бурлет,—,PADDED,armor.equip.padded,
+torse,,Бурлет,Torse,Украшения / Плюмажи и бурлет,Ткань,PADDED,armor.equip.padded,
+rondels,,Рондели,Rondels,Украшения / Рондели,Сталь,PLATE,armor.equip.plate,
+gwalden_rondels,,Гвальденские рондели,Gwalden Rondels,Украшения / Рондели,Сталь,PLATE,armor.equip.plate,
+heraldic_rondels,,Геральдические рондели,Heraldic Rondels,Украшения / Рондели,Сталь,PLATE,armor.equip.plate,
+,hooded_cloak,Плащ с капюшоном,Hooded cloak,нет в TABLITsA1 (слот «Накидка»),,PADDED,armor.equip.padded,
+,quilted_aketon,Акетон,Aketon,нет в TABLITsA1 (слот «Поддоспех»),,PADDED,armor.equip.padded,
+,short_mail,Короткая кольчуга,Short mail,нет в TABLITsA1 (слот «Кольчуга»),,MAIL,armor.equip.mail,armor.move.mail
+,boots,Сапоги,Boots,нет в TABLITsA1 (слот «Обувь»),,LEATHER,armor.equip.leather,

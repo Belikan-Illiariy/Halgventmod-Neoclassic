@@ -18,8 +18,14 @@ public final class DataGenerators {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         // Теги блоков: что срезает серп, куда сажаются семена
-        generator.addProvider(event.includeServer(),
+        ModBlockTagsProvider blockTags = generator.addProvider(event.includeServer(),
                 new ModBlockTagsProvider(output, lookupProvider, existingFileHelper));
+
+        // Теги для звуков боя: вид оружия, ближний бой
+        generator.addProvider(event.includeServer(),
+                new ModItemTagsProvider(output, lookupProvider, blockTags.contentsGetter(), existingFileHelper));
+        generator.addProvider(event.includeServer(),
+                new ModDamageTypeTagsProvider(output, lookupProvider, existingFileHelper));
 
         // Модели предметов и переводы
         generator.addProvider(event.includeClient(), new ModItemModelProvider(output, existingFileHelper));

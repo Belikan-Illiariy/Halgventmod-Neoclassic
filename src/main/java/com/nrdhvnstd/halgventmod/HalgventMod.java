@@ -15,6 +15,7 @@ import com.nrdhvnstd.halgventmod.registry.ModCreativeTabs;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.registry.ModMenus;
+import com.nrdhvnstd.halgventmod.registry.ModSounds;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -28,6 +29,7 @@ public class HalgventMod {
         ModAttachments.register(modEventBus);
         ModAttributes.register(modEventBus);
         ModEffects.register(modEventBus);
+        ModSounds.register(modEventBus);
         ModComponents.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);

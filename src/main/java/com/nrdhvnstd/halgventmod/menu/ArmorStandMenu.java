@@ -64,7 +64,7 @@ public class ArmorStandMenu extends AbstractContainerMenu {
         for (ArmorSlot slot : ArmorSlot.values()) {
             int col = slot.ordinal() % PlayerArmorMenu.ARMOR_COLUMNS;
             int row = slot.ordinal() / PlayerArmorMenu.ARMOR_COLUMNS;
-            addSlot(new ArmorEquipSlot(armor, slot, PlayerArmorMenu.ARMOR_X + col * PlayerArmorMenu.SLOT_STEP,
+            addSlot(new ArmorEquipSlot(armor, slot, stand, PlayerArmorMenu.ARMOR_X + col * PlayerArmorMenu.SLOT_STEP,
                     PlayerArmorMenu.TOP + row * PlayerArmorMenu.SLOT_STEP));
         }
     }

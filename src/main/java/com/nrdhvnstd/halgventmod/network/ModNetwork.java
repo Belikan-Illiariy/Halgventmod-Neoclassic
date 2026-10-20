@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "15"; // 15: окна шитья и выкроек кожевника; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
+    private static final String VERSION = "16"; // 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -45,6 +45,7 @@ public final class ModNetwork {
         registrar.playToClient(ArmorialTitlesPayload.TYPE, ArmorialTitlesPayload.STREAM_CODEC, ArmorialTitlesPayload::handle);
         registrar.playToClient(ArmorialContentPayload.TYPE, ArmorialContentPayload.STREAM_CODEC, ArmorialContentPayload::handle);
         registrar.playToServer(ArmorialEditPayload.TYPE, ArmorialEditPayload.STREAM_CODEC, ArmorialEditPayload::handle);
+        registrar.playToServer(SwingPayload.TYPE, SwingPayload.STREAM_CODEC, SwingPayload::handle);
         registrar.playToClient(SewingOpenPayload.TYPE, SewingOpenPayload.STREAM_CODEC, SewingOpenPayload::handle);
         registrar.playToServer(SewingResultPayload.TYPE, SewingResultPayload.STREAM_CODEC, SewingResultPayload::handle);
         registrar.playToClient(PatternOpenPayload.TYPE, PatternOpenPayload.STREAM_CODEC, PatternOpenPayload::handle);

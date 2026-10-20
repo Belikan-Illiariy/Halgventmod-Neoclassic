@@ -4,8 +4,6 @@ import com.nrdhvnstd.halgventmod.armor.ArmorRules;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -40,8 +38,7 @@ public class GearItem extends Item {
         if (!level.isClientSide) {
             ItemStack worn = gear.get(slot);
             gear.set(slot, held.copyWithCount(1));
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 1.0F);
+            slot.type().playEquip(player);
             return InteractionResultHolder.success(worn); // снятая вещь — в руку (или пустая рука)
         }
         return InteractionResultHolder.success(held);

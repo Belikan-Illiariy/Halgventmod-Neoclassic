@@ -7,8 +7,6 @@ import com.nrdhvnstd.halgventmod.menu.ArmorStandMenu;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -76,7 +74,7 @@ public final class ArmorStandEvents {
             if (!player.getAbilities().instabuild || !worn.isEmpty()) {
                 player.setItemInHand(hand, worn);
             }
-            changed(stand);
+            changed(stand, armor.get(slot));
         }
         return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
@@ -103,15 +101,15 @@ public final class ArmorStandEvents {
         if (!player.level().isClientSide) {
             player.setItemInHand(InteractionHand.MAIN_HAND, armor.get(outermost));
             armor.set(outermost, ItemStack.EMPTY);
-            changed(stand);
+            changed(stand, player.getMainHandItem());
         }
         return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
 
-    private static void changed(ArmorStand stand) {
+    // stack — надетая или снятая вещь: по её материалу звук
+    private static void changed(ArmorStand stand, ItemStack stack) {
         stand.syncData(ModAttachments.ARMOR);
-        stand.level().playSound(null, stand.getX(), stand.getY(), stand.getZ(),
-                SoundEvents.ARMOR_EQUIP_GENERIC, SoundSource.PLAYERS, 1.0F, 1.0F);
+        ArmorSounds.equip(stand, stack);
     }
 
     // Стойку сломали — броня выпадает, как ванильная

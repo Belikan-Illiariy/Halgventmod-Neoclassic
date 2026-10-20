@@ -11,6 +11,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.armor.ArmorKind;
 import com.nrdhvnstd.halgventmod.armor.ArmorPieceItem;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.CloakType;
@@ -70,6 +71,7 @@ public final class ModItems {
     //     .returns(Items.BOWL)                       — что остаётся в руке (миска, бутылка)
     //   Броня:
     //     .armor(ArmorSlot.HELMET)                   — вещь брони своего слота; стак 1, надевается ПКМ
+    //     .armorKind(ArmorKind.PLATE)                — материал для звука, если не как у слота (ArmorKind.forSlot)
     //     .layerOrder(n)                             — свой порядок отрисовки вместо порядка слота
     //     .dyeable()                                 — красится как ткань (текстура в сером + <id>_overlay.png)
     //     .enamel()                                  — покрывается эмалью (<id>.png в цвете + серый <id>_enamel.png)
@@ -643,6 +645,7 @@ public final class ModItems {
             .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PADDED)
             .grams(150)
             .register();
     public static final DeferredItem<Item> RAWHIDE_MITTENS = item("rawhide_mittens", "Сыромятные рукавицы", "Rawhide mittens", Gender.PL)
@@ -655,12 +658,14 @@ public final class ModItems {
             .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PADDED)
             .grams(300)
             .register();
     public static final DeferredItem<Item> CLOTH_GAUNTLETS = item("cloth_gauntlets", "Тканевые перчатки", "Cloth gauntlets", Gender.PL)
             .traits(ModTraits.COMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PADDED)
             .dyeable()
             .grams(200)
             .register();
@@ -680,48 +685,56 @@ public final class ModItems {
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.MAIL)
             .grams(700)
             .register();
     public static final DeferredItem<Item> MUFFLERS = item("mufflers", "Кольчужные рукавицы", "Mufflers", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.MAIL)
             .grams(600)
             .register();
     public static final DeferredItem<Item> VAMBRACES = item("vambraces", "Наручи", "Vambraces", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .grams(800)
             .register();
     public static final DeferredItem<Item> LAMELLAR_GAUNTLETS = item("lamellar_gauntlets", "Ламеллярные перчатки", "Lamellar gauntlets", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .grams(900)
             .register();
     public static final DeferredItem<Item> SPLINTED_GAUNTLETS = item("splinted_gauntlets", "Шинные перчатки", "Splinted gauntlets", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .grams(900)
             .register();
     public static final DeferredItem<Item> SIMPLE_PLATE_GAUNTLETS = item("simple_plate_gauntlets", "Простые латные перчатки", "Simple plate gauntlets", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .kg(1)
             .register();
     public static final DeferredItem<Item> GWALDEN_GAUNTLETS = item("gwalden_gauntlets", "Гвальденские латные перчатки", "Gwalden gauntlets", Gender.PL)
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .kg(1.2)
             .register();
     public static final DeferredItem<Item> MARINIKIAN_GAUNTLETS = item("marinikian_gauntlets", "Мариникийские латные перчатки", "Marinikian gauntlets", Gender.PL)
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.GLOVES)
+            .armorKind(ArmorKind.PLATE)
             .kg(1.2)
             .register();
 
@@ -1150,6 +1163,7 @@ public final class ModItems {
 
         // Броня
         private ArmorSlot armorSlot;
+        private ArmorKind armorKind;
         private int layerOrder = ModArmor.ArmorInfo.SLOT_ORDER;
         private ModArmor.Dye dye = ModArmor.Dye.NONE;
         private final List<ModArmor.Coating> coatings = new ArrayList<>();
@@ -1271,6 +1285,12 @@ public final class ModItems {
         public Builder armor(ArmorSlot slot) {
             this.armorSlot = slot;
             this.maxStack = 1;
+            return this;
+        }
+
+        /** Материал для звука, если не такой, как по умолчанию у слота (ArmorKind.forSlot): латные перчатки, тканевые рукавицы. */
+        public Builder armorKind(ArmorKind kind) {
+            this.armorKind = kind;
             return this;
         }
 
@@ -1451,7 +1471,7 @@ public final class ModItems {
             }
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());
-            } else if (layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dye != ModArmor.Dye.NONE || !armorModels.isEmpty()
+            } else if (armorKind != null || layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dye != ModArmor.Dye.NONE || !armorModels.isEmpty()
                     || visor || !protection.isNone() || narrowView || hoodCompatible || cloak != null) {
                 throw new IllegalArgumentException(id + ": свойства брони без .armor(...)");
             }
@@ -1491,7 +1511,7 @@ public final class ModItems {
             if (protection.armor() < 0 || protection.toughness() < 0 || visorBonus.armor() < 0 || visorBonus.toughness() < 0) {
                 throw new IllegalArgumentException(id + ": защита не бывает отрицательной");
             }
-            return new ModArmor.ArmorInfo(armorSlot, layerOrder, dye, List.copyOf(coatings), List.copyOf(armorModels),
+            return new ModArmor.ArmorInfo(armorSlot, armorKind != null ? armorKind : ArmorKind.forSlot(armorSlot), layerOrder, dye, List.copyOf(coatings), List.copyOf(armorModels),
                     visor, protection, visorBonus, narrowView, hoodCompatible, cloak);
         }
     }
