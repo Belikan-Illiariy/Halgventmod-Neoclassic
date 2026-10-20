@@ -1,0 +1,9 @@
+{
+  "values": [
+    "halgventmod:knife",
+    { "id": "conquest_armory:hunting_knife", "required": false },
+    { "id": "conquest_armory:refined_hunting_knife", "required": false },
+    { "id": "conquest_armory:exquisite_hunting_knife", "required": false },
+    { "id": "conquest:hunting_knife", "required": false }
+  ]
+}

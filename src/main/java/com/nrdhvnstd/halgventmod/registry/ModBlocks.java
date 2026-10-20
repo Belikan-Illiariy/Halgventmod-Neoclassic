@@ -1,9 +1,15 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.leather.DryingRackBlock;
+import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlock;
+import com.nrdhvnstd.halgventmod.leather.LeatherTableBlock;
+import com.nrdhvnstd.halgventmod.leather.TanningVatBlock;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlock;
 
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -25,7 +31,24 @@ public final class ModBlocks {
                     .isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos) -> false)));
 
-    // Здесь будут блоки: чан, колода, сушилка...
+    // Станции кожевника (leather/*). Модели — из Conquest Reforged
+    public static final DeferredBlock<FleshingBeamBlock> FLESHING_BEAM = BLOCKS.register("fleshing_beam",
+            () -> new FleshingBeamBlock(wood()));
+    public static final DeferredBlock<TanningVatBlock> TANNING_VAT = BLOCKS.register("tanning_vat",
+            () -> new TanningVatBlock(wood()));
+    public static final DeferredBlock<DryingRackBlock> DRYING_RACK = BLOCKS.register("drying_rack",
+            () -> new DryingRackBlock(wood()));
+    public static final DeferredBlock<LeatherTableBlock> LEATHER_TABLE = BLOCKS.register("leather_table",
+            () -> new LeatherTableBlock(wood()));
+
+    private static BlockBehaviour.Properties wood() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(2.0F)
+                .sound(SoundType.WOOD)
+                .noOcclusion()
+                .ignitedByLava();
+    }
 
     private ModBlocks() {}
 

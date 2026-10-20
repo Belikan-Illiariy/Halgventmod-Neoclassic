@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "conquest:block/wooden_washing_tub" },
+    "facing=south": { "model": "conquest:block/wooden_washing_tub" },
+    "facing=east":  { "model": "conquest:block/wooden_washing_tub", "y": 90 },
+    "facing=west":  { "model": "conquest:block/wooden_washing_tub", "y": 90 }
+  }
+}

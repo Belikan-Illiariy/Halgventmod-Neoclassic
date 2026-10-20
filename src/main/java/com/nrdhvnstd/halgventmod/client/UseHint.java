@@ -2,7 +2,10 @@ package com.nrdhvnstd.halgventmod.client;
 
 import javax.annotation.Nullable;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -40,6 +43,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class UseHint {
     private static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "use_hint");
+    private static final ResourceLocation CROSSHAIR = ResourceLocation.withDefaultNamespace("hud/crosshair");
     private static final int COLOR_NAME = 0xFFFFFF;
     private static final int COLOR_ACTION = 0xFFE8A0;
 
@@ -111,6 +115,19 @@ public final class UseHint {
         Font font = minecraft.font;
         int x = graphics.guiWidth() / 2;
         int y = graphics.guiHeight() / 2;
+        // Колода со шкурой и инструмент кожевника в руке: вместо надписи — прицел, чтобы попадать по клочкам мездры
+        if (minecraft.level.getBlockEntity(pos) instanceof FleshingBeamBlockEntity beam && !beam.hide().isEmpty()
+                && FleshingBeamBlockEntity.isLeatherTool(minecraft.player.getMainHandItem())) {
+            // Как ванильный прицел: инверсия цвета под ним, без чёрного фона спрайта
+            RenderSystem.enableBlend();
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ZERO);
+            graphics.blitSprite(CROSSHAIR, (graphics.guiWidth() - 15) / 2, (graphics.guiHeight() - 15) / 2, 15, 15);
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableBlend();
+            return;
+        }
         graphics.drawCenteredString(font, state.getBlock().getName(), x, y - font.lineHeight, COLOR_NAME);
         graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use." + action(minecraft.level, pos, state),
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);

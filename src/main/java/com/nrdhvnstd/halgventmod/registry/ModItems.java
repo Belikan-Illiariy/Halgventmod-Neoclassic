@@ -29,6 +29,7 @@ import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.leather.Hide;
 import com.nrdhvnstd.halgventmod.weight.ModWeights;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -819,6 +820,248 @@ public final class ModItems {
 
 
 
+    // ----- Кожевенное дело (leather/*; станции — в ModBlocks) -----
+    // Цепочка: парная шкура → (соль) солёная → колода: мездра → чан с золой: золёная → колода, струг: голье →
+    // чан (кора / квасцы) или жир для меха → мокрая кожа → рама → кожа → стол кожевника → вещь.
+    // Шкура и качество идут компонентами halgventmod:hide и halgventmod:leather_quality (LeatherQuality).
+    public static final DeferredItem<Item> RAW_HIDE = item("raw_hide", "Парная шкура", "Raw hide", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.MATERIALS)
+            .lore("Только что снята со зверя. Через двое суток сгниёт: посолите её или сразу снимите мездру на колоде.",
+                    "Freshly taken from the beast. It rots in two days: salt it or flesh it on the beam at once.")
+            .stacksTo(4)
+            .kg(4)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> SALTED_HIDE = item("salted_hide", "Солёная шкура", "Salted hide", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.MATERIALS)
+            .lore("Пересыпана солью и пролежит полмесяца. Дальше — колода и чан.",
+                    "Packed with salt, it keeps for half a month. Next: the beam and the vat.")
+            .stacksTo(4)
+            .kg(3.5)
+            .shelfLife(16)
+            .register();
+    public static final DeferredItem<Item> LIMED_HIDE = item("limed_hide", "Золёная шкура", "Limed hide", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.MATERIALS)
+            .lore("Вымочена в зольном щёлоке: волос лезет сам. Снимите его стругом на колоде.",
+                    "Soaked in ash lye, the hair is slipping. Scrape it off on the beam.")
+            .stacksTo(4)
+            .kg(3)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> PELT = item("pelt", "Голье", "Pelt", Gender.N)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.MATERIALS)
+            .lore("Чистая шкура без волоса и мездры. В корьевой чан — дублёная кожа, в квасцовый — мягкая, "
+                            + "на раму — сыромять.",
+                    "A clean hide without hair or flesh. Bark vat for tanned leather, alum vat for soft, "
+                            + "the rack for rawhide.")
+            .stacksTo(4)
+            .kg(2.5)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> WET_LEATHER = item("wet_leather", "Мокрая кожа", "Wet leather", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Только из чана. Натяните на раму и сушите, пока не испортилась.",
+                    "Fresh from the vat. Stretch it on the rack and dry it before it spoils.")
+            .stacksTo(4)
+            .kg(2.5)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> TANNED_LEATHER = item("tanned_leather", "Дублёная кожа", "Tanned leather", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Плотная кожа корьевого дубления: пояса, сумки, колчаны. Сваренная в кипятке — варёная кожа.",
+                    "Firm bark-tanned leather: belts, bags, quivers. Boiled in water it becomes hardened leather.")
+            .stacksTo(16)
+            .grams(600)
+            .register();
+    public static final DeferredItem<Item> SOFT_LEATHER = item("soft_leather", "Мягкая кожа", "Soft leather", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Замша квасцового дубления: тонкая и тянется. На перчатки и подкладку.",
+                    "Alum-tawed suede, thin and supple. For gloves and linings.")
+            .stacksTo(16)
+            .grams(400)
+            .register();
+    public static final DeferredItem<Item> RAWHIDE = item("rawhide", "Сыромять", "Rawhide", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Высушенное без дубления голье: жёсткое, но боится воды. Из мелкой шкуры стругом выскабливают пергамент.",
+                    "Pelt dried without tanning: stiff, but afraid of water. A small one scraped down gives parchment.")
+            .stacksTo(16)
+            .grams(500)
+            .register();
+    public static final DeferredItem<Item> DRESSED_FUR = item("dressed_fur", "Выделанный мех", "Dressed fur", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Мех, выделанный на жиру: мягкий и тёплый. На плащи и подбой.",
+                    "Fur dressed with fat: soft and warm. For cloaks and lining.")
+            .stacksTo(16)
+            .grams(700)
+            .register();
+    public static final DeferredItem<Item> BOILED_LEATHER = item("boiled_leather", "Варёная кожа", "Hardened leather", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Дублёная кожа, сваренная в кипятке: твёрдая, как рог. На краги и бригантину.",
+                    "Tanned leather boiled until hard as horn. For gauntlets and brigandines.")
+            .stacksTo(16)
+            .grams(700)
+            .register();
+    public static final DeferredItem<Item> PARCHMENT = item("parchment", "Пергамент", "Parchment", Gender.M)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.MATERIALS)
+            .lore("Тонко выскобленная сыромять мелкой шкуры. На письма, книги и лекала.",
+                    "Finely scraped rawhide of a small beast. For letters, books and patterns.")
+            .stacksTo(16)
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> LEATHER_SCRAPS = item("leather_scraps", "Обрезки кожи", "Leather scraps", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Остаются после раскроя. Из них кроят ремешки.", "Left after cutting. Straps are cut from them.")
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> LEATHER_STRAP = item("leather_strap", "Кожаный ремешок", "Leather strap", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Ремень, завязка, петля. Нужен сумкам, колчанам и доспеху.",
+                    "A strap, a tie, a loop. Bags, quivers and armour need them.")
+            .grams(40)
+            .register();
+    public static final DeferredItem<Item> FLESH = item("flesh", "Мездра", "Flesh scrapings", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.MATERIALS)
+            .lore("Жир и плёнки с изнанки шкуры. Вываренная в чане, даёт клей.",
+                    "Fat and membrane from the inside of a hide. Boiled in a vat, it gives glue.")
+            .stacksTo(16)
+            .grams(200)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> HIDE_GLUE = item("hide_glue", "Мездровый клей", "Hide glue", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Склеивает слои варёной кожи. Нужен крагам и бригантине.",
+                    "Binds layers of hardened leather. Gauntlets and brigandines need it.")
+            .stacksTo(16)
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> SALT = item("salt", "Соль", "Salt", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MINERALS)
+            .lore("Выпаривается из воды в чане над огнём. Сохраняет шкуры и идёт в квасцовый раствор.",
+                    "Boiled out of water in a vat over a fire. Keeps hides and goes into the alum bath.")
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> ASH = item("ash", "Зола", "Ash", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MINERALS)
+            .lore("ПКМ лопатой по горящему костру. Три горсти в чан с водой — щёлок для золки шкур.",
+                    "Right-click a burning campfire with a shovel. Three handfuls in a water vat make lye for liming.")
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> BARK = item("bark", "Кора", "Bark", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("ПКМ топором по бревну. Четыре куска в чан с водой — корьевой раствор для дубления.",
+                    "Right-click a log with an axe. Four pieces in a water vat make the tanning liquor.")
+            .grams(200)
+            .register();
+    public static final DeferredItem<Item> ALUM = item("alum", "Квасцы", "Alum", Gender.PL)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.MINERALS)
+            .lore("Белые кристаллы из кальцита. Две горсти и соль в чан с водой — квасцовый раствор для мягкой кожи.",
+                    "White crystals found in calcite. Two handfuls and salt in a water vat make the alum bath.")
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> THREADS = item("threads", "Нитки", "Thread", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Для шитья на столе кожевника. Подойдёт и простая нить.",
+                    "For sewing at the leatherworker's table. Plain string will do too.")
+            .grams(30)
+            .register();
+
+    // Инструменты кожевника: работают по станциям на E (использование блока с предметом в руке), тупятся от работы
+    public static final DeferredItem<Item> FLESHING_KNIFE = item("fleshing_knife", "Мездряк", "Fleshing knife", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по клочкам мездры на шкуре (колода) — счищать их слой за слоем. Цельтесь в клочки и бейте ровно, "
+                            + "дожидаясь замаха: по чистому месту и в спешке нож режет шкуру.",
+                    "E at the flesh patches of a hide on the beam scrapes them layer by layer. Aim at the patches and strike "
+                            + "evenly, waiting for the swing: a clean spot or haste cuts the hide.")
+            .durability(300)
+            .grams(400)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> SCRAPER = item("scraper", "Струг", "Scraper", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по золёной шкуре на колоде — снять волос; по сыромяти мелкой шкуры — выскоблить пергамент.",
+                    "E at a limed hide on the beam scrapes the hair; at small rawhide it scrapes parchment.")
+            .durability(300)
+            .grams(350)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> LEATHER_MALLET = item("leather_mallet", "Колотушка", "Leather mallet", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по высохшей коже на раме — размять: она станет мягче и лучше.",
+                    "E at dried leather on the rack softens it, making it better.")
+            .durability(400)
+            .grams(600)
+            .draw(DrawType.TOOL)
+            .register();
+    // Простой нож. Кроить на столе кожевника можно и охотничьими ножами Conquest (тег halgventmod:knives)
+    public static final DeferredItem<Item> KNIFE = item("knife", "Нож", "Knife", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по столу кожевника — раскроить выложенную кожу по выбранной выкройке.",
+                    "E at the leatherworker's table cuts the laid leather to the chosen pattern.")
+            .durability(300)
+            .grams(200)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> NEEDLE = item("needle", "Игла", "Needle", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по столу кожевника с раскроенной вещью — шить: прокалывайте, когда игла над отметкой. "
+                            + "Нитки берутся из инвентаря.",
+                    "E at the leatherworker's table with a cut piece sews it: pierce when the needle is over a mark. "
+                            + "Thread is taken from your inventory.")
+            .durability(250)
+            .grams(10)
+            .register();
+
+    // Станции кожевника (блоки — ModBlocks, модели — из Conquest Reforged)
+    public static final DeferredItem<BlockItem> FLESHING_BEAM = item("fleshing_beam", "Кожевенная колода", "Fleshing beam", Gender.F)
+            .category(Category.TOOLS)
+            .lore("E со шкурой в руке — положить; E мездряком, стругом или солью — работать.",
+                    "E with a hide in hand lays it down; E with the fleshing knife, scraper or salt works it.")
+            .kg(30)
+            .register(properties -> new BlockItem(ModBlocks.FLESHING_BEAM.get(), properties));
+    public static final DeferredItem<BlockItem> TANNING_VAT = item("tanning_vat", "Дубильный чан", "Tanning vat", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E ведром воды — налить; E золой, корой, квасцами с солью или салом — раствор; E шкурой — опустить. Над огнём варит.",
+                    "E with a water bucket fills it; E with ash, bark, alum and salt or fat makes the bath; E with a hide sinks it. Over a fire it boils.")
+            .kg(20)
+            .register(properties -> new BlockItem(ModBlocks.TANNING_VAT.get(), properties));
+    public static final DeferredItem<BlockItem> DRYING_RACK = item("drying_rack", "Рама для сушки", "Drying rack", Gender.F)
+            .category(Category.TOOLS)
+            .lore("E мокрой кожей или гольем — натянуть. Летом сохнет за сутки, зимой — за четверо. Дождь мешает.",
+                    "E with wet leather or a pelt stretches it. Dries in a day in summer, four in winter. Rain gets in the way.")
+            .kg(10)
+            .register(properties -> new BlockItem(ModBlocks.DRYING_RACK.get(), properties));
+    public static final DeferredItem<BlockItem> LEATHER_TABLE = item("leather_table", "Стол кожевника", "Leatherworker's table", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E пустой рукой — окно выкроек. E кожей — выложить, E ножом — кроить, E иглой — шить.",
+                    "E with an empty hand opens the patterns. E with leather lays it, E with the knife cuts, E with the needle sews.")
+            .kg(25)
+            .register(properties -> new BlockItem(ModBlocks.LEATHER_TABLE.get(), properties));
+
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)
             .traits(ModTraits.RARE)
@@ -887,6 +1130,11 @@ public final class ModItems {
                 event.modify(def.item(), builder -> builder.set(ModComponents.TRAITS.get(), def.traits()));
             }
         }
+        // Шкура без сведений о звере (из творческого, /give, сундука) — воловья. Шкура со зверя ставит свою
+        Hide unfleshed = new Hide("cow", 5, false, false);
+        event.modify(RAW_HIDE, builder -> builder.set(ModComponents.HIDE.get(), unfleshed));
+        event.modify(SALTED_HIDE, builder -> builder.set(ModComponents.HIDE.get(), unfleshed));
+        event.modify(LIMED_HIDE, builder -> builder.set(ModComponents.HIDE.get(), unfleshed.withFleshed()));
     }
 
     public static final class Builder {

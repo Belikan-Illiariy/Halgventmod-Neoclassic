@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [ "I I", "SIS" ],
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "I": { "item": "minecraft:iron_nugget" }
+  },
+  "result": { "id": "halgventmod:scraper", "count": 1 }
+}
