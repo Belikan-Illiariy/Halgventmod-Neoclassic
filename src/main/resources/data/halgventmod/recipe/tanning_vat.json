@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [ "P P", "P P", "PPP" ],
-  "key": {
-    "P": { "tag": "minecraft:planks" }
-  },
-  "result": { "id": "halgventmod:tanning_vat", "count": 1 }
-}

@@ -4,6 +4,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
 import com.nrdhvnstd.halgventmod.cooking.HookBlock;
+import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlock;
 import com.nrdhvnstd.halgventmod.cooking.OvenBlock;
 import com.nrdhvnstd.halgventmod.cooking.QuernBlock;
 import com.nrdhvnstd.halgventmod.leather.DryingRackBlock;
@@ -53,6 +54,8 @@ public final class ModBlocks {
             () -> new OvenBlock(stone().lightLevel(state -> state.getValue(OvenBlock.LIT) ? 12 : 0)));
     public static final DeferredBlock<QuernBlock> QUERN = BLOCKS.register("quern",
             () -> new QuernBlock(stone()));
+    public static final DeferredBlock<KitchenTableBlock> KITCHEN_TABLE = BLOCKS.register("kitchen_table",
+            () -> new KitchenTableBlock(wood()));
     public static final DeferredBlock<BrineBarrelBlock> BRINE_BARREL = BLOCKS.register("brine_barrel",
             () -> new BrineBarrelBlock(wood()));
     public static final DeferredBlock<HookBlock> SMOKING_HOOK = BLOCKS.register("smoking_hook",

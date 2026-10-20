@@ -1135,15 +1135,15 @@ public final class ModItems {
     public static final DeferredItem<Item> WHEAT_FLOUR = item("wheat_flour", "Пшеничная мука", "Wheat flour", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.FOOD)
-            .lore("Смолота на жёрнове. Две горсти с ведром воды — тесто.", "Ground on a quern. Two handfuls and a bucket of water make dough.")
+            .lore("Смолота на жёрнове. На разделочном столе с водой — тесто.", "Ground on a quern. With water at a kitchen table it makes dough.")
             .stacksTo(16)
             .grams(200)
             .register();
     public static final DeferredItem<Item> DOUGH = item("dough", "Тесто", "Dough", Gender.N)
             .traits(ModTraits.COMMON, ModTraits.RAW)
             .category(Category.FOOD)
-            .lore("E по растопленной печи — посадить хлеб. С начинкой в верстаке — сырой пирог.",
-                    "E at a fired oven bakes bread. With a filling at the crafting table — a raw pie.")
+            .lore("E по растопленной печи — посадить хлеб. С начинкой на разделочном столе — сырой пирог.",
+                    "E at a fired oven bakes bread. With a filling at a kitchen table — a raw pie.")
             .stacksTo(8)
             .grams(400)
             .shelfLife(2)
@@ -1294,6 +1294,12 @@ public final class ModItems {
                     "E with wheat to fill, an empty hand to turn. Don't rush — the grain spills.")
             .kg(30)
             .register(properties -> new BlockItem(ModBlocks.QUERN.get(), properties));
+    public static final DeferredItem<BlockItem> KITCHEN_TABLE = item("kitchen_table", "Разделочный стол", "Kitchen table", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E пустой рукой — рецепты. Продукты, вода и соль — на доску, пустой рукой — месить. Тесто и пироги — здесь.",
+                    "E with an empty hand shows recipes. Food, water and salt go on the board, an empty hand kneads. Dough and pies are made here.")
+            .kg(20)
+            .register(properties -> new BlockItem(ModBlocks.KITCHEN_TABLE.get(), properties));
     public static final DeferredItem<BlockItem> BRINE_BARREL = item("brine_barrel", "Засолочная бочка", "Brine barrel", Gender.F)
             .category(Category.TOOLS)
             .lore("Сырое мясо или рыба и по соли на кусок — через двое суток солонина.",

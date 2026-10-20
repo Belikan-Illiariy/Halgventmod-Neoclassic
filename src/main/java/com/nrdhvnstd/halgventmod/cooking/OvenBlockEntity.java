@@ -227,6 +227,10 @@ public class OvenBlockEntity extends StationBlockEntity {
         } else {
             result = baked(raw);
             int quality = done < 1.0F ? 1 : done < OVERBAKED ? 3 : 1;
+            // Тесто с разделочного стола несёт своё качество: хорошо замешанное — лучше хлеб
+            if (FoodQuality.has(raw)) {
+                quality += FoodQuality.get(raw) - FoodQuality.NORMAL;
+            }
             FoodQuality.set(result, quality);
             tell(player, done < 1.0F ? "baked_under" : done < OVERBAKED ? "baked_good" : "baked_over",
                     result.getHoverName());

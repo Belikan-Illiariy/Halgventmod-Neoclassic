@@ -1,6 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": [ { "item": "minecraft:barrel" }, { "item": "halgventmod:salt" } ],
-  "result": { "id": "halgventmod:brine_barrel", "count": 1 }
-}

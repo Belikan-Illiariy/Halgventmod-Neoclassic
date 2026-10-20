@@ -751,6 +751,24 @@ public class ModLanguageProvider extends LanguageProvider {
         add("tooltip.halgventmod.pie_filling.mushroom", russian ? "Начинка: грибы" : "Filling: mushrooms");
         add("tooltip.halgventmod.pie_filling.berry", russian ? "Начинка: ягоды" : "Filling: berries");
 
+        add("gui.halgventmod.kitchen.title", russian ? "Рецепты" : "Recipes");
+        add("gui.halgventmod.kitchen.ingredients", russian ? "Продукты" : "Ingredients");
+        add("gui.halgventmod.kitchen.extras", russian ? "Добавки" : "Extras");
+        add("gui.halgventmod.kitchen.kneads", russian ? "Месить: %s раз" : "Knead: %s times");
+        cooking("kitchen_pick", "E пустой рукой — выбрать рецепт", "E with an empty hand picks a recipe");
+        cooking("kitchen_busy", "Сначала доделайте или заберите выложенное", "Finish or take back what is on the board first");
+        cooking("kitchen_take_first", "Сначала заберите готовое", "Take what is ready first");
+        cooking("kitchen_has_water", "Воды уже хватает", "Enough water already");
+        cooking("kitchen_has_salt", "Уже посолено", "Already salted");
+        cooking("kitchen_enough", "%s хватает", "Enough %s");
+        cooking("kitchen_spoiled", "Испорченное не берут", "Spoiled food won't do");
+        cooking("kitchen_wrong", "Это не по рецепту", "Not in this recipe");
+        cooking("kitchen_need", "Нужно ещё: %s × %s", "Still needed: %s × %s");
+        cooking("kitchen_need_water", "Полейте водой из ведра", "Pour in water from a bucket");
+        cooking("kitchen_ready_to_knead", "Всё на доске: месите пустой рукой", "All on the board: knead with an empty hand");
+        cooking("kitchen_knead", "%s / %s", "%s / %s");
+        cooking("kitchen_kneaded", "Уже замешано — доделайте", "Already kneaded — finish it");
+        cooking("kitchen_done", "Готово: %s", "Done: %s");
         cooking("diet_bored", "%s приелось: сытость %s%%", "Tired of %s: %s%% as filling");
         cooking("raw_sick", "Сырое пошло не впрок", "The raw food did not sit well");
 

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "conquest:block/rustic_square_wooden_table" },
+    "facing=east": { "model": "conquest:block/rustic_square_wooden_table", "y": 90 },
+    "facing=south": { "model": "conquest:block/rustic_square_wooden_table", "y": 180 },
+    "facing=west": { "model": "conquest:block/rustic_square_wooden_table", "y": 270 }
+  }
+}

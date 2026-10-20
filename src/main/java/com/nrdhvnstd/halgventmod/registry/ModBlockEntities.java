@@ -4,6 +4,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HookBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.OvenBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.QuernBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.DryingRackBlockEntity;
@@ -51,6 +52,9 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN =
             BLOCK_ENTITIES.register("quern", () -> BlockEntityType.Builder
                     .of(QuernBlockEntity::new, ModBlocks.QUERN.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<KitchenTableBlockEntity>> KITCHEN_TABLE =
+            BLOCK_ENTITIES.register("kitchen_table", () -> BlockEntityType.Builder
+                    .of(KitchenTableBlockEntity::new, ModBlocks.KITCHEN_TABLE.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BrineBarrelBlockEntity>> BRINE_BARREL =
             BLOCK_ENTITIES.register("brine_barrel", () -> BlockEntityType.Builder
                     .of(BrineBarrelBlockEntity::new, ModBlocks.BRINE_BARREL.get()).build(null));

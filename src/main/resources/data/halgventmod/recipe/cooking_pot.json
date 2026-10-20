@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [ "B B", " B " ],
-  "key": { "B": { "item": "minecraft:brick" } },
-  "result": { "id": "halgventmod:cooking_pot", "count": 1 }
-}
