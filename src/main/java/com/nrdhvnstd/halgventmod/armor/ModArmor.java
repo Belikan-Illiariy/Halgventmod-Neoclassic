@@ -87,11 +87,12 @@ public final class ModArmor {
      * @param visor          подвижное забрало: кость «visor» в модели детали; поднято ли — компонент halgventmod:visor_raised
      * @param protection     защита вещи (у шлема с забралом — при поднятом забрале)
      * @param visorBonus     прибавка к защите при опущенном забрале (только с visor)
+     * @param narrowView     шлем без забрала, но с узким вырезом: обзор сужен всегда (VisorOverlay)
      * @param hoodCompatible шлем, поверх которого можно надеть капюшон
      * @param cloak          вид накидки (только для слота накидки)
      */
     public record ArmorInfo(ArmorSlot slot, int layerOrder, Dye dye, List<Coating> coatings, List<String> models,
-                            boolean visor, Protection protection, Protection visorBonus, boolean hoodCompatible,
+                            boolean visor, Protection protection, Protection visorBonus, boolean narrowView, boolean hoodCompatible,
                             @Nullable CloakType cloak) {
         public static final int SLOT_ORDER = 0;
 

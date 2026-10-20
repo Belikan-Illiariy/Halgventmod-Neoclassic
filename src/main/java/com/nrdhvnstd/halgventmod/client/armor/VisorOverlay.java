@@ -24,9 +24,11 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
- * Опущенное забрало сужает обзор, как надетая тыква: картинка поверх всего экрана, только от первого лица.
+ * Опущенное забрало (и узкий вырез шлема без забрала, .narrowView()) сужает обзор, как надетая тыква:
+ * картинка поверх всего экрана, только от первого лица.
  * Своя картинка шлема — textures/misc/visor/<id шлема>.png (щель забрала, рисует художник); пока её нет — тыква.
  * Забрало поднимается — картинка плавно гаснет вместе с ним (VisorAnimation).
+ * F1 её не прячет: слой мода не входит в ванильные группы с условием !hideGui (Gui), а свою проверку hideGui здесь не ставить.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class VisorOverlay {
@@ -58,11 +60,12 @@ public final class VisorOverlay {
         ArmorInventory armor = player.getExistingDataOrNull(ModAttachments.ARMOR);
         ItemStack helmet = armor != null ? armor.get(ArmorSlot.HELMET) : ItemStack.EMPTY;
         ModArmor.ArmorInfo info = ModArmor.get(helmet);
-        if (info == null || !info.visor()) {
+        if (info == null || !(info.visor() || info.narrowView())) {
             return;
         }
         float age = player.tickCount + delta.getGameTimeDeltaPartialTick(false);
-        float closed = 1.0F - VisorAnimation.progress(player, ModArmor.visorRaised(helmet), age);
+        // Узкий вырез без забрала (.narrowView()) — обзор сужен всегда
+        float closed = info.visor() ? 1.0F - VisorAnimation.progress(player, ModArmor.visorRaised(helmet), age) : 1.0F;
         if (closed <= 0.0F) {
             return;
         }

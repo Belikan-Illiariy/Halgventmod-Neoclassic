@@ -75,9 +75,10 @@ public final class ModItems {
     //     .painted()                                 — покрывается росписью (<id>.png в цвете + серый <id>_painted.png)
     //                                                  можно оба: .enamel().painted() — первое по умолчанию
     //     .armorModel("hounskull_visor")             — выступающие детали (модели), необязательно
-    //     .visor()                                   — подвижное забрало: кость visor в модели детали, поднимается клавишей V
+    //     .visor()                                   — подвижное забрало: клавиша V, опущенное сужает обзор; кость visor в модели детали, если она есть
     //     .visor(2, 1)                               — то же, и опущенное забрало прибавляет к защите (броня, твёрдость)
     //     .protection(2, 1)                          — защита: броня и твёрдость брони (временно, ванильные атрибуты)
+    //     .narrowView()                              — только шлем без забрала: узкий вырез, обзор сужен всегда
     //     .hoodCompatible()                          — только шлем: поверх него можно надеть капюшон
     //     .cloak(CloakType.HOODED_CAPE)              — только накидка: капюшон, плащ или оба
     //   Снаряжение и сумки:
@@ -285,6 +286,7 @@ public final class ModItems {
             .lore("Глухой шлем, закрывающий голову до шеи; лицо открыто узким вырезом. Его нередко покрывают эмалью.",
                     "A closed helmet reaching down to the neck, with a narrow opening for the face. It is often enamelled.")
             .armor(ArmorSlot.HELMET)
+            .narrowView()
             .enamel()
             .hoodCompatible()
             .kg(2.4)
@@ -294,6 +296,7 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .narrowView()
             .hoodCompatible()
             .kg(2.4)
             .register();
@@ -301,6 +304,7 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .kg(3.5)
             .register();
     public static final DeferredItem<Item> HUNDSGUGEL_BASCINET = item("hundsgugel_bascinet", "Хундсгугель", "Hounskull", Gender.M)
@@ -316,36 +320,42 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .kg(3.2)
             .register();
     public static final DeferredItem<Item> KLAPPVISOR_BASCINET = item("klappvisor_bascinet", "Бацинет с клапвизором", "Klappvisor bascinet", Gender.M)
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .kg(3)
             .register();
     public static final DeferredItem<Item> ARMET = item("armet", "Армет", "Armet", Gender.M)
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .kg(3.5)
             .register();
     public static final DeferredItem<Item> INFANTRY_SALLET = item("infantry_sallet", "Пехотный салад", "Infantry sallet", Gender.M)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .narrowView()
             .kg(2.2)
             .register();
     public static final DeferredItem<Item> KNIGHT_SALLET = item("knight_sallet", "Рыцарский салад", "Knight's sallet", Gender.M)
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .narrowView()
             .kg(3)
             .register();
     public static final DeferredItem<Item> LIGHT_TOPFHELM = item("light_topfhelm", "Лёгкий топфхельм", "Light pot helm", Gender.M)
             .traits(ModTraits.UNCOMMON)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .dyeable()
             .kg(2.5)
             .register();
@@ -353,6 +363,7 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .dyeable()
             .kg(3.5)
             .register();
@@ -360,6 +371,7 @@ public final class ModItems {
             .traits(ModTraits.RARE)
             .category(Category.ARMOR)
             .armor(ArmorSlot.HELMET)
+            .visor() // модели забрала пока нет: только обзор и клавиша V
             .enamel()
             .painted()
             .kg(4)
@@ -897,6 +909,7 @@ public final class ModItems {
         private boolean visor;
         private ModArmor.Protection protection = ModArmor.Protection.NONE;
         private ModArmor.Protection visorBonus = ModArmor.Protection.NONE;
+        private boolean narrowView;
         private boolean hoodCompatible;
         private CloakType cloak;
 
@@ -1060,7 +1073,7 @@ public final class ModItems {
             return this;
         }
 
-        /** Подвижное забрало: кость «visor» в модели детали (.armorModel(...)); поднимается клавишей. */
+        /** Подвижное забрало: поднимается клавишей, опущенное сужает обзор. Кость «visor» в модели детали (.armorModel(...)) поворачивается, если модель есть. */
         public Builder visor() {
             this.visor = true;
             return this;
@@ -1075,6 +1088,12 @@ public final class ModItems {
         /** Защита: броня и твёрдость брони, как у ванильных атрибутов. Временно, до этапа 7 ТЗ брони. */
         public Builder protection(double armor, double toughness) {
             this.protection = new ModArmor.Protection(armor, toughness);
+            return this;
+        }
+
+        /** Шлем без забрала с узким вырезом для лица: обзор сужен всегда, как опущенным забралом. */
+        public Builder narrowView() {
+            this.narrowView = true;
             return this;
         }
 
@@ -1185,7 +1204,7 @@ public final class ModItems {
             if (armorSlot != null) {
                 ModArmor.put(item.getId(), armorInfo());
             } else if (layerOrder != ModArmor.ArmorInfo.SLOT_ORDER || dye != ModArmor.Dye.NONE || !armorModels.isEmpty()
-                    || visor || !protection.isNone() || hoodCompatible || cloak != null) {
+                    || visor || !protection.isNone() || narrowView || hoodCompatible || cloak != null) {
                 throw new IllegalArgumentException(id + ": свойства брони без .armor(...)");
             }
             return item;
@@ -1209,6 +1228,9 @@ public final class ModItems {
             if (maxStack != 1) {
                 throw new IllegalArgumentException(id + ": броня стакается только по 1");
             }
+            if (narrowView && (armorSlot != ArmorSlot.HELMET || visor)) {
+                throw new IllegalArgumentException(id + ": .narrowView() — только для шлема без забрала (у забрала обзор свой)");
+            }
             if (hoodCompatible && armorSlot != ArmorSlot.HELMET) {
                 throw new IllegalArgumentException(id + ": .hoodCompatible() — только для шлемов");
             }
@@ -1218,14 +1240,11 @@ public final class ModItems {
             if (dye == ModArmor.Dye.COATED && armorSlot == ArmorSlot.CLOAK) {
                 throw new IllegalArgumentException(id + ": накидка не покрывается эмалью и росписью — только .dyeable()");
             }
-            if (visor && armorModels.isEmpty()) {
-                throw new IllegalArgumentException(id + ": .visor() без .armorModel(...) — забралу нужна модель с костью visor");
-            }
             if (protection.armor() < 0 || protection.toughness() < 0 || visorBonus.armor() < 0 || visorBonus.toughness() < 0) {
                 throw new IllegalArgumentException(id + ": защита не бывает отрицательной");
             }
             return new ModArmor.ArmorInfo(armorSlot, layerOrder, dye, List.copyOf(coatings), List.copyOf(armorModels),
-                    visor, protection, visorBonus, hoodCompatible, cloak);
+                    visor, protection, visorBonus, narrowView, hoodCompatible, cloak);
         }
     }
 }
