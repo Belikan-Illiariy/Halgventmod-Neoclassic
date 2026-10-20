@@ -1168,7 +1168,7 @@ public final class ModItems {
     public static final DeferredItem<Item> SWEET_BUN = item("sweet_bun", "Сладкая булочка", "Sweet bun", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.FOOD)
-            .lore("Сдобная булочка на мёду или сахаре.", "A rich bun made with honey or sugar.")
+            .lore("Сдобная булочка на мёду.", "A rich bun made with honey.")
             .stacksTo(8)
             .grams(150)
             .food(25, 20.0F)

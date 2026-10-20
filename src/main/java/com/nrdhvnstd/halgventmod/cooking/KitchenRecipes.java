@@ -42,8 +42,7 @@ public final class KitchenRecipes {
 
     private static final Need FLOUR = new Need(stack -> stack.is(ModItems.WHEAT_FLOUR.get()), 2, ModItems.WHEAT_FLOUR::get);
     private static final Need DOUGH = new Need(stack -> stack.is(ModItems.DOUGH.get()), 1, ModItems.DOUGH::get);
-    private static final Need SWEETENER = new Need(stack -> stack.is(ModItems.HONEY.get()) || stack.is(Items.SUGAR),
-            1, ModItems.HONEY::get);
+    private static final Need SWEETENER = new Need(stack -> stack.is(ModItems.HONEY.get()), 1, ModItems.HONEY::get);
 
     private static Extra extra(Item item, float saturation) {
         return new Extra(stack -> stack.is(item), () -> item, saturation);
@@ -61,7 +60,6 @@ public final class KitchenRecipes {
     private static final Extra CHEESE = extra(ModItems.CHEESE, 12);
     private static final Extra SALO = extra(ModItems.SALO, 10);
     private static final Extra HONEY = extra(ModItems.HONEY, 10);
-    private static final Extra SUGAR = extra(Items.SUGAR, 6);
     private static final Extra APPLE = extra(Items.APPLE, 6);
     private static final Extra BERRIES = new Extra(stack -> stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES),
             () -> Items.SWEET_BERRIES, 6);
@@ -78,7 +76,7 @@ public final class KitchenRecipes {
             new Recipe("berry_pie", () -> pie("berry"), () -> ItemStack.EMPTY, 3, false, false,
                     List.of(DOUGH, new Need(stack -> stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES)
                             || stack.is(Items.APPLE), 1, () -> Items.SWEET_BERRIES)),
-                    List.of(HONEY, SUGAR, APPLE, BERRIES, EGG)),
+                    List.of(HONEY, APPLE, BERRIES, EGG)),
             new Recipe("sweet_bun", () -> new ItemStack(ModItems.RAW_BUN.get(), 2), () -> ItemStack.EMPTY, 4, false, false,
                     List.of(DOUGH, SWEETENER),
                     List.of(EGG, BERRIES, APPLE, CHEESE, HONEY)),
