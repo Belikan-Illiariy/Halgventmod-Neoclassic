@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.mojang.serialization.Codec;
+import com.nrdhvnstd.halgventmod.leather.LeatherQuality;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 
 import io.netty.buffer.ByteBuf;
@@ -72,6 +73,10 @@ public final class ModArmor {
             return new Protection(armor + other.armor, toughness + other.toughness);
         }
 
+        public Protection times(double factor) {
+            return factor == 1.0 ? this : new Protection(armor * factor, toughness * factor);
+        }
+
         public boolean isNone() {
             return armor == 0 && toughness == 0;
         }
@@ -96,9 +101,10 @@ public final class ModArmor {
                             @Nullable CloakType cloak) {
         public static final int SLOT_ORDER = 0;
 
-        /** Защита этого стака: у шлема с опущенным забралом — с прибавкой. */
+        /** Защита этого стака: у шлема с опущенным забралом — с прибавкой; у кожаной вещи — с поправкой на качество. */
         public Protection protection(ItemStack stack) {
-            return visor && !visorRaised(stack) ? protection.plus(visorBonus) : protection;
+            Protection base = visor && !visorRaised(stack) ? protection.plus(visorBonus) : protection;
+            return base.times(LeatherQuality.protectionFactor(stack));
         }
 
         /** Порядок отрисовки: больше — ближе к внешней стороне. */

@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.farming.FarmingRules;
+import com.nrdhvnstd.halgventmod.registry.ModBlocks;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -29,5 +30,10 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         // По чему кликают семенами, чтобы посадить их в режиме приключения
         tag(FarmingRules.PLANTABLE_SOIL)
                 .add(Blocks.FARMLAND);
+
+        // Станции кожевника — рубят топором
+        tag(BlockTags.MINEABLE_WITH_AXE)
+                .add(ModBlocks.FLESHING_BEAM.get(), ModBlocks.TANNING_VAT.get(),
+                        ModBlocks.DRYING_RACK.get(), ModBlocks.LEATHER_TABLE.get());
     }
 }

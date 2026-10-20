@@ -5,6 +5,7 @@ import java.util.List;
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.leather.Hide;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -90,6 +91,41 @@ public final class ModComponents {
             COMPONENTS.register("armorial_book", () -> DataComponentType.<String>builder()
                     .persistent(Codec.STRING)
                     .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Кожевенное дело (leather/*): чья шкура, сколько кусков, с мехом ли, снята ли мездра
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Hide>> HIDE =
+            COMPONENTS.register("hide", () -> DataComponentType.<Hide>builder()
+                    .persistent(Hide.CODEC)
+                    .networkSynchronized(Hide.STREAM_CODEC)
+                    .build());
+
+    // Во что высохнет мокрая кожа на раме (Tannage)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TANNAGE =
+            COMPONENTS.register("tannage", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Качество кожи и вещей из неё 0–4 (LeatherQuality), видно признаком редкости
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LEATHER_QUALITY =
+            COMPONENTS.register("leather_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 4))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Сутки, когда кожаную вещь последний раз смазали (LeatherCare)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> OILED_DAY =
+            COMPONENTS.register("oiled_day", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Кожаная вещь пересохла — хуже защищает
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> DRIED_OUT =
+            COMPONENTS.register("dried_out", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
                     .build());
 
     private ModComponents() {}

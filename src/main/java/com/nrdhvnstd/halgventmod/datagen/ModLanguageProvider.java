@@ -9,6 +9,9 @@ import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.leather.Animals;
+import com.nrdhvnstd.halgventmod.leather.Solution;
+import com.nrdhvnstd.halgventmod.leather.Tannage;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.world.Calendar;
@@ -593,6 +596,138 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.BURDEN.get(), russian ? "Обуза" : "Burden");
         add(ModEffects.ENCUMBERED.get(), russian ? "Скованность" : "Encumbered");
         add(ModEffects.OVERLOADED.get(), russian ? "Тяжесть" : "Overloaded");
+        // ----- Кожевенное дело -----
+        leatherTranslations();
+    }
+
+    /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
+    private void leatherTranslations() {
+        for (Animals.Kind kind : Animals.all()) {
+            add(Animals.langKey(kind.id()), russian ? kind.nameRu() : kind.nameEn());
+        }
+        for (Tannage tannage : Tannage.values()) {
+            add(tannage.langKey(), russian ? switch (tannage) {
+                case TANNED -> "дублёную кожу";
+                case SOFT -> "мягкую кожу";
+                case FUR -> "выделанный мех";
+                case RAWHIDE -> "сыромять";
+            } : switch (tannage) {
+                case TANNED -> "tanned leather";
+                case SOFT -> "soft leather";
+                case FUR -> "dressed fur";
+                case RAWHIDE -> "rawhide";
+            });
+        }
+        solution(Solution.NONE, "пусто", "empty");
+        solution(Solution.WATER, "вода", "water");
+        solution(Solution.LYE, "зольный щёлок", "ash lye");
+        solution(Solution.BARK, "корьевой раствор", "bark liquor");
+        solution(Solution.ALUM, "квасцовый раствор", "alum bath");
+        solution(Solution.FAT, "жировой раствор", "fat liquor");
+
+        add("tooltip.halgventmod.hide", russian ? "%s шкура · кусков кожи: %s" : "%s hide · leather pieces: %s");
+        add("tooltip.halgventmod.fleshed", russian ? "Мездра снята" : "Fleshed");
+        add("tooltip.halgventmod.not_fleshed", russian ? "Мездра не снята" : "Not fleshed");
+        add("tooltip.halgventmod.has_fur", russian ? "С мехом: в жировой чан — выйдет мех" : "Furred: the fat vat makes fur");
+        add("tooltip.halgventmod.dries_into", russian ? "На раме высохнет в %s" : "Dries on the rack into %s");
+        add("tooltip.halgventmod.oiled", russian ? "Смазана, пересохнет через %s сут." : "Oiled, dries out in %s days");
+        add("tooltip.halgventmod.dried_out",
+                russian ? "Пересохла: хуже защищает. Смажьте на столе кожевника" : "Dried out: protects less. Oil it at the leatherworker's table");
+
+        add("gui.halgventmod.sewing.title", russian ? "Шитьё: %s" : "Sewing: %s");
+        add("gui.halgventmod.sewing.progress", russian ? "Стежки: %s / %s · промахи: %s" : "Stitches: %s / %s · misses: %s");
+        add("gui.halgventmod.sewing.hint",
+                russian ? "ЛКМ или Пробел — проколоть, когда игла над отметкой" : "Click or Space to pierce when the needle is over the mark");
+        add("gui.halgventmod.sewing.done", russian ? "Сшито!" : "Sewn!");
+
+        add("gui.halgventmod.pattern.title", russian ? "Выкройки" : "Patterns");
+        add("gui.halgventmod.pattern.choose", russian ? "Выбрать" : "Choose");
+        add("gui.halgventmod.pattern.ingredients", russian ? "Материалы" : "Materials");
+        add("gui.halgventmod.pattern.tools", russian ? "Инструменты" : "Tools");
+        add("gui.halgventmod.pattern.current", russian ? "Выбрана на столе" : "On the table now");
+        add("gui.halgventmod.pattern.leather", russian ? "Кожа (кроится ножом):" : "Leather (cut with the knife):");
+        add("gui.halgventmod.pattern.extras", russian ? "Фурнитура (после раскроя):" : "Fittings (after cutting):");
+        add("gui.halgventmod.pattern.thread", russian ? "Нитки: %s / %s" : "Thread: %s / %s");
+        add("gui.halgventmod.pattern.stitches", russian ? "Стежков: %s" : "Stitches: %s");
+        add("gui.halgventmod.pattern.cut_only", russian ? "Только раскроить, без шитья" : "Just cut, no sewing");
+        leather("rotten", "Шкура сгнила. Годится только на клей: в чан с водой над огнём", "The hide has rotted. Only good for glue: a water vat over a fire");
+        leather("beam_empty", "Положите на колоду шкуру: парную, солёную, золёную или сыромять", "Lay a hide on the beam: raw, salted, limed or rawhide");
+        leather("salt_only_raw", "Солят только парную шкуру", "Only a raw hide is salted");
+        leather("salted", "Шкура посолена: пролежит 16 суток", "Hide salted: it keeps for 16 days");
+        leather("knife_wrong", "Мездряком работают по парной или солёной шкуре", "The fleshing knife is for a raw or salted hide");
+        leather("already_fleshed", "Мездра уже снята. Дальше — чан: щёлок (зола) или жир для меха", "Already fleshed. Next: the vat — lye (ash) or fat for fur");
+        leather("fleshed", "Мездра снята", "Fleshed");
+        leather("flesh_layer", "Слой снят, на этом клочке ещё: %s", "A layer off, this patch has %s more");
+        leather("flesh_left", "Клочок счищен. Осталось клочков мездры: %s", "Patch cleared. Flesh patches left: %s");
+        leather("flesh_miss", "Здесь чисто — бейте по клочкам мездры (осталось: %s)", "Clean here: strike the flesh patches (%s left)");
+        leather("dehaired", "Волос снят — получилось голье", "Hair scraped off — you have a pelt");
+        leather("parchment_small_only", "Пергамент выходит только из мелкой шкуры: козы, овцы, кролика", "Parchment comes only from a small hide: goat, sheep, rabbit");
+        leather("parchment", "Выскоблен пергамент", "Parchment scraped");
+        leather("scraper_wrong", "Стругом снимают волос с золёной шкуры или скоблят сыромять", "The scraper is for a limed hide or rawhide");
+        leather("cut", "Спешка! Нож прорезал шкуру — она стала хуже", "Too hasty! The blade cut the hide — it is worse now");
+        leather("stroke", "%s / %s", "%s / %s");
+
+        leather("vat_busy", "В чане уже что-то есть", "Something is already in the vat");
+        leather("vat_dry", "Чан пуст: налейте воды ведром", "The vat is empty: pour water with a bucket");
+        leather("vat_take_first", "Сначала выньте всё из чана", "Take everything out of the vat first");
+        leather("vat_already", "В чане уже %s: добавлять нечего", "The vat already holds %s");
+        leather("additives", "В воде: зола %s/%s · кора %s/%s · квасцы %s/%s, соль %s · сало %s/%s",
+                "In the water: ash %s/%s · bark %s/%s · alum %s/%s, salt %s · fat %s/%s");
+        leather("solution_ready", "Готов %s", "Ready: %s");
+        leather("vat_full", "В чане нет места", "The vat is full");
+        leather("flesh_first", "Сначала снимите мездру на колоде", "Flesh the hide on the beam first");
+        leather("fat_needs_fur", "В жир кладут шкуру с мехом", "Only a furred hide goes into fat");
+        leather("vat_wrong", "Это не идёт в %s", "This doesn't go into %s");
+        leather("vat_spent", "Раствор выработан на шкуры, что уже лежат", "The bath is used up by the hides already in it");
+        leather("needs_fire", "Опущено. Разведите огонь под чаном", "Sunk. Light a fire under the vat");
+        leather("soaking", "Мокнет: %s", "Soaking: %s");
+        leather("undertanned", "Вынута раньше срока: кожа недодублена", "Taken out early: the leather is under-tanned");
+        leather("too_early", "Рано: готово на %s%%. Работа сначала", "Too early: %s%% done. Starting over");
+        leather("vat_status", "%s, хватит ещё на шкур: %s", "%s, enough for %s more hides");
+
+        leather("rack_empty", "Натяните мокрую кожу или голье", "Stretch wet leather or a pelt on it");
+        leather("rack_placed", "Натянута. В эту пору сохнет суток: %s", "Stretched. In this season it dries in %s days");
+        leather("rack_not_dry", "Ещё не высохла: %s%%", "Not dry yet: %s%%");
+        leather("rack_taken", "Снято с рамы", "Taken off the rack");
+        leather("already_softened", "Уже разбита колотушкой", "Already softened");
+        leather("mallet_rush", "Не спешите: бейте ровно", "Don't rush: strike evenly");
+        leather("softened", "Кожа размята: стала лучше", "The leather is softened: it is better now");
+        leather("already_oiled", "Уже пропитана", "Already dressed with oil");
+        leather("oiled", "Пропитана жиром: стала лучше", "Dressed with oil: it is better now");
+
+        leather("table_busy", "Сначала доделайте начатое или заберите кожу", "Finish what you started or take the leather back");
+        leather("pick_pattern", "E пустой рукой — выбрать выкройку", "E with an empty hand picks a pattern");
+        leather("pattern", "Выкройка: %1$s — кожа: %2$s; затем: %3$s; нитки %4$s, стежков %5$s",
+                "Pattern: %1$s — leather: %2$s; then: %3$s; thread %4$s, stitches %5$s");
+        leather("pattern_simple", "Выкройка: %1$s — кожа: %2$s; нитки %4$s, стежков %5$s",
+                "Pattern: %1$s — leather: %2$s; thread %4$s, stitches %5$s");
+        leather("pattern_cut_only", "Выкройка: %1$s — кожа: %2$s; только раскроить", "Pattern: %1$s — leather: %2$s; just cut");
+        leather("enough_of", "%s хватает", "Enough %s");
+        leather("wrong_leather", "Это не по выкройке", "Not for this pattern");
+        leather("wrong_extra", "Это не нужно этой вещи", "This piece doesn't need that");
+        leather("need_leather", "Не хватает кожи", "Not enough leather");
+        leather("already_cut", "Уже раскроено: шейте иглой", "Already cut: sew it with the needle");
+        leather("cut_sew", "Раскроено. Шейте иглой", "Cut. Sew it with the needle");
+        leather("cut_extras", "Раскроено. Добавьте фурнитуру и шейте иглой", "Cut. Add the fittings and sew with the needle");
+        leather("cut_first", "Сначала раскроите кожу ножом", "Cut the leather with the knife first");
+        leather("need_extras", "Не хватает фурнитуры", "Fittings are missing");
+        leather("need_thread", "Нужно ниток (или нити): %s", "You need thread: %s");
+        leather("need_needle", "Держите иглу в руке", "Hold the needle in your hand");
+        leather("sewn_clean", "Ни одного промаха — вещь вышла лучше", "Not a single miss — the piece came out better");
+        leather("sewn", "Сшито, промахов: %s", "Sewn, misses: %s");
+        leather("sewn_sloppy", "Шов кривой (промахов: %s) — вещь вышла хуже", "A crooked seam (misses: %s) — the piece came out worse");
+        leather("made", "Готово: %s", "Done: %s");
+        leather("table_cut", "Кожа раскроена — назад не сложить. Доделайте вещь", "The leather is cut — it can't go back. Finish the piece");
+        leather("item_oiled", "%s смазана", "%s oiled");
+        leather("need_oil", "Нужно сало или воск в инвентаре", "You need salo or wax in your inventory");
+    }
+
+    private void solution(Solution solution, String ru, String en) {
+        add(solution.langKey(), russian ? ru : en);
+    }
+
+    private void leather(String key, String ru, String en) {
+        add("message.halgventmod.leather." + key, russian ? ru : en);
     }
 
     private void squad(String key, String ru, String en) {
