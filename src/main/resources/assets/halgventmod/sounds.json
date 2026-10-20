@@ -34,5 +34,755 @@
   "ambient.hooves_2": {
     "category": "ambient",
     "sounds": [{ "name": "minecraft:mob/horse/wood2" }]
+  },
+  "combat.hit.blade.plate": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blade.plate",
+    "sounds": [
+      "halgventmod:combat/hit/blade/plate1",
+      "halgventmod:combat/hit/blade/plate2",
+      "halgventmod:combat/hit/blade/plate3",
+      "halgventmod:combat/hit/blade/plate4",
+      "halgventmod:combat/hit/blade/plate5",
+      "halgventmod:combat/hit/blade/plate6",
+      "halgventmod:combat/hit/blade/plate7",
+      "halgventmod:combat/hit/blade/plate8",
+      "halgventmod:combat/hit/blade/plate9"
+    ]
+  },
+  "combat.hit.deflect": {
+    "subtitle": "subtitles.halgventmod.combat.hit.deflect",
+    "sounds": [
+      "halgventmod:combat/hit/deflect1",
+      "halgventmod:combat/hit/deflect2",
+      "halgventmod:combat/hit/deflect3",
+      "halgventmod:combat/hit/deflect4",
+      "halgventmod:combat/hit/deflect5",
+      "halgventmod:combat/hit/deflect6",
+      "halgventmod:combat/hit/deflect7",
+      "halgventmod:combat/hit/deflect8",
+      "halgventmod:combat/hit/deflect9",
+      "halgventmod:combat/hit/deflect10",
+      "halgventmod:combat/hit/deflect11"
+    ]
+  },
+  "combat.hit.blade.mail": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blade.mail",
+    "sounds": [
+      {
+        "name": "halgventmod:combat.hit.blade.padded",
+        "type": "event"
+      }
+    ]
+  },
+  "combat.hit.blade.padded": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blade.padded",
+    "sounds": [
+      "halgventmod:combat/hit/blade/padded1",
+      "halgventmod:combat/hit/blade/padded2",
+      "halgventmod:combat/hit/blade/padded3",
+      "halgventmod:combat/hit/blade/padded4"
+    ]
+  },
+  "combat.hit.blade.flesh": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blade.flesh",
+    "sounds": [
+      "halgventmod:combat/hit/blade/flesh1",
+      "halgventmod:combat/hit/blade/flesh2",
+      "halgventmod:combat/hit/blade/flesh3",
+      "halgventmod:combat/hit/blade/flesh4",
+      "halgventmod:combat/hit/blade/flesh5",
+      "halgventmod:combat/hit/blade/flesh6",
+      "halgventmod:combat/hit/blade/flesh7",
+      "halgventmod:combat/hit/blade/flesh8",
+      "halgventmod:combat/hit/blade/flesh9",
+      "halgventmod:combat/hit/blade/flesh10",
+      "halgventmod:combat/hit/blade/flesh11",
+      "halgventmod:combat/hit/blade/flesh12",
+      "halgventmod:combat/hit/blade/flesh13"
+    ]
+  },
+  "combat.hit.point.armor": {
+    "subtitle": "subtitles.halgventmod.combat.hit.point.armor",
+    "sounds": [
+      "halgventmod:combat/hit/point/armor1",
+      "halgventmod:combat/hit/point/armor2",
+      "halgventmod:combat/hit/point/armor3",
+      "halgventmod:combat/hit/point/armor4",
+      "halgventmod:combat/hit/point/armor5",
+      "halgventmod:combat/hit/point/armor6",
+      "halgventmod:combat/hit/point/armor7"
+    ]
+  },
+  "combat.hit.point.flesh": {
+    "subtitle": "subtitles.halgventmod.combat.hit.point.flesh",
+    "sounds": [
+      "halgventmod:combat/hit/point/flesh1",
+      "halgventmod:combat/hit/point/flesh2",
+      "halgventmod:combat/hit/point/flesh3"
+    ]
+  },
+  "combat.hit.blunt.plate": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blunt.plate",
+    "sounds": [
+      "halgventmod:combat/hit/blunt/plate1",
+      "halgventmod:combat/hit/blunt/plate2",
+      "halgventmod:combat/hit/blunt/plate3",
+      "halgventmod:combat/hit/blunt/plate4",
+      "halgventmod:combat/hit/blunt/plate5",
+      "halgventmod:combat/hit/blunt/plate6",
+      "halgventmod:combat/hit/blunt/plate7",
+      "halgventmod:combat/hit/blunt/plate8",
+      "halgventmod:combat/hit/blunt/plate9",
+      "halgventmod:combat/hit/blunt/plate10",
+      "halgventmod:combat/hit/blunt/plate11",
+      "halgventmod:combat/hit/blunt/plate12",
+      "halgventmod:combat/hit/blunt/plate13",
+      "halgventmod:combat/hit/blunt/plate14",
+      "halgventmod:combat/hit/blunt/plate15",
+      "halgventmod:combat/hit/blunt/plate16",
+      "halgventmod:combat/hit/blunt/plate17",
+      "halgventmod:combat/hit/blunt/plate18",
+      "halgventmod:combat/hit/blunt/plate19",
+      "halgventmod:combat/hit/blunt/plate20"
+    ]
+  },
+  "combat.hit.blunt.soft": {
+    "subtitle": "subtitles.halgventmod.combat.hit.blunt.soft",
+    "sounds": [
+      "halgventmod:combat/hit/blunt/soft1",
+      "halgventmod:combat/hit/blunt/soft2",
+      "halgventmod:combat/hit/blunt/soft3",
+      "halgventmod:combat/hit/blunt/soft4",
+      "halgventmod:combat/hit/blunt/soft5",
+      "halgventmod:combat/hit/blunt/soft6",
+      "halgventmod:combat/hit/blunt/soft7",
+      "halgventmod:combat/hit/blunt/soft8",
+      "halgventmod:combat/hit/blunt/soft9",
+      "halgventmod:combat/hit/blunt/soft10",
+      "halgventmod:combat/hit/blunt/soft11"
+    ]
+  },
+  "combat.hit.fist": {
+    "subtitle": "subtitles.halgventmod.combat.hit.fist",
+    "sounds": [
+      "halgventmod:combat/hit/fist1",
+      "halgventmod:combat/hit/fist2",
+      "halgventmod:combat/hit/fist3",
+      "halgventmod:combat/hit/fist4",
+      "halgventmod:combat/hit/fist5",
+      "halgventmod:combat/hit/fist6",
+      "halgventmod:combat/hit/fist7",
+      "halgventmod:combat/hit/fist8"
+    ]
+  },
+  "combat.hit.arrow.armor": {
+    "subtitle": "subtitles.halgventmod.combat.hit.arrow.armor",
+    "sounds": [
+      "halgventmod:combat/hit/arrow/armor1",
+      "halgventmod:combat/hit/arrow/armor2",
+      "halgventmod:combat/hit/arrow/armor3",
+      "halgventmod:combat/hit/arrow/armor4",
+      "halgventmod:combat/hit/arrow/armor5",
+      "halgventmod:combat/hit/arrow/armor6",
+      "halgventmod:combat/hit/arrow/armor7",
+      "halgventmod:combat/hit/arrow/armor8"
+    ]
+  },
+  "combat.hit.arrow.flesh": {
+    "subtitle": "subtitles.halgventmod.combat.hit.arrow.flesh",
+    "sounds": [
+      "halgventmod:combat/hit/arrow/flesh1",
+      "halgventmod:combat/hit/arrow/flesh2",
+      "halgventmod:combat/hit/arrow/flesh3",
+      "halgventmod:combat/hit/arrow/flesh4",
+      "halgventmod:combat/hit/arrow/flesh5",
+      "halgventmod:combat/hit/arrow/flesh6",
+      "halgventmod:combat/hit/arrow/flesh7",
+      "halgventmod:combat/hit/arrow/flesh8"
+    ]
+  },
+  "combat.hit.arrow.wood": {
+    "subtitle": "subtitles.halgventmod.combat.hit.arrow.wood",
+    "sounds": [
+      "halgventmod:combat/hit/arrow/wood1",
+      "halgventmod:combat/hit/arrow/wood2",
+      "halgventmod:combat/hit/arrow/wood3",
+      "halgventmod:combat/hit/arrow/wood4",
+      "halgventmod:combat/hit/arrow/wood5",
+      "halgventmod:combat/hit/arrow/wood6",
+      "halgventmod:combat/hit/arrow/wood7",
+      "halgventmod:combat/hit/arrow/wood8",
+      "halgventmod:combat/hit/arrow/wood9",
+      "halgventmod:combat/hit/arrow/wood10",
+      "halgventmod:combat/hit/arrow/wood11",
+      "halgventmod:combat/hit/arrow/wood12",
+      "halgventmod:combat/hit/arrow/wood13",
+      "halgventmod:combat/hit/arrow/wood14"
+    ]
+  },
+  "combat.hit.arrow.stone": {
+    "subtitle": "subtitles.halgventmod.combat.hit.arrow.stone",
+    "sounds": [
+      "halgventmod:combat/hit/arrow/stone1",
+      "halgventmod:combat/hit/arrow/stone2",
+      "halgventmod:combat/hit/arrow/stone3"
+    ]
+  },
+  "combat.block.shield.wood": {
+    "subtitle": "subtitles.halgventmod.combat.block.shield.wood",
+    "sounds": [
+      "halgventmod:combat/block/shield/wood1",
+      "halgventmod:combat/block/shield/wood2",
+      "halgventmod:combat/block/shield/wood3",
+      "halgventmod:combat/block/shield/wood4",
+      "halgventmod:combat/block/shield/wood5",
+      "halgventmod:combat/block/shield/wood6",
+      "halgventmod:combat/block/shield/wood7",
+      "halgventmod:combat/block/shield/wood8",
+      "halgventmod:combat/block/shield/wood9",
+      "halgventmod:combat/block/shield/wood10",
+      "halgventmod:combat/block/shield/wood11",
+      "halgventmod:combat/block/shield/wood12",
+      "halgventmod:combat/block/shield/wood13",
+      "halgventmod:combat/block/shield/wood14",
+      "halgventmod:combat/block/shield/wood15",
+      "halgventmod:combat/block/shield/wood16",
+      "halgventmod:combat/block/shield/wood17",
+      "halgventmod:combat/block/shield/wood18",
+      "halgventmod:combat/block/shield/wood19",
+      "halgventmod:combat/block/shield/wood20",
+      "halgventmod:combat/block/shield/wood21",
+      "halgventmod:combat/block/shield/wood22",
+      "halgventmod:combat/block/shield/wood23",
+      "halgventmod:combat/block/shield/wood24",
+      "halgventmod:combat/block/shield/wood25",
+      "halgventmod:combat/block/shield/wood26",
+      "halgventmod:combat/block/shield/wood27",
+      "halgventmod:combat/block/shield/wood28"
+    ]
+  },
+  "combat.block.shield.metal": {
+    "subtitle": "subtitles.halgventmod.combat.block.shield.metal",
+    "sounds": [
+      "halgventmod:combat/block/shield/metal1",
+      "halgventmod:combat/block/shield/metal2",
+      "halgventmod:combat/block/shield/metal3",
+      "halgventmod:combat/block/shield/metal4"
+    ]
+  },
+  "combat.block.weapon": {
+    "subtitle": "subtitles.halgventmod.combat.block.weapon",
+    "sounds": [
+      "halgventmod:combat/block/weapon1",
+      "halgventmod:combat/block/weapon2",
+      "halgventmod:combat/block/weapon3",
+      "halgventmod:combat/block/weapon4",
+      "halgventmod:combat/block/weapon5",
+      "halgventmod:combat/block/weapon6",
+      "halgventmod:combat/block/weapon7",
+      "halgventmod:combat/block/weapon8",
+      "halgventmod:combat/block/weapon9"
+    ]
+  },
+  "combat.block.broken": {
+    "subtitle": "subtitles.halgventmod.combat.block.broken",
+    "sounds": [
+      "halgventmod:combat/block/broken1",
+      "halgventmod:combat/block/broken2"
+    ]
+  },
+  "combat.shield.raise": {
+    "subtitle": "subtitles.halgventmod.combat.shield.raise",
+    "sounds": [
+      "halgventmod:combat/shield/raise1",
+      "halgventmod:combat/shield/raise2",
+      "halgventmod:combat/shield/raise3",
+      "halgventmod:combat/shield/raise4"
+    ]
+  },
+  "combat.swing.light": {
+    "subtitle": "subtitles.halgventmod.combat.swing.light",
+    "sounds": [
+      "halgventmod:combat/swing/light1",
+      "halgventmod:combat/swing/light2",
+      "halgventmod:combat/swing/light3",
+      "halgventmod:combat/swing/light4",
+      "halgventmod:combat/swing/light5",
+      "halgventmod:combat/swing/light6",
+      "halgventmod:combat/swing/light7",
+      "halgventmod:combat/swing/light8",
+      "halgventmod:combat/swing/light9",
+      "halgventmod:combat/swing/light10",
+      "halgventmod:combat/swing/light11",
+      "halgventmod:combat/swing/light12",
+      "halgventmod:combat/swing/light13",
+      "halgventmod:combat/swing/light14"
+    ]
+  },
+  "combat.swing.heavy": {
+    "subtitle": "subtitles.halgventmod.combat.swing.heavy",
+    "sounds": [
+      "halgventmod:combat/swing/heavy1",
+      "halgventmod:combat/swing/heavy2",
+      "halgventmod:combat/swing/heavy3",
+      "halgventmod:combat/swing/heavy4",
+      "halgventmod:combat/swing/heavy5",
+      "halgventmod:combat/swing/heavy6"
+    ]
+  },
+  "combat.weapon.draw": {
+    "subtitle": "subtitles.halgventmod.combat.weapon.draw",
+    "sounds": [
+      "halgventmod:combat/weapon/draw1",
+      "halgventmod:combat/weapon/draw2",
+      "halgventmod:combat/weapon/draw3",
+      "halgventmod:combat/weapon/draw4",
+      "halgventmod:combat/weapon/draw5",
+      "halgventmod:combat/weapon/draw6",
+      "halgventmod:combat/weapon/draw7",
+      "halgventmod:combat/weapon/draw8",
+      "halgventmod:combat/weapon/draw9",
+      "halgventmod:combat/weapon/draw10",
+      "halgventmod:combat/weapon/draw11",
+      "halgventmod:combat/weapon/draw12",
+      "halgventmod:combat/weapon/draw13"
+    ]
+  },
+  "combat.weapon.sheathe": {
+    "subtitle": "subtitles.halgventmod.combat.weapon.sheathe",
+    "sounds": [
+      "halgventmod:combat/weapon/sheathe1",
+      "halgventmod:combat/weapon/sheathe2",
+      "halgventmod:combat/weapon/sheathe3"
+    ]
+  },
+  "combat.weapon.grip": {
+    "subtitle": "subtitles.halgventmod.combat.weapon.grip",
+    "sounds": [
+      "halgventmod:combat/weapon/grip1",
+      "halgventmod:combat/weapon/grip2"
+    ]
+  },
+  "combat.weapon.dull": {
+    "subtitle": "subtitles.halgventmod.combat.weapon.dull",
+    "sounds": [
+      {
+        "name": "halgventmod:combat.hit.deflect",
+        "type": "event"
+      }
+    ]
+  },
+  "combat.bow.draw": {
+    "subtitle": "subtitles.halgventmod.combat.bow.draw",
+    "sounds": [
+      "halgventmod:combat/bow/draw1",
+      "halgventmod:combat/bow/draw2",
+      "halgventmod:combat/bow/draw3",
+      "halgventmod:combat/bow/draw4",
+      "halgventmod:combat/bow/draw5"
+    ]
+  },
+  "combat.bow.shoot": {
+    "subtitle": "subtitles.halgventmod.combat.bow.shoot",
+    "sounds": [
+      "halgventmod:combat/bow/shoot1"
+    ]
+  },
+  "combat.crossbow.load": {
+    "subtitle": "subtitles.halgventmod.combat.crossbow.load",
+    "sounds": [
+      "halgventmod:combat/crossbow/load1",
+      "halgventmod:combat/crossbow/load2"
+    ]
+  },
+  "combat.crossbow.shoot": {
+    "subtitle": "subtitles.halgventmod.combat.crossbow.shoot",
+    "sounds": [
+      "halgventmod:combat/crossbow/shoot1"
+    ]
+  },
+  "combat.arrow.fly": {
+    "subtitle": "subtitles.halgventmod.combat.arrow.fly",
+    "sounds": [
+      "halgventmod:combat/arrow/fly1",
+      "halgventmod:combat/arrow/fly2",
+      "halgventmod:combat/arrow/fly3",
+      "halgventmod:combat/arrow/fly4"
+    ]
+  },
+  "armor.equip.plate": {
+    "subtitle": "subtitles.halgventmod.armor.equip.plate",
+    "sounds": [
+      "halgventmod:armor/equip/plate1",
+      "halgventmod:armor/equip/plate2",
+      "halgventmod:armor/equip/plate3",
+      "halgventmod:armor/equip/plate4",
+      "halgventmod:armor/equip/plate5",
+      "halgventmod:armor/equip/plate6",
+      "halgventmod:armor/equip/plate7",
+      "halgventmod:armor/equip/plate8",
+      "halgventmod:armor/equip/plate9",
+      "halgventmod:armor/equip/plate10",
+      "halgventmod:armor/equip/plate11",
+      "halgventmod:armor/equip/plate12",
+      "halgventmod:armor/equip/plate13",
+      "halgventmod:armor/equip/plate14"
+    ]
+  },
+  "armor.equip.mail": {
+    "subtitle": "subtitles.halgventmod.armor.equip.mail",
+    "sounds": [
+      "halgventmod:armor/equip/mail1",
+      "halgventmod:armor/equip/mail2",
+      "halgventmod:armor/equip/mail3",
+      "halgventmod:armor/equip/mail4"
+    ]
+  },
+  "armor.equip.padded": {
+    "subtitle": "subtitles.halgventmod.armor.equip.padded",
+    "sounds": [
+      "halgventmod:armor/equip/padded1",
+      "halgventmod:armor/equip/padded2",
+      "halgventmod:armor/equip/padded3",
+      "halgventmod:armor/equip/padded4",
+      "halgventmod:armor/equip/padded5"
+    ]
+  },
+  "armor.equip.leather": {
+    "subtitle": "subtitles.halgventmod.armor.equip.leather",
+    "sounds": [
+      "halgventmod:armor/equip/leather1"
+    ]
+  },
+  "armor.move.plate": {
+    "subtitle": "subtitles.halgventmod.armor.move.plate",
+    "sounds": [
+      "halgventmod:armor/move/plate1",
+      "halgventmod:armor/move/plate2",
+      "halgventmod:armor/move/plate3",
+      "halgventmod:armor/move/plate4"
+    ]
+  },
+  "armor.move.mail": {
+    "subtitle": "subtitles.halgventmod.armor.move.mail",
+    "sounds": [
+      "halgventmod:armor/move/mail1",
+      "halgventmod:armor/move/mail2",
+      "halgventmod:armor/move/mail3",
+      "halgventmod:armor/move/mail4",
+      "halgventmod:armor/move/mail5",
+      "halgventmod:armor/move/mail6"
+    ]
+  },
+  "armor.visor.open": {
+    "subtitle": "subtitles.halgventmod.armor.visor.open",
+    "sounds": [
+      "halgventmod:armor/visor/open1",
+      "halgventmod:armor/visor/open2"
+    ]
+  },
+  "armor.visor.close": {
+    "subtitle": "subtitles.halgventmod.armor.visor.close",
+    "sounds": [
+      "halgventmod:armor/visor/close1",
+      "halgventmod:armor/visor/close2",
+      "halgventmod:armor/visor/close3",
+      "halgventmod:armor/visor/close4"
+    ]
+  },
+  "armor.break": {
+    "subtitle": "subtitles.halgventmod.armor.break",
+    "sounds": [
+      "halgventmod:armor/break1",
+      "halgventmod:armor/break2"
+    ]
+  },
+  "gear.equip.backpack": {
+    "subtitle": "subtitles.halgventmod.gear.equip.backpack",
+    "sounds": [
+      "halgventmod:gear/equip/backpack1",
+      "halgventmod:gear/equip/backpack2"
+    ]
+  },
+  "gear.equip.belt": {
+    "subtitle": "subtitles.halgventmod.gear.equip.belt",
+    "sounds": [
+      "halgventmod:gear/equip/belt1",
+      "halgventmod:gear/equip/belt2",
+      "halgventmod:gear/equip/belt3",
+      "halgventmod:gear/equip/belt4"
+    ]
+  },
+  "gear.equip.pouch": {
+    "subtitle": "subtitles.halgventmod.gear.equip.pouch",
+    "sounds": [
+      "halgventmod:gear/equip/pouch1",
+      "halgventmod:gear/equip/pouch2"
+    ]
+  },
+  "gear.equip.quiver": {
+    "subtitle": "subtitles.halgventmod.gear.equip.quiver",
+    "sounds": [
+      "halgventmod:gear/equip/quiver1",
+      "halgventmod:gear/equip/quiver2"
+    ]
+  },
+  "combat.stun": {
+    "subtitle": "subtitles.halgventmod.combat.stun",
+    "sounds": [
+      "halgventmod:combat/stun1",
+      "halgventmod:combat/stun2",
+      "halgventmod:combat/stun3"
+    ]
+  },
+  "combat.downed": {
+    "subtitle": "subtitles.halgventmod.combat.downed",
+    "sounds": [
+      "halgventmod:combat/downed1",
+      "halgventmod:combat/downed2",
+      "halgventmod:combat/downed3",
+      "halgventmod:combat/downed4",
+      "halgventmod:combat/downed5"
+    ]
+  },
+  "combat.finisher": {
+    "subtitle": "subtitles.halgventmod.combat.finisher",
+    "sounds": [
+      "halgventmod:combat/finisher1",
+      "halgventmod:combat/finisher2",
+      "halgventmod:combat/finisher3",
+      "halgventmod:combat/finisher4"
+    ]
+  },
+  "combat.limb_cut": {
+    "subtitle": "subtitles.halgventmod.combat.limb_cut",
+    "sounds": [
+      "halgventmod:combat/limb_cut1",
+      "halgventmod:combat/limb_cut2",
+      "halgventmod:combat/limb_cut3"
+    ]
+  },
+  "combat.blood.splash": {
+    "subtitle": "subtitles.halgventmod.combat.blood.splash",
+    "sounds": [
+      "halgventmod:combat/blood/splash1",
+      "halgventmod:combat/blood/splash2",
+      "halgventmod:combat/blood/splash3",
+      "halgventmod:combat/blood/splash4",
+      "halgventmod:combat/blood/splash5",
+      "halgventmod:combat/blood/splash6",
+      "halgventmod:combat/blood/splash7",
+      "halgventmod:combat/blood/splash8",
+      "halgventmod:combat/blood/splash9"
+    ]
+  },
+  "combat.heartbeat": {
+    "subtitle": "subtitles.halgventmod.combat.heartbeat",
+    "sounds": [
+      "halgventmod:combat/heartbeat1"
+    ]
+  },
+  "voice.female_1.hurt_light": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_light",
+    "sounds": [
+      "halgventmod:voice/female_1/hurt_light1",
+      "halgventmod:voice/female_1/hurt_light2",
+      "halgventmod:voice/female_1/hurt_light3",
+      "halgventmod:voice/female_1/hurt_light4"
+    ]
+  },
+  "voice.female_2.hurt_light": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_light",
+    "sounds": [
+      "halgventmod:voice/female_2/hurt_light1"
+    ]
+  },
+  "voice.male_1.hurt_light": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_light",
+    "sounds": [
+      "halgventmod:voice/male_1/hurt_light1",
+      "halgventmod:voice/male_1/hurt_light2",
+      "halgventmod:voice/male_1/hurt_light3",
+      "halgventmod:voice/male_1/hurt_light4"
+    ]
+  },
+  "voice.male_2.hurt_light": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_light",
+    "sounds": [
+      "halgventmod:voice/male_2/hurt_light1"
+    ]
+  },
+  "voice.female_1.hurt_heavy": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_heavy",
+    "sounds": [
+      "halgventmod:voice/female_1/hurt_heavy1",
+      "halgventmod:voice/female_1/hurt_heavy2"
+    ]
+  },
+  "voice.male_1.hurt_heavy": {
+    "subtitle": "subtitles.halgventmod.voice.hurt_heavy",
+    "sounds": [
+      "halgventmod:voice/male_1/hurt_heavy1",
+      "halgventmod:voice/male_1/hurt_heavy2"
+    ]
+  },
+  "voice.female_1.death": {
+    "subtitle": "subtitles.halgventmod.voice.death",
+    "sounds": [
+      "halgventmod:voice/female_1/death1",
+      "halgventmod:voice/female_1/death2"
+    ]
+  },
+  "voice.female_2.death": {
+    "subtitle": "subtitles.halgventmod.voice.death",
+    "sounds": [
+      "halgventmod:voice/female_2/death1"
+    ]
+  },
+  "voice.male_1.death": {
+    "subtitle": "subtitles.halgventmod.voice.death",
+    "sounds": [
+      "halgventmod:voice/male_1/death1",
+      "halgventmod:voice/male_1/death2"
+    ]
+  },
+  "voice.male_2.death": {
+    "subtitle": "subtitles.halgventmod.voice.death",
+    "sounds": [
+      "halgventmod:voice/male_2/death1"
+    ]
+  },
+  "voice.female_1.effort": {
+    "subtitle": "subtitles.halgventmod.voice.effort",
+    "sounds": [
+      "halgventmod:voice/female_1/effort1",
+      "halgventmod:voice/female_1/effort2"
+    ]
+  },
+  "voice.male_1.effort": {
+    "subtitle": "subtitles.halgventmod.voice.effort",
+    "sounds": [
+      "halgventmod:voice/male_1/effort1",
+      "halgventmod:voice/male_1/effort2"
+    ]
+  },
+  "voice.female_1.drown": {
+    "subtitle": "subtitles.halgventmod.voice.drown",
+    "sounds": [
+      "halgventmod:voice/female_1/drown1"
+    ]
+  },
+  "voice.male_1.drown": {
+    "subtitle": "subtitles.halgventmod.voice.drown",
+    "sounds": [
+      "halgventmod:voice/male_1/drown1"
+    ]
+  },
+  "voice.female_1.out_of_breath": {
+    "subtitle": "subtitles.halgventmod.voice.out_of_breath",
+    "sounds": [
+      "halgventmod:voice/female_1/out_of_breath1"
+    ]
+  },
+  "voice.male_1.out_of_breath": {
+    "subtitle": "subtitles.halgventmod.voice.out_of_breath",
+    "sounds": [
+      "halgventmod:voice/male_1/out_of_breath1"
+    ]
+  },
+  "voice.male_3.warcry": {
+    "subtitle": "subtitles.halgventmod.voice.warcry",
+    "sounds": [
+      "halgventmod:voice/male_3/warcry1"
+    ]
+  },
+  "mob.beast.hurt": {
+    "subtitle": "subtitles.halgventmod.mob.beast.hurt",
+    "sounds": [
+      "halgventmod:mob/beast/hurt1",
+      "halgventmod:mob/beast/hurt2"
+    ]
+  },
+  "mob.beast.attack": {
+    "subtitle": "subtitles.halgventmod.mob.beast.attack",
+    "sounds": [
+      "halgventmod:mob/beast/attack1",
+      "halgventmod:mob/beast/attack2",
+      "halgventmod:mob/beast/attack3",
+      "halgventmod:mob/beast/attack4",
+      "halgventmod:mob/beast/attack5",
+      "halgventmod:mob/beast/attack6",
+      "halgventmod:mob/beast/attack7",
+      "halgventmod:mob/beast/attack8"
+    ]
+  },
+  "mob.beast.death": {
+    "subtitle": "subtitles.halgventmod.mob.beast.death",
+    "sounds": [
+      "halgventmod:mob/beast/death1"
+    ]
+  },
+  "mob.monster.hurt": {
+    "subtitle": "subtitles.halgventmod.mob.monster.hurt",
+    "sounds": [
+      "halgventmod:mob/monster/hurt1",
+      "halgventmod:mob/monster/hurt2",
+      "halgventmod:mob/monster/hurt3",
+      "halgventmod:mob/monster/hurt4",
+      "halgventmod:mob/monster/hurt5",
+      "halgventmod:mob/monster/hurt6",
+      "halgventmod:mob/monster/hurt7",
+      "halgventmod:mob/monster/hurt8",
+      "halgventmod:mob/monster/hurt9",
+      "halgventmod:mob/monster/hurt10",
+      "halgventmod:mob/monster/hurt11",
+      "halgventmod:mob/monster/hurt12",
+      "halgventmod:mob/monster/hurt13"
+    ]
+  },
+  "mob.monster.attack": {
+    "subtitle": "subtitles.halgventmod.mob.monster.attack",
+    "sounds": [
+      "halgventmod:mob/monster/attack1",
+      "halgventmod:mob/monster/attack2",
+      "halgventmod:mob/monster/attack3",
+      "halgventmod:mob/monster/attack4",
+      "halgventmod:mob/monster/attack5",
+      "halgventmod:mob/monster/attack6",
+      "halgventmod:mob/monster/attack7",
+      "halgventmod:mob/monster/attack8",
+      "halgventmod:mob/monster/attack9",
+      "halgventmod:mob/monster/attack10",
+      "halgventmod:mob/monster/attack11",
+      "halgventmod:mob/monster/attack12",
+      "halgventmod:mob/monster/attack13"
+    ]
+  },
+  "mob.monster.death": {
+    "subtitle": "subtitles.halgventmod.mob.monster.death",
+    "sounds": [
+      "halgventmod:mob/monster/death1",
+      "halgventmod:mob/monster/death2",
+      "halgventmod:mob/monster/death3",
+      "halgventmod:mob/monster/death4",
+      "halgventmod:mob/monster/death5"
+    ]
+  },
+  "mob.undead.hurt": {
+    "subtitle": "subtitles.halgventmod.mob.undead.hurt",
+    "sounds": [
+      "halgventmod:mob/undead/hurt1",
+      "halgventmod:mob/undead/hurt2",
+      "halgventmod:mob/undead/hurt3"
+    ]
+  },
+  "mob.undead.death": {
+    "subtitle": "subtitles.halgventmod.mob.undead.death",
+    "sounds": [
+      "halgventmod:mob/undead/death1",
+      "halgventmod:mob/undead/death2",
+      "halgventmod:mob/undead/death3",
+      "halgventmod:mob/undead/death4"
+    ]
   }
 }

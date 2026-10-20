@@ -1,3 +1,8 @@
+Halgventmod: Neoclassic
+=======
+
+Sound credits: [CREDITS_SOUNDS.md](src/main/resources/CREDITS_SOUNDS.md) (CC-BY and CC-BY-SA authors; the file is also packed into the mod jar).
+
 
 Installation information
 =======

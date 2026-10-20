@@ -94,12 +94,12 @@ public class PlayerArmorMenu extends AbstractContainerMenu {
         for (ArmorSlot slot : ArmorSlot.values()) {
             int col = slot.ordinal() % ARMOR_COLUMNS;
             int row = slot.ordinal() / ARMOR_COLUMNS;
-            addSlot(new ArmorEquipSlot(armor, slot, ARMOR_X + col * SLOT_STEP, TOP + row * SLOT_STEP));
+            addSlot(new ArmorEquipSlot(armor, slot, owner, ARMOR_X + col * SLOT_STEP, TOP + row * SLOT_STEP));
         }
         for (GearSlot slot : GearSlot.values()) {
             int col = slot.ordinal() % GearSlot.COLUMNS;
             int row = slot.ordinal() / GearSlot.COLUMNS;
-            addSlot(new GearEquipSlot(gear, slot, GEAR_X + col * SLOT_STEP, TOP + row * SLOT_STEP));
+            addSlot(new GearEquipSlot(gear, slot, owner, GEAR_X + col * SLOT_STEP, TOP + row * SLOT_STEP));
         }
     }
 

@@ -11,6 +11,8 @@ import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
+import com.nrdhvnstd.halgventmod.registry.ModSounds;
+import com.nrdhvnstd.halgventmod.sound.Voices;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.data.PackOutput;
@@ -593,6 +595,14 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.BURDEN.get(), russian ? "Обуза" : "Burden");
         add(ModEffects.ENCUMBERED.get(), russian ? "Скованность" : "Encumbered");
         add(ModEffects.OVERLOADED.get(), russian ? "Тяжесть" : "Overloaded");
+
+        // Субтитры звуков: обычные события и голоса (один ключ на вид крика для всех наборов)
+        for (ModSounds.Definition sound : ModSounds.definitions()) {
+            add(sound.subtitleKey(), russian ? sound.subtitleRu() : sound.subtitleEn());
+        }
+        for (Voices.Cry cry : Voices.Cry.values()) {
+            add(cry.subtitleKey(), russian ? cry.subtitleRu() : cry.subtitleEn());
+        }
     }
 
     private void squad(String key, String ru, String en) {

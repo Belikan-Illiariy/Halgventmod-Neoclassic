@@ -15,11 +15,22 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class GearEquipSlot extends SlotItemHandler {
     private final GearInventory gear;
     private final GearSlot gearSlot;
+    private final Player wearer;
 
-    public GearEquipSlot(GearInventory gear, GearSlot gearSlot, int x, int y) {
+    public GearEquipSlot(GearInventory gear, GearSlot gearSlot, Player wearer, int x, int y) {
         super(gear, gearSlot.ordinal(), x, y);
         this.gear = gear;
         this.gearSlot = gearSlot;
+        this.wearer = wearer;
+    }
+
+    // Как у ячейки брони: один звук на надевание или снятие
+    @Override
+    public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+        super.setByPlayer(newStack, oldStack);
+        if (!newStack.isEmpty() || !oldStack.isEmpty()) {
+            gearSlot.type().playEquip(wearer);
+        }
     }
 
     public GearSlot gearSlot() {

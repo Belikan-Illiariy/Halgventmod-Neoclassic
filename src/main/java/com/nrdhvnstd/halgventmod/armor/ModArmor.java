@@ -80,6 +80,7 @@ public final class ModArmor {
     /**
      * Сведения о вещи брони.
      * @param slot           слот: ячейка, плоскость, порядок по умолчанию, папка текстур
+     * @param kind           материал для звука: латы, кольчуга, ткань, кожа
      * @param layerOrder     свой порядок отрисовки вместо порядка слота; 0 — как у слота
      * @param dye            как красится: основа в оттенках серого + неокрашиваемый _overlay
      * @param coatings       покрытия, которые бывают у вещи (только у COATED), первое — по умолчанию
@@ -91,7 +92,7 @@ public final class ModArmor {
      * @param hoodCompatible шлем, поверх которого можно надеть капюшон
      * @param cloak          вид накидки (только для слота накидки)
      */
-    public record ArmorInfo(ArmorSlot slot, int layerOrder, Dye dye, List<Coating> coatings, List<String> models,
+    public record ArmorInfo(ArmorSlot slot, ArmorKind kind, int layerOrder, Dye dye, List<Coating> coatings, List<String> models,
                             boolean visor, Protection protection, Protection visorBonus, boolean narrowView, boolean hoodCompatible,
                             @Nullable CloakType cloak) {
         public static final int SLOT_ORDER = 0;

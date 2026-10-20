@@ -6,9 +6,11 @@ import com.mojang.datafixers.util.Pair;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorRules;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.armor.ArmorSounds;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
@@ -18,11 +20,21 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class ArmorEquipSlot extends SlotItemHandler {
     private final ArmorInventory armor;
     private final ArmorSlot armorSlot;
+    private final Entity wearer; // на ком броня: игрок или стойка — от него звук надевания
 
-    public ArmorEquipSlot(ArmorInventory armor, ArmorSlot armorSlot, int x, int y) {
+    public ArmorEquipSlot(ArmorInventory armor, ArmorSlot armorSlot, Entity wearer, int x, int y) {
         super(armor, armorSlot.ordinal(), x, y);
         this.armor = armor;
         this.armorSlot = armorSlot;
+        this.wearer = wearer;
+    }
+
+    // Надел или снял щелчком, Shift+щелчком или цифрой: один звук на операцию — по новой вещи, а если ячейка опустела — по снятой.
+    // Как у ванильной второй руки: здесь, а не в onTake или quickMoveStack, иначе звук двойной
+    @Override
+    public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+        super.setByPlayer(newStack, oldStack);
+        ArmorSounds.equip(wearer, newStack.isEmpty() ? oldStack : newStack);
     }
 
     public ArmorSlot armorSlot() {

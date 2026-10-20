@@ -2,7 +2,11 @@ package com.nrdhvnstd.halgventmod.draw;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
+import com.nrdhvnstd.halgventmod.registry.ModSounds;
+import com.nrdhvnstd.halgventmod.sound.SoundPlay;
+import com.nrdhvnstd.halgventmod.sound.SoundTags;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +35,8 @@ public final class Drawing {
     public static final int SETTLE_TICKS = 2;
     private static final float SOUND_VOLUME = 0.5F;
     private static final float SOUND_PITCH = 1.0F;
+    private static final float BLADE_VOLUME = 0.6F;        // ножны ⚠️
+    private static final float BLADE_PITCH_SPREAD = 0.08F; // ⚠️
 
     private Drawing() {}
 
@@ -43,6 +49,8 @@ public final class Drawing {
         private boolean started = true;
         private int startedAt;     // тик, когда пошли звук и подъём
         private int readyAt;       // с этого тика предметом можно пользоваться
+        private Item drawnItem = Items.AIR; // что достали последним и из какой ячейки — для звука ножен
+        private int drawnSlot = -1;
     }
 
     /** Предмет в основной руке достан. */
@@ -78,6 +86,12 @@ public final class Drawing {
 
         if (!state.seen || item != state.item || slot != state.slot) {
             boolean instant = !state.seen || hand.isEmpty() || player.getAbilities().instabuild;
+            if (!state.seen) {
+                state.drawnItem = item; // вход в мир и возрождение — без звуков
+                state.drawnSlot = slot;
+            } else if (instant) {
+                bladeSounds(player, state, hand, slot);
+            }
             state.seen = true;
             state.item = item;
             state.slot = slot;
@@ -92,11 +106,32 @@ public final class Drawing {
             state.started = true;
             state.startedAt = now;
             state.readyAt = Math.max(now, state.changedAt + type.ticks());
-            if (!player.level().isClientSide) {
+            if (!bladeSounds(player, state, hand, slot) && !player.level().isClientSide) {
                 player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                         type.sound(), SoundSource.PLAYERS, SOUND_VOLUME, SOUND_PITCH);
             }
         }
+    }
+
+    /**
+     * Ножны (TZ_sounds.md, 6.5), когда в руке оказался новый предмет: клинок из тега sound/sheathed выходит из ножен —
+     * свой звук вместо обычного звука доставания (true); клинок убрали сменой ячейки — входит в ножны.
+     * С клинка на клинок — только «из ножен». Поломка и выбрасывание ячейку не меняют — без «в ножны».
+     */
+    private static boolean bladeSounds(Player player, State state, ItemStack hand, int slot) {
+        boolean wasBlade = BuiltInRegistries.ITEM.wrapAsHolder(state.drawnItem).is(SoundTags.SHEATHED);
+        boolean slotChanged = slot != state.drawnSlot;
+        boolean isBlade = hand.is(SoundTags.SHEATHED);
+        state.drawnItem = hand.getItem();
+        state.drawnSlot = slot;
+        if (!player.level().isClientSide) {
+            if (isBlade) {
+                SoundPlay.at(player, ModSounds.COMBAT_WEAPON_DRAW.get(), SoundSource.PLAYERS, BLADE_VOLUME, BLADE_PITCH_SPREAD);
+            } else if (wasBlade && slotChanged) {
+                SoundPlay.at(player, ModSounds.COMBAT_WEAPON_SHEATHE.get(), SoundSource.PLAYERS, BLADE_VOLUME, BLADE_PITCH_SPREAD);
+            }
+        }
+        return isBlade;
     }
 
     // ----- Пока не достан: ни удара, ни использования -----
