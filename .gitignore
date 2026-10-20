@@ -38,3 +38,8 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Локальные файлы в docs ###
+docs/crash-*.txt
+docs/*.mp4
+docs/xaero/
