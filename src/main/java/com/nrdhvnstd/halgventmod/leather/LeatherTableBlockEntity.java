@@ -302,7 +302,7 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack oil = inventory.getItem(i);
-            if (oil.is(ModItems.SALO.get()) || oil.is(Items.HONEYCOMB)) {
+            if (oil.is(ModItems.SALO.get()) || oil.is(Items.HONEYCOMB) || oil.is(ModItems.BEESWAX.get())) {
                 if (!player.getAbilities().instabuild) {
                     oil.shrink(1);
                 }

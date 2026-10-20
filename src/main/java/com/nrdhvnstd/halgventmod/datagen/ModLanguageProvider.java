@@ -755,6 +755,18 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.kitchen.ingredients", russian ? "Продукты" : "Ingredients");
         add("gui.halgventmod.kitchen.extras", russian ? "Добавки" : "Extras");
         add("gui.halgventmod.kitchen.kneads", russian ? "Месить: %s раз" : "Knead: %s times");
+        add("tooltip.halgventmod.food_extras", russian ? "С добавками: %s (насыщение +%s)" : "With extras: %s (saturation +%s)");
+        cooking("kitchen_extra", "%s — в начинку: насыщение +%s", "%s in the filling: saturation +%s");
+        cooking("kitchen_extra_twice", "%s уже есть в начинке", "%s is already in the filling");
+        cooking("kitchen_extras_full", "Добавок не больше %s", "No more than %s extras");
+        add("message.halgventmod.bees.calmed", russian ? "Пчёлы притихли от дыма" : "The smoke calms the bees");
+        add("message.halgventmod.bees.empty_smoke", russian ? "В улье никого нет" : "The hive is empty");
+        add("message.halgventmod.bees.empty", russian ? "Улей пуст: ни пчёл, ни мёда" : "The hive is empty: no bees, no honey");
+        add("message.halgventmod.bees.no_honey", russian ? "Мёда ещё нет" : "No honey yet");
+        add("message.halgventmod.bees.stung", russian ? "Пчёлы жалят! Сначала окурите улей дымарём" : "The bees sting! Smoke the hive first");
+        add("message.halgventmod.bees.waiting", russian ? "Пусто. Цветов рядом: %s — весной и летом заселится рой" : "Empty. Flowers nearby: %s — a swarm will settle in spring or summer");
+        add("message.halgventmod.bees.few_flowers", russian ? "Пусто, и цветов мало: %s из %s. Посадите цветы рядом" : "Empty, and few flowers: %s of %s. Plant flowers nearby");
+        add("message.halgventmod.bees.status", russian ? "Пчёлы живут. Мёда %s из %s, цветов рядом: %s" : "Bees live here. Honey %s of %s, flowers nearby: %s");
         cooking("kitchen_pick", "E пустой рукой — выбрать рецепт", "E with an empty hand picks a recipe");
         cooking("kitchen_busy", "Сначала доделайте или заберите выложенное", "Finish or take back what is on the board first");
         cooking("kitchen_take_first", "Сначала заберите готовое", "Take what is ready first");

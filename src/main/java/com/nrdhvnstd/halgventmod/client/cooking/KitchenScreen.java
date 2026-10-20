@@ -61,7 +61,11 @@ public class KitchenScreen extends Screen {
     private static final long DOUBLE_CLICK_MS = 300;
 
     /** Что лежит в слоте-призраке: вещь, сколько нужно, есть ли. */
-    private record Ghost(ItemStack stack, int count, boolean have) {}
+    private record Ghost(ItemStack stack, int count, boolean have, boolean optional) {
+        Ghost(ItemStack stack, int count, boolean have) {
+            this(stack, count, have, false);
+        }
+    }
 
     private final BlockPos pos;
     private final int current;
@@ -148,6 +152,10 @@ public class KitchenScreen extends Screen {
         List<Ghost> list = new ArrayList<>();
         for (KitchenRecipes.Need need : recipe.needs()) {
             list.add(new Ghost(new ItemStack(need.icon().get()), need.count(), count(inventory, need) >= need.count()));
+        }
+        for (KitchenRecipes.Extra extra : recipe.extras()) {
+            KitchenRecipes.Need asNeed = new KitchenRecipes.Need(extra.matches(), 1, extra.icon());
+            list.add(new Ghost(new ItemStack(extra.icon().get()), 1, count(inventory, asNeed) > 0, true));
         }
         return list;
     }
@@ -272,13 +280,16 @@ public class KitchenScreen extends Screen {
         }
         int ix = sx + 1;
         int iy = sy + 1;
-        if (!ghost.have()) {
+        if (!ghost.have() && !ghost.optional()) {
             g.fill(ix, iy, ix + 16, iy + 16, MISSING_BG);
         }
         g.renderFakeItem(ghost.stack(), ix, iy);
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);
         g.fill(ix, iy, ix + 16, iy + 16, GHOST_VEIL);
+        if (ghost.optional()) {
+            g.drawString(font, "+", ix, iy - 1, 0xFFFFD27F, true); // необязательная добавка
+        }
         if (ghost.count() > 1) {
             String text = String.valueOf(ghost.count());
             g.drawString(font, text, ix + 17 - font.width(text), iy + 9, ghost.have() ? 0xFFFFFFFF : 0xFFFF6A5A, true);

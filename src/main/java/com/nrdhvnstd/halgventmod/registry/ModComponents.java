@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.cooking.Dish;
+import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
 import com.nrdhvnstd.halgventmod.leather.Hide;
 
 import net.minecraft.core.component.DataComponentType;
@@ -155,6 +156,13 @@ public final class ModComponents {
             COMPONENTS.register("gear_quality", () -> DataComponentType.<Integer>builder()
                     .persistent(Codec.intRange(0, 5))
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Необязательные добавки в пирог или булочку: что и сколько насыщения (FoodExtras)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FoodExtras>> FOOD_EXTRAS =
+            COMPONENTS.register("food_extras", () -> DataComponentType.<FoodExtras>builder()
+                    .persistent(FoodExtras.CODEC)
+                    .networkSynchronized(FoodExtras.STREAM_CODEC)
                     .build());
 
     private ModComponents() {}

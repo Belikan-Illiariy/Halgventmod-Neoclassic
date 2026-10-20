@@ -38,7 +38,8 @@ import net.minecraft.world.level.Level;
  * <p>Что положено в котелок, делится по тегам halgventmod:cooking/*. Блюдо решает основа, которой больше всего
  * (при равенстве — по порядку {@link Kind}): мясо → мясная похлёбка, рыба → уха, зерно → каша, грибы → грибная
  * похлёбка, овощи → похлёбка. Только травы с водой — отвар. Соль и травы — приправы: порций не дают, поднимают
- * качество. Молоко — к любой основе, прибавляет сытости (каша на молоке — молочная).
+ * качество. Молоко — к любой основе, прибавляет сытости (каша на молоке — молочная). Мёд и сахар — сладость:
+ * +качество и немного сытости (каша на мёду, отвар с мёдом).
  *
  * <p>Порций — по числу основ (у отвара — по 2 на пучок трав). Сытость порции — сумма сытости основ
  * × {@link #COOKING_BONUS} / порций. Сырое мясо в котле проваривается: риск отравления у похлёбки нет.
@@ -56,7 +57,7 @@ public final class Cookery {
 
     /** Чем считается положенное в котелок. */
     public enum Kind {
-        MEAT, FISH, GRAIN, MUSHROOM, VEGETABLE, MILK, SALT, HERB;
+        MEAT, FISH, GRAIN, MUSHROOM, VEGETABLE, MILK, SALT, HERB, SWEET;
 
         public boolean main() {
             return ordinal() <= VEGETABLE.ordinal();
@@ -143,7 +144,7 @@ public final class Cookery {
             if (kind.main()) {
                 mainTypes.add(stack.getItem());
                 total += nutrition(stack);
-            } else if (kind == Kind.MILK) {
+            } else if (kind == Kind.MILK || kind == Kind.SWEET) {
                 total += nutrition(stack);
             }
             Integer left = Freshness.daysLeft(stack, level);
@@ -176,6 +177,9 @@ public final class Cookery {
             if (herbs == 0) {
                 return null;
             }
+            if (counts.containsKey(Kind.SWEET)) {
+                quality++; // отвар с мёдом
+            }
             int portions = herbs * TEA_PORTIONS_PER_HERB;
             ItemStack tea = new ItemStack(Result.HERBAL_TEA.item());
             tea.set(ModComponents.DISH.get(),
@@ -195,6 +199,9 @@ public final class Cookery {
         }
         if (counts.containsKey(Kind.HERB)) {
             quality++;
+        }
+        if (counts.containsKey(Kind.SWEET)) {
+            quality++; // мёд или сахар
         }
         if (mainTypes.size() >= 3) {
             quality++;

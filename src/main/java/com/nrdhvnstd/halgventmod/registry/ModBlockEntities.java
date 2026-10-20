@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.beekeeping.SkepBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HookBlockEntity;
@@ -41,6 +42,11 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LeatherTableBlockEntity>> LEATHER_TABLE =
             BLOCK_ENTITIES.register("leather_table", () -> BlockEntityType.Builder
                     .of(LeatherTableBlockEntity::new, ModBlocks.LEATHER_TABLE.get()).build(null));
+
+    // Пчеловодство
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SkepBlockEntity>> SKEP =
+            BLOCK_ENTITIES.register("skep", () -> BlockEntityType.Builder
+                    .of(SkepBlockEntity::new, ModBlocks.SKEP.get()).build(null));
 
     // Готовка (cooking/*)
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HearthBlockEntity>> HEARTH =

@@ -1157,6 +1157,23 @@ public final class ModItems {
             .grams(500)
             .shelfLife(2)
             .register();
+    public static final DeferredItem<Item> RAW_BUN = item("raw_bun", "Сырая булочка", "Raw bun", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить.", "E at a fired oven to bake it.")
+            .stacksTo(8)
+            .grams(150)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> SWEET_BUN = item("sweet_bun", "Сладкая булочка", "Sweet bun", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сдобная булочка на мёду или сахаре.", "A rich bun made with honey or sugar.")
+            .stacksTo(8)
+            .grams(150)
+            .food(25, 20.0F)
+            .shelfLife(5)
+            .register();
     public static final DeferredItem<Item> MEAT_PIE = item("meat_pie", "Пирог с мясом", "Meat pie", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.FOOD)
@@ -1315,6 +1332,48 @@ public final class ModItems {
                     "Hang it above a hearth: meat and fish get smoked. Herbs and mushrooms dry on it.")
             .grams(500)
             .register(properties -> new BlockItem(ModBlocks.SMOKING_HOOK.get(), properties));
+
+    // ----- Пчеловодство (beekeeping/*) -----
+    public static final DeferredItem<Item> HONEY = item("honey", "Мёд", "Honey", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Отжат из сот на разделочном столе. Не портится. В котелок — сладость, в выпечку — начинка.",
+                    "Pressed from combs at a kitchen table. Never spoils. Sweetens a pot, fills a pastry.")
+            .stacksTo(16)
+            .grams(300)
+            .food(15, 12.0F)
+            .register();
+    public static final DeferredItem<Item> HONEYCOMB_FULL = item("honeycomb_full", "Медовые соты", "Honeycomb", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Срезаны ножом из улья. На разделочном столе — мёд и воск.",
+                    "Cut from a hive with a knife. At a kitchen table they give honey and wax.")
+            .stacksTo(16)
+            .grams(250)
+            .shelfLife(32)
+            .register();
+    public static final DeferredItem<Item> BEESWAX = item("beeswax", "Воск", "Beeswax", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Остаётся от сот. Пропитывает кожу и смазывает кожаные вещи.",
+                    "Left from the combs. Dresses leather and oils leather goods.")
+            .stacksTo(16)
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> BEE_SMOKER = item("bee_smoker", "Дымарь", "Bee smoker", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по улью — окурить: пчёлы притихают на полминуты, и соты можно резать без укусов.",
+                    "E at a hive smokes it: the bees calm down for half a minute, so the combs can be cut unstung.")
+            .durability(64)
+            .grams(400)
+            .register();
+    public static final DeferredItem<BlockItem> SKEP = item("skep", "Улей", "Skep", Gender.M)
+            .category(Category.TOOLS)
+            .lore("Поставьте у цветов: весной или летом в него заселится рой. Копит мёд, зимой пчёлы его едят — оставьте им запас.",
+                    "Place it near flowers: a swarm settles in during spring or summer. It stores honey; in winter the bees eat it — leave them some.")
+            .kg(3)
+            .register(properties -> new BlockItem(ModBlocks.SKEP.get(), properties));
 
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)

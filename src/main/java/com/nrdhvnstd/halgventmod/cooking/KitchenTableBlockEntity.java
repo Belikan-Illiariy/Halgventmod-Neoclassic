@@ -7,10 +7,12 @@ import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.network.KitchenOpenPayload;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -42,6 +44,7 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
 
     private int recipe = -1;
     private final List<ItemStack> laid = new ArrayList<>();
+    private final List<ItemStack> extras = new ArrayList<>(); // необязательные добавки
     private boolean water;
     private boolean salt;
     private int kneads;
@@ -52,9 +55,11 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
         super(ModBlockEntities.KITCHEN_TABLE.get(), pos, state);
     }
 
-    // Для отрисовки
+    // Для отрисовки: обязательное и добавки вместе
     public List<ItemStack> laid() {
-        return laid;
+        List<ItemStack> all = new ArrayList<>(laid);
+        all.addAll(extras);
+        return all;
     }
 
     public ItemStack result() {
@@ -69,6 +74,7 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
     public List<ItemStack> contents() {
         List<ItemStack> all = new ArrayList<>();
         laid.forEach(stack -> all.add(stack.copy()));
+        extras.forEach(stack -> all.add(stack.copy()));
         if (salt) {
             all.add(new ItemStack(ModItems.SALT.get()));
         }
@@ -83,7 +89,7 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
     }
 
     private boolean idle() {
-        return laid.isEmpty() && !water && !salt && result.isEmpty();
+        return laid.isEmpty() && extras.isEmpty() && !water && !salt && result.isEmpty();
     }
 
     private int count(KitchenRecipes.Need need) {
@@ -160,13 +166,14 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             changed();
             return true;
         }
+        boolean neededFull = false;
         for (KitchenRecipes.Need need : current.needs()) {
             if (!need.matches().test(stack)) {
                 continue;
             }
             if (count(need) >= need.count()) {
-                tell(player, "kitchen_enough", stack.getHoverName());
-                return true;
+                neededFull = true; // хватает — может, это ещё и добавка
+                continue;
             }
             if (Freshness.isSpoiled(stack, level)) {
                 tell(player, "kitchen_spoiled");
@@ -177,6 +184,39 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             sound(SoundEvents.WOOL_PLACE, 0.6F, 1.0F);
             status(player, current);
             changed();
+            return true;
+        }
+        for (KitchenRecipes.Extra extra : current.extras()) {
+            if (!extra.matches().test(stack)) {
+                continue;
+            }
+            if (kneads > 0) {
+                tell(player, "kitchen_kneaded");
+                return true;
+            }
+            for (ItemStack added : extras) {
+                if (extra.matches().test(added)) {
+                    tell(player, "kitchen_extra_twice", stack.getHoverName());
+                    return true;
+                }
+            }
+            if (extras.size() >= KitchenRecipes.MAX_EXTRAS) {
+                tell(player, "kitchen_extras_full", KitchenRecipes.MAX_EXTRAS);
+                return true;
+            }
+            if (Freshness.isSpoiled(stack, level)) {
+                tell(player, "kitchen_spoiled");
+                return true;
+            }
+            extras.add(stack.copyWithCount(1));
+            consumeOne(player, stack);
+            sound(SoundEvents.WOOL_PLACE, 0.6F, 1.2F);
+            tell(player, "kitchen_extra", stack.getHoverName(), Math.round(extra.saturation()));
+            changed();
+            return true;
+        }
+        if (neededFull) {
+            tell(player, "kitchen_enough", stack.getHoverName());
             return true;
         }
         if (Cookery.kind(stack) != null || stack.is(ModItems.WHEAT_FLOUR.get()) || stack.is(ModItems.DOUGH.get())) {
@@ -230,7 +270,23 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             }
         }
         result = FoodQuality.set(current.makeResult(), quality);
+        if (!extras.isEmpty()) {
+            float saturation = 0;
+            List<String> ids = new ArrayList<>();
+            for (ItemStack added : extras) {
+                for (KitchenRecipes.Extra extra : current.extras()) {
+                    if (extra.matches().test(added)) {
+                        saturation += extra.saturation();
+                        break;
+                    }
+                }
+                ids.add(BuiltInRegistries.ITEM.getKey(added.getItem()).toString());
+            }
+            result.set(ModComponents.FOOD_EXTRAS.get(), new FoodExtras(List.copyOf(ids), saturation));
+        }
+        give(player, current.makeByproduct());
         laid.clear();
+        extras.clear();
         water = false;
         salt = false;
         kneads = 0;
@@ -246,7 +302,9 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             tell(player, "kitchen_kneaded");
             return true;
         }
-        if (!laid.isEmpty()) {
+        if (!extras.isEmpty()) {
+            give(player, extras.remove(extras.size() - 1));
+        } else if (!laid.isEmpty()) {
             give(player, laid.remove(laid.size() - 1));
         } else if (salt) {
             salt = false;
@@ -282,6 +340,9 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
         ListTag list = new ListTag();
         laid.forEach(stack -> list.add(stack.save(registries)));
         tag.put("Laid", list);
+        ListTag extraList = new ListTag();
+        extras.forEach(stack -> extraList.add(stack.save(registries)));
+        tag.put("Extras", extraList);
         tag.putBoolean("Water", water);
         tag.putBoolean("Salt", salt);
         tag.putInt("Kneads", kneads);
@@ -304,6 +365,14 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             ItemStack stack = ItemStack.parseOptional(registries, list.getCompound(i));
             if (!stack.isEmpty()) {
                 laid.add(stack);
+            }
+        }
+        extras.clear();
+        ListTag extraList = tag.getList("Extras", Tag.TAG_COMPOUND);
+        for (int i = 0; i < extraList.size(); i++) {
+            ItemStack stack = ItemStack.parseOptional(registries, extraList.getCompound(i));
+            if (!stack.isEmpty()) {
+                extras.add(stack);
             }
         }
         water = tag.getBoolean("Water");

@@ -206,7 +206,7 @@ public class DryingRackBlockEntity extends StationBlockEntity {
     }
 
     private static boolean isOil(ItemStack stack) {
-        return stack.is(ModItems.SALO.get()) || stack.is(Items.HONEYCOMB);
+        return stack.is(ModItems.SALO.get()) || stack.is(Items.HONEYCOMB) || stack.is(ModItems.BEESWAX.get());
     }
 
     private int percent() {

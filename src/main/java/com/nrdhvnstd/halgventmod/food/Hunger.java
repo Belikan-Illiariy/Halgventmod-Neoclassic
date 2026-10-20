@@ -4,6 +4,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.Diet;
 import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
+import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.DayLength;
@@ -88,6 +89,11 @@ public final class Hunger {
         } else {
             nutrition = food.nutrition() * VANILLA_SCALE;
             saturation = food.saturation() * VANILLA_SCALE;
+        }
+        // Добавки в пирог или булочку с разделочного стола — прибавка к насыщению
+        FoodExtras extras = stack.get(ModComponents.FOOD_EXTRAS.get());
+        if (extras != null) {
+            saturation += extras.saturation();
         }
         float quality = FoodQuality.factor(stack);
         nutrition = Math.round(nutrition * quality);

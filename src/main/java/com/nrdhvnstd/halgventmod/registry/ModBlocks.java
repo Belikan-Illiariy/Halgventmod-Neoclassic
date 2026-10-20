@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.beekeeping.SkepBlock;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
 import com.nrdhvnstd.halgventmod.cooking.HookBlock;
@@ -46,6 +47,15 @@ public final class ModBlocks {
             () -> new DryingRackBlock(wood()));
     public static final DeferredBlock<LeatherTableBlock> LEATHER_TABLE = BLOCKS.register("leather_table",
             () -> new LeatherTableBlock(wood()));
+
+    // Пчеловодство: плетёный улей Conquest Reforged
+    public static final DeferredBlock<SkepBlock> SKEP = BLOCKS.register("skep",
+            () -> new SkepBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.8F)
+                    .sound(SoundType.GRASS)
+                    .noOcclusion()
+                    .ignitedByLava()));
 
     // Готовка (cooking/*). Модели — из Conquest Reforged, у бочки — ванильная
     public static final DeferredBlock<HearthBlock> HEARTH = BLOCKS.register("hearth",

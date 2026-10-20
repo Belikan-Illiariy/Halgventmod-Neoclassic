@@ -89,8 +89,11 @@ public class OvenBlockEntity extends StationBlockEntity {
         player.displayClientMessage(Component.translatable("message.halgventmod.cooking." + key, args), true);
     }
 
-    /** Что выходит из этого: тесто — хлеб, сырой пирог — пирог по начинке. Пусто — не печётся. */
+    /** Что выходит из этого: тесто — хлеб, сырой пирог — пирог по начинке, сырая булочка — сладкая. Пусто — не печётся. */
     public static ItemStack baked(ItemStack raw) {
+        if (raw.is(ModItems.RAW_BUN.get())) {
+            return new ItemStack(ModItems.SWEET_BUN.get());
+        }
         if (raw.is(ModItems.DOUGH.get())) {
             return new ItemStack(ModItems.WHEAT_BREAD.get());
         }
@@ -226,6 +229,10 @@ public class OvenBlockEntity extends StationBlockEntity {
             tell(player, "baked_burnt");
         } else {
             result = baked(raw);
+            FoodExtras extras = raw.get(ModComponents.FOOD_EXTRAS.get());
+            if (extras != null) {
+                result.set(ModComponents.FOOD_EXTRAS.get(), extras); // добавки остаются в начинке
+            }
             int quality = done < 1.0F ? 1 : done < OVERBAKED ? 3 : 1;
             // Тесто с разделочного стола несёт своё качество: хорошо замешанное — лучше хлеб
             if (FoodQuality.has(raw)) {
