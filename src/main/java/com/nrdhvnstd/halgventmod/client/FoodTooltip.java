@@ -24,15 +24,15 @@ public final class FoodTooltip {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
-        ModFoods.FoodInfo info = ModFoods.get(stack);
-        if (info == null || info.shelfLifeDays() <= 0) {
+        int shelfLife = ModFoods.shelfLife(stack);
+        if (shelfLife <= 0) {
             return;
         }
 
         Level level = Minecraft.getInstance().level;
         Integer left = level != null ? Freshness.daysLeft(stack, level) : null;
         if (left == null) {
-            left = info.shelfLifeDays(); // ещё без отметки (например, во вкладке креатива) — свежий
+            left = shelfLife; // ещё без отметки (например, во вкладке креатива) — свежий
         }
 
         event.getToolTip().add(left > 0

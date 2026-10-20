@@ -1138,6 +1138,7 @@ public final class ModItems {
             .lore("Смолота на жёрнове. На разделочном столе с водой — тесто.", "Ground on a quern. With water at a kitchen table it makes dough.")
             .stacksTo(16)
             .grams(200)
+            .shelfLife(32)
             .register();
     public static final DeferredItem<Item> DOUGH = item("dough", "Тесто", "Dough", Gender.N)
             .traits(ModTraits.COMMON, ModTraits.RAW)
@@ -1191,6 +1192,7 @@ public final class ModItems {
             .stacksTo(16)
             .grams(100)
             .food(3, 0.0F)
+            .shelfLife(32)
             .register();
 
     // Заготовки: соль, дым, сушка — лежат во много раз дольше
@@ -1259,6 +1261,7 @@ public final class ModItems {
             .lore("Высушены на крюке. Лежат почти вечно.", "Dried on a hook. Keep almost forever.")
             .stacksTo(16)
             .grams(10)
+            .shelfLife(192)
             .register();
 
     // Посуда и станции

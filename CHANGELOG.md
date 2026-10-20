@@ -27,6 +27,14 @@
 
 ### Что нового
 
+#### Порча для всей еды
+- Портится теперь **вся еда**, а не только своя: ванильная — по таблице в `food/ModFoods.java` ⚠️, еда других модов — за 8 суток. Сырое мясо — 2 суток, сырая рыба — 1, жареное — 3–4, похлёбки — 2, хлеб — 6, ягоды и арбуз — 3–6, овощи и яблоки — 16–24, сушёные водоросли — 64, молоко — 2 (у молока теперь срок и жажда +20). Не портятся мёд, золотые яблоки, гнилая плоть и паучий глаз.
+- Свои вещи без срока получили его: горелое и мука — 32 суток, сушёные травы — 192.
+- Испорченное молоко тоже даёт «Голод» и «Тошноту», как испорченная еда.
+
+#### Окно выкроек: инструменты в столбик
+- В окне выкроек кожевника инструменты — один столбик из трёх ячеек (нож, игла, нитки) вместо сетки 3×3; подпись над ним на прежнем месте. В окне рецептов разделочного стола добавки (вода, соль) — так же.
+
 #### Окно инвентаря в стиле Conquest Reforged
 - Окно инвентаря и окно стойки для брони больше не серые: железная плашка, мшистые ячейки с железной рамкой, как у сундуков Conquest, тёмные вставки под фигурку и панель предмета. Закрытые ячейки сумок — тёмные.
 
@@ -83,6 +91,7 @@
 - `quality/` (новое): `GearQuality` — ступени, таблица, броски, качество с кожи; `DamageKind` — типы урона и стойкость материалов; `QualityEvents` — урон и защита ванильных вещей через `ItemAttributeModifierEvent`, пробитие и стойкость в `LivingIncomingDamageEvent`, бросок при крафте, Посредственное в инвентаре, команда `/quality`. `client/QualityTooltip.java` — строка в подсказке. `client/QualityBadge.java` — плашка качества: строка признаков заменяется строкой «признаки + плашка» (`RenderTooltipEvent.GatherComponents`), в панели предмета рисуется отдельно; `client/ItemTooltipHandler.java` — убирает качество из признаков. Качество — только компонент `gear_quality`, в `traits` не пишется.
 - `item/ModTraits.java` — шесть признаков качества. `registry/ModComponents.java` — `gear_quality`. `armor/ModArmor.java` — защита брони мода × качество. `leather/LeatherTableBlockEntity.java` — броня со стола получает качество снаряжения. `datagen/ModLanguageProvider.java` — `qualityTranslations()`.
 - `cooking/KitchenRecipes.java`, `KitchenTableBlock(Entity).java`, `client/cooking/KitchenScreen.java`, `network/KitchenOpenPayload.java`, `KitchenChoosePayload.java` (новое) — разделочный стол и его окно рецептов; `client/cooking/CookingRenderers.java` — продукты на доске; `network/ModNetwork.java` — версия 17. `cooking/OvenBlockEntity.java` — качество теста переходит в выпечку. Рецепты станций, инструментов, теста и пирогов убраны из `data/halgventmod/recipe/`.
+- `food/ModFoods.java` — таблица ванильной еды, `shelfLife(stack)` со сроком по умолчанию для чужой еды; `food/Freshness.java`, `client/FoodTooltip.java` — срок через неё, порча молока. `client/leather/PatternScreen.java`, `client/cooking/KitchenScreen.java` — один столбик инструментов.
 - `gradle.properties` — версия 0.0.9.
 
 ---
