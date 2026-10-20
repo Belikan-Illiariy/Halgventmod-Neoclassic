@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.storage;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.nrdhvnstd.halgventmod.Permissions;
 import com.nrdhvnstd.halgventmod.gear.GearInventory;
 import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.gear.ModGear;
@@ -26,6 +27,20 @@ public final class Storage {
     private static final GearSlot[] CLEARED_SLOTS = {GearSlot.BACK, GearSlot.POUCH_1, GearSlot.POUCH_2, GearSlot.QUIVER};
 
     private Storage() {}
+
+    /**
+     * Творческий режим или администратор: открыты все 27 ячеек хранилища, сумки ничего не меняют.
+     * Вещи тогда лежат в самих ванильных ячейках 9–35, а не в сумках; содержимое надетых сумок не трогается.
+     * Перестал быть администратором или вышел из творческого — вещи из 9–35 раскладываются по сумкам (evictHidden).
+     */
+    public static boolean unrestricted(Player player) {
+        return player.isCreative() || Permissions.isAdmin(player);
+    }
+
+    /** Ванильная ячейка инвентаря для номера сетки хранилища 0–26 (у творческого и администратора). */
+    public static int vanillaSlot(int index) {
+        return StorageArea.VANILLA_FIRST + index;
+    }
 
     /** Ячейки области (живой список надетой сумки; пустой, если сумки нет). */
     public static NonNullList<ItemStack> items(Player player, StorageArea area) {
@@ -73,7 +88,12 @@ public final class Storage {
             for (int i = 0; i < POCKETS && !stack.isEmpty(); i++) {
                 topUp(inventory, i, stack);
             }
-            for (StorageArea area : StorageArea.FILL_ORDER) {
+            if (unrestricted(player)) {
+                for (int i = 0; i < StorageArea.INDEX_COUNT && !stack.isEmpty(); i++) {
+                    topUp(inventory, vanillaSlot(i), stack);
+                }
+            }
+            for (StorageArea area : unrestricted(player) ? new StorageArea[0] : StorageArea.FILL_ORDER) {
                 if (stack.isEmpty()) {
                     break;
                 }
@@ -90,7 +110,13 @@ public final class Storage {
                 inventory.items.get(i).setPopTime(POP_TIME);
             }
         }
-        if (canStore(stack)) {
+        if (unrestricted(player)) {
+            for (int i = 0; i < StorageArea.INDEX_COUNT && !stack.isEmpty(); i++) {
+                if (inventory.items.get(vanillaSlot(i)).isEmpty()) {
+                    inventory.items.set(vanillaSlot(i), stack.split(stack.getMaxStackSize()));
+                }
+            }
+        } else if (canStore(stack)) {
             for (StorageArea area : StorageArea.FILL_ORDER) {
                 if (stack.isEmpty()) {
                     break;
@@ -182,6 +208,9 @@ public final class Storage {
 
     /** Вещи, попавшие в скрытые ячейки 9–35 (чужой мод, команда) — разложить или бросить под ноги. */
     public static void evictHidden(Inventory inventory) {
+        if (unrestricted(inventory.player)) {
+            return; // у творческого и администратора 9–35 — открытое хранилище
+        }
         for (int i = StorageArea.VANILLA_FIRST; i < Inventory.INVENTORY_SIZE; i++) {
             ItemStack stack = inventory.items.get(i);
             if (!stack.isEmpty()) {

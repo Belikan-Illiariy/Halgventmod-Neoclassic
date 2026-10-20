@@ -610,6 +610,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // ----- Кожевенное дело -----
         leatherTranslations();
         cookingTranslations();
+        qualityTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -821,6 +822,19 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void cooking(String key, String ru, String en) {
         add("message.halgventmod.cooking." + key, russian ? ru : en);
+    }
+
+    /** Качество снаряжения и типы урона (quality/*). Сами признаки качества — из ModTraits. */
+    private void qualityTranslations() {
+        add("tooltip.halgventmod.quality.weapon", russian ? "Урон ×%s, пробитие %s%% (%s)" : "Damage ×%s, penetration %s%% (%s)");
+        add("tooltip.halgventmod.quality.armor", russian ? "Защита ×%s, стойкость ×%s" : "Protection ×%s, resistance ×%s");
+        add("damage_kind.halgventmod.chopping", russian ? "рубящий" : "chopping");
+        add("damage_kind.halgventmod.piercing", russian ? "колющий" : "piercing");
+        add("damage_kind.halgventmod.blunt", russian ? "дробящий" : "blunt");
+        add("damage_kind.halgventmod.penetrating", russian ? "проникающий" : "penetrating");
+        add("command.halgventmod.quality.set", russian ? "Качество задано: %s" : "Quality set: %s");
+        add("command.halgventmod.quality.not_gear",
+                russian ? "Возьмите в руку оружие или броню и укажите качество" : "Hold a weapon or armor and name a quality");
     }
 
     private void squad(String key, String ru, String en) {

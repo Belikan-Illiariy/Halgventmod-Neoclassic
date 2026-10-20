@@ -52,15 +52,6 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     // Строка нагрузки над окном: зазор до верхнего края окна
     private static final int LOAD_GAP = 2;
 
-    // Цвета заглушки (как у ванильных окон)
-    static final int WINDOW_FILL = 0xFFC6C6C6;
-    static final int WINDOW_DARK = 0xFF555555;
-    static final int WINDOW_LIGHT = 0xFFFFFFFF;
-    static final int SLOT_FILL = 0xFF8B8B8B;
-    static final int SLOT_SHADOW = 0xFF373737;
-    static final int SLOT_LOCKED = 0xFF2B2B2B;
-    private static final int PANEL_FILL = 0xFF1E1E1E;
-
     @Nullable
     private ClearInventoryButton clearButton; // только в творческом
 
@@ -165,17 +156,15 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        bevel(graphics, x, y, x + imageWidth, y + imageHeight, WINDOW_FILL, WINDOW_LIGHT, WINDOW_DARK);
-        // Рамка фигурки и панели предмета
-        graphics.fill(x + PlayerArmorMenu.FIGURE_LEFT, y + PlayerArmorMenu.FIGURE_TOP,
-                x + PlayerArmorMenu.FIGURE_RIGHT, y + PlayerArmorMenu.FIGURE_BOTTOM, 0xFF000000);
-        graphics.fill(x + PlayerArmorMenu.PANEL_LEFT, y + PlayerArmorMenu.PANEL_TOP,
-                x + PlayerArmorMenu.PANEL_RIGHT, y + PlayerArmorMenu.PANEL_BOTTOM, PANEL_FILL);
+        // Стиль Conquest Reforged: железная плашка, мшистые ячейки сундука, тёмные вставки под фигурку и панель предмета
+        ConquestUi.window(graphics, x, y, x + imageWidth, y + imageHeight);
+        ConquestUi.inset(graphics, x + PlayerArmorMenu.FIGURE_LEFT, y + PlayerArmorMenu.FIGURE_TOP,
+                x + PlayerArmorMenu.FIGURE_RIGHT, y + PlayerArmorMenu.FIGURE_BOTTOM);
+        ConquestUi.inset(graphics, x + PlayerArmorMenu.PANEL_LEFT, y + PlayerArmorMenu.PANEL_TOP,
+                x + PlayerArmorMenu.PANEL_RIGHT, y + PlayerArmorMenu.PANEL_BOTTOM);
         for (Slot slot : menu.slots) {
             if (slot.isActive()) {
-                boolean locked = slot instanceof StorageSlot storage && !storage.isOpen();
-                bevel(graphics, x + slot.x - 1, y + slot.y - 1, x + slot.x + 17, y + slot.y + 17,
-                        locked ? SLOT_LOCKED : SLOT_FILL, SLOT_SHADOW, WINDOW_LIGHT);
+                ConquestUi.slot(graphics, x + slot.x, y + slot.y, slot instanceof StorageSlot storage && !storage.isOpen());
             }
         }
         StorageSlotOverlay.drawDividers(graphics, this, x, y); // черта между спиной и подсумками
@@ -183,16 +172,6 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
                 x + PlayerArmorMenu.FIGURE_LEFT, y + PlayerArmorMenu.FIGURE_TOP,
                 x + PlayerArmorMenu.FIGURE_RIGHT, y + PlayerArmorMenu.FIGURE_BOTTOM,
                 FIGURE_SCALE, FIGURE_Y_OFFSET, mouseX, mouseY, minecraft.player);
-    }
-
-    // Прямоугольник с объёмной рамкой: светлая сверху-слева, тёмная снизу-справа (или наоборот — у ячеек)
-    static void bevel(GuiGraphics graphics, int left, int top, int right, int bottom,
-                              int fill, int topLeft, int bottomRight) {
-        graphics.fill(left, top, right, bottom, fill);
-        graphics.fill(left, top, right - 1, top + 1, topLeft);
-        graphics.fill(left, top, left + 1, bottom - 1, topLeft);
-        graphics.fill(left + 1, bottom - 1, right, bottom, bottomRight);
-        graphics.fill(right - 1, top + 1, right, bottom, bottomRight);
     }
 
     // Панель предмета: вещь под курсором, а если курсор ни над чем — вещь в руке

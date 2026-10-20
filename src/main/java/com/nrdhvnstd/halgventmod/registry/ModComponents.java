@@ -150,6 +150,13 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.STRING_UTF8)
                     .build());
 
+    // Качество снаряжения 0–5: Ужасный…Шедевр (quality/GearQuality), видно признаком
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> GEAR_QUALITY =
+            COMPONENTS.register("gear_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
     private ModComponents() {}
 
     public static void register(IEventBus modEventBus) {
