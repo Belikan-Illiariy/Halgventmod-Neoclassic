@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north,load=empty": { "model": "halgventmod:block/hook_empty" },
+    "facing=north,load=smoking": { "model": "halgventmod:block/hook_smoking" },
+    "facing=north,load=drying": { "model": "halgventmod:block/hook_drying" },
+    "facing=east,load=empty": { "model": "halgventmod:block/hook_empty" },
+    "facing=east,load=smoking": { "model": "halgventmod:block/hook_smoking" },
+    "facing=east,load=drying": { "model": "halgventmod:block/hook_drying" },
+    "facing=south,load=empty": { "model": "halgventmod:block/hook_empty" },
+    "facing=south,load=smoking": { "model": "halgventmod:block/hook_smoking" },
+    "facing=south,load=drying": { "model": "halgventmod:block/hook_drying" },
+    "facing=west,load=empty": { "model": "halgventmod:block/hook_empty" },
+    "facing=west,load=smoking": { "model": "halgventmod:block/hook_smoking" },
+    "facing=west,load=drying": { "model": "halgventmod:block/hook_drying" }
+  }
+}

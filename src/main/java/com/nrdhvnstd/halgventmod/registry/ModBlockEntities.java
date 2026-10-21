@@ -1,6 +1,17 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.beekeeping.SkepBlockEntity;
+import com.nrdhvnstd.halgventmod.brewing.AgingCaskBlockEntity;
+import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlockEntity;
+import com.nrdhvnstd.halgventmod.brewing.StillBlockEntity;
+import com.nrdhvnstd.halgventmod.brewing.WinePressBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.HookBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.OvenBlockEntity;
+import com.nrdhvnstd.halgventmod.cooking.QuernBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.DryingRackBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlockEntity;
@@ -35,6 +46,41 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LeatherTableBlockEntity>> LEATHER_TABLE =
             BLOCK_ENTITIES.register("leather_table", () -> BlockEntityType.Builder
                     .of(LeatherTableBlockEntity::new, ModBlocks.LEATHER_TABLE.get()).build(null));
+
+    // Алкоголь
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WinePressBlockEntity>> WINE_PRESS =
+            BLOCK_ENTITIES.register("wine_press", () -> BlockEntityType.Builder.of(WinePressBlockEntity::new, ModBlocks.WINE_PRESS.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FermentingBarrelBlockEntity>> FERMENTING_BARREL =
+            BLOCK_ENTITIES.register("fermenting_barrel", () -> BlockEntityType.Builder.of(FermentingBarrelBlockEntity::new, ModBlocks.FERMENTING_BARREL.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StillBlockEntity>> STILL =
+            BLOCK_ENTITIES.register("still", () -> BlockEntityType.Builder.of(StillBlockEntity::new, ModBlocks.STILL.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AgingCaskBlockEntity>> AGING_CASK =
+            BLOCK_ENTITIES.register("aging_cask", () -> BlockEntityType.Builder.of(AgingCaskBlockEntity::new, ModBlocks.AGING_CASK.get()).build(null));
+
+    // Пчеловодство
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SkepBlockEntity>> SKEP =
+            BLOCK_ENTITIES.register("skep", () -> BlockEntityType.Builder
+                    .of(SkepBlockEntity::new, ModBlocks.SKEP.get()).build(null));
+
+    // Готовка (cooking/*)
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HearthBlockEntity>> HEARTH =
+            BLOCK_ENTITIES.register("hearth", () -> BlockEntityType.Builder
+                    .of(HearthBlockEntity::new, ModBlocks.HEARTH.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OvenBlockEntity>> OVEN =
+            BLOCK_ENTITIES.register("baking_oven", () -> BlockEntityType.Builder
+                    .of(OvenBlockEntity::new, ModBlocks.BAKING_OVEN.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN =
+            BLOCK_ENTITIES.register("quern", () -> BlockEntityType.Builder
+                    .of(QuernBlockEntity::new, ModBlocks.QUERN.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<KitchenTableBlockEntity>> KITCHEN_TABLE =
+            BLOCK_ENTITIES.register("kitchen_table", () -> BlockEntityType.Builder
+                    .of(KitchenTableBlockEntity::new, ModBlocks.KITCHEN_TABLE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BrineBarrelBlockEntity>> BRINE_BARREL =
+            BLOCK_ENTITIES.register("brine_barrel", () -> BlockEntityType.Builder
+                    .of(BrineBarrelBlockEntity::new, ModBlocks.BRINE_BARREL.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HookBlockEntity>> SMOKING_HOOK =
+            BLOCK_ENTITIES.register("smoking_hook", () -> BlockEntityType.Builder
+                    .of(HookBlockEntity::new, ModBlocks.SMOKING_HOOK.get()).build(null));
 
     private ModBlockEntities() {}
 

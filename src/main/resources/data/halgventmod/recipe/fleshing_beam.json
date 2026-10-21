@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [ "L", "L" ],
-  "key": {
-    "L": { "tag": "minecraft:logs" }
-  },
-  "result": { "id": "halgventmod:fleshing_beam", "count": 1 }
-}

@@ -6,6 +6,7 @@ import java.util.List;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.network.PatternOpenPayload;
+import com.nrdhvnstd.halgventmod.quality.GearQuality;
 import com.nrdhvnstd.halgventmod.network.SewingOpenPayload;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
@@ -260,7 +261,13 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
     }
 
     private void finish(Player player, LeatherPatterns.Pattern current, int qualityDelta) {
-        ItemStack result = LeatherQuality.set(current.result(), quality + qualityDelta);
+        // Броня со стола получает качество снаряжения (из качества кожи и шитья), прочее — качество кожи
+        ItemStack result = current.result();
+        if (GearQuality.applies(result)) {
+            GearQuality.set(result, GearQuality.fromLeather(quality + qualityDelta));
+        } else {
+            LeatherQuality.set(result, quality + qualityDelta);
+        }
         if (current.stitches() > 0) {
             result.set(ModComponents.OILED_DAY.get(), Freshness.currentDay(level));
         }
@@ -295,7 +302,7 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack oil = inventory.getItem(i);
-            if (oil.is(ModItems.SALO.get()) || oil.is(Items.HONEYCOMB)) {
+            if (oil.is(ModItems.SALO.get()) || oil.is(Items.HONEYCOMB) || oil.is(ModItems.BEESWAX.get())) {
                 if (!player.getAbilities().instabuild) {
                     oil.shrink(1);
                 }

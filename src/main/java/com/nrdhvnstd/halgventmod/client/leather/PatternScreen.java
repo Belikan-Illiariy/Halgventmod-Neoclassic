@@ -42,7 +42,7 @@ public class PatternScreen extends Screen {
     private static final int RECIPE = 22;          // клетка выкройки
     private static final int SLOT = 18;            // слот ингредиента и инструмента
     private static final int GRID = 3;             // ингредиенты 3×3
-    private static final int TOOL_COLUMNS = 3;
+    private static final int TOOL_COLUMNS = 1;
     private static final int TOP = 32;
     private static final int RECIPES_X = PAD;
     private static final int GRID_X = RECIPES_X + RECIPE_COLUMNS * RECIPE + 14;
@@ -50,7 +50,9 @@ public class PatternScreen extends Screen {
     private static final int RESULT_X = ARROW_X + 24 + 6;
     private static final int RESULT = 26;
     private static final int TOOLS_X = RESULT_X + RESULT + 16;
-    private static final int WIDTH = TOOLS_X + TOOL_COLUMNS * SLOT + PAD;
+    private static final int TOOLS_AREA = 64;     // окно шире столбика: подпись над ним в одну строку
+    private static final int TOOLS_SLOT_X = TOOLS_X;
+    private static final int WIDTH = TOOLS_X + TOOLS_AREA + PAD;
 
     private static final int TEXT = 0xFFE9DCB4;
     private static final int TEXT_DIM = 0xFFAA9C80;
@@ -231,10 +233,10 @@ public class PatternScreen extends Screen {
             hoveredStack = result;
         }
 
-        // Инструменты: 3 столбца по 3, заполняются сверху вниз — нож, игла, нитки идут столбиком
+        // Инструменты — один столбик из трёх ячеек: нож, игла, нитки
         List<Ghost> tools = tools(pattern, inventory);
         for (int i = 0; i < TOOL_COLUMNS * GRID; i++) {
-            int sx = x + TOOLS_X + (i / GRID) * SLOT;
+            int sx = x + TOOLS_SLOT_X + (i / GRID) * SLOT;
             int sy = y + TOP + (i % GRID) * SLOT;
             Ghost ghost = i < tools.size() ? tools.get(i) : null;
             if (slot(g, ghost, sx, sy, mouseX, mouseY)) {

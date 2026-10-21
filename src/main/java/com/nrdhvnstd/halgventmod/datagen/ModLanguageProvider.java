@@ -609,6 +609,9 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // ----- Кожевенное дело -----
         leatherTranslations();
+        cookingTranslations();
+        qualityTranslations();
+        brewingTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -739,6 +742,224 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void leather(String key, String ru, String en) {
         add("message.halgventmod.leather." + key, russian ? ru : en);
+    }
+
+    /** Готовка: очаг, котелок, жарка, печь, жёрнов, заготовки (cooking/*). */
+    private void cookingTranslations() {
+        add("tooltip.halgventmod.dish_food", russian ? "Сытость %s, жажда %s" : "Nutrition %s, thirst %s");
+        add("tooltip.halgventmod.dish_of", russian ? "Сварено из: %s" : "Made of: %s");
+        add("tooltip.halgventmod.pie_filling.meat", russian ? "Начинка: мясо" : "Filling: meat");
+        add("tooltip.halgventmod.pie_filling.mushroom", russian ? "Начинка: грибы" : "Filling: mushrooms");
+        add("tooltip.halgventmod.pie_filling.berry", russian ? "Начинка: ягоды" : "Filling: berries");
+
+        add("gui.halgventmod.kitchen.title", russian ? "Рецепты" : "Recipes");
+        add("gui.halgventmod.kitchen.ingredients", russian ? "Продукты" : "Ingredients");
+        add("gui.halgventmod.kitchen.extras", russian ? "Добавки" : "Extras");
+        add("gui.halgventmod.kitchen.kneads", russian ? "Месить: %s раз" : "Knead: %s times");
+        add("tooltip.halgventmod.food_extras", russian ? "С добавками: %s (насыщение +%s)" : "With extras: %s (saturation +%s)");
+        cooking("kitchen_extra", "%s — в начинку: насыщение +%s", "%s in the filling: saturation +%s");
+        cooking("kitchen_extra_twice", "%s уже есть в начинке", "%s is already in the filling");
+        cooking("kitchen_extras_full", "Добавок не больше %s", "No more than %s extras");
+        add("message.halgventmod.bees.calmed", russian ? "Пчёлы притихли от дыма" : "The smoke calms the bees");
+        add("message.halgventmod.bees.empty_smoke", russian ? "В улье никого нет" : "The hive is empty");
+        add("message.halgventmod.bees.empty", russian ? "Улей пуст: ни пчёл, ни мёда" : "The hive is empty: no bees, no honey");
+        add("message.halgventmod.bees.no_honey", russian ? "Мёда ещё нет" : "No honey yet");
+        add("message.halgventmod.bees.stung", russian ? "Пчёлы жалят! Сначала окурите улей дымарём" : "The bees sting! Smoke the hive first");
+        add("message.halgventmod.bees.waiting", russian ? "Пусто. Цветов рядом: %s — весной и летом заселится рой" : "Empty. Flowers nearby: %s — a swarm will settle in spring or summer");
+        add("message.halgventmod.bees.few_flowers", russian ? "Пусто, и цветов мало: %s из %s. Посадите цветы рядом" : "Empty, and few flowers: %s of %s. Plant flowers nearby");
+        add("message.halgventmod.bees.status", russian ? "Пчёлы живут. Мёда %s из %s, цветов рядом: %s" : "Bees live here. Honey %s of %s, flowers nearby: %s");
+        cooking("kitchen_pick", "E пустой рукой — выбрать рецепт", "E with an empty hand picks a recipe");
+        cooking("kitchen_busy", "Сначала доделайте или заберите выложенное", "Finish or take back what is on the board first");
+        cooking("kitchen_take_first", "Сначала заберите готовое", "Take what is ready first");
+        cooking("kitchen_has_water", "Воды уже хватает", "Enough water already");
+        cooking("kitchen_has_salt", "Уже посолено", "Already salted");
+        cooking("kitchen_enough", "%s хватает", "Enough %s");
+        cooking("kitchen_spoiled", "Испорченное не берут", "Spoiled food won't do");
+        cooking("kitchen_wrong", "Это не по рецепту", "Not in this recipe");
+        cooking("kitchen_need", "Нужно ещё: %s × %s", "Still needed: %s × %s");
+        cooking("kitchen_need_water", "Полейте водой из ведра", "Pour in water from a bucket");
+        cooking("kitchen_ready_to_knead", "Всё на доске: месите пустой рукой", "All on the board: knead with an empty hand");
+        cooking("kitchen_knead", "%s / %s", "%s / %s");
+        cooking("kitchen_kneaded", "Уже замешано — доделайте", "Already kneaded — finish it");
+        cooking("kitchen_done", "Готово: %s", "Done: %s");
+        cooking("diet_bored", "%s приелось: сытость %s%%", "Tired of %s: %s%% as filling");
+        cooking("raw_sick", "Сырое пошло не впрок", "The raw food did not sit well");
+
+        cooking("fuel_full", "Дров хватит: больше не положить", "Enough firewood: no room for more");
+        cooking("fuel_added", "Подложили дров: запас %s%%", "Firewood added: %s%% stocked");
+        cooking("fuel_unlit", "Дрова сложены (%s%%). Разожгите огнивом или факелом", "Firewood stacked (%s%%). Light it with a flint or torch");
+        cooking("already_lit", "Уже горит", "Already burning");
+        cooking("no_fuel", "Нечему гореть: сначала дрова", "Nothing to burn: add firewood first");
+        cooking("fire_status", "Жар %s, дров %s%%", "Heat %s, firewood %s%%");
+        cooking("fire_out", "Огонь не горит (дров %2$s%%)", "The fire is out (firewood %2$s%%)");
+
+        cooking("pot_already", "Котелок уже стоит", "A pot is already on");
+        cooking("grill_busy", "Сначала снимите всё с углей", "Take everything off the coals first");
+        cooking("still_pot", "Сначала снимите котелок", "Take the pot off first");
+        cooking("still_blocked", "Над очагом нет места для куба", "No room above the hearth for the still");
+        cooking("pot_has_water", "Вода уже налита", "There is water already");
+        cooking("need_water", "Налейте в котелок воды ведром", "Pour water into the pot with a bucket");
+        cooking("pot_water_only", "Одна вода: положите продукты", "Just water: add some food");
+        cooking("pot_full", "Котелок полон", "The pot is full");
+        cooking("pot_serving", "Из котелка уже разливают — сначала доешьте", "The pot is being served — finish it first");
+        cooking("pot_busy", "В котелке варится — не снять", "Something is cooking — can't take it off");
+        cooking("pot_cold", "Положено %s из %s. Огонь не горит", "%s of %s added. The fire is out");
+        cooking("pot_cooking", "Варится: %s%%, положено %s из %s", "Cooking: %s%%, %s of %s added");
+        cooking("pot_stir", "Пригорает! Помешайте половником (%s%%, %s из %s)", "Scorching! Stir it with a ladle (%s%%, %s of %s)");
+        cooking("stirred", "Помешали", "Stirred");
+        cooking("pot_ready", "Готово: %s, порций %s", "Ready: %s, %s portions");
+        cooking("portions_left", "Осталось порций: %s", "Portions left: %s");
+        cooking("need_bowl", "Черпают миской", "Serve it with a bowl");
+        cooking("need_bottle", "Отвар наливают в склянку", "Pour the tea into a bottle");
+        cooking("grill_full", "На углях нет места", "No room on the coals");
+
+        cooking("oven_full", "В печи нет места", "The oven is full");
+        cooking("oven_cold", "Печь не прогрета (%s°): не печётся", "The oven is cold (%s°): nothing bakes");
+        cooking("oven_status", "Жар %s°, дров %s%%. Печётся: %s", "Heat %s°, firewood %s%%. Baking: %s");
+        cooking("oven_status_empty", "Жар %s°, дров %s%%", "Heat %s°, firewood %s%%");
+        cooking("baked_raw", "Ещё сырое", "Still raw");
+        cooking("baked_under", "%s: недопечено", "%s: underbaked");
+        cooking("baked_good", "%s: в самый раз", "%s: just right");
+        cooking("baked_over", "%s: пересушено", "%s: overbaked");
+        cooking("baked_burnt", "Сгорело", "Burnt");
+
+        cooking("quern_full", "Жёрнов полон", "The quern is full");
+        cooking("quern_grain", "Засыпано зерна: %s", "Grain in: %s");
+        cooking("quern_empty", "Засыпьте пшеницу или рожь", "Pour in some wheat or rye");
+        cooking("quern_mixed", "Сначала домелите или заберите то зерно", "Finish grinding or take back the other grain first");
+        cooking("quern_turn", "%s / %s", "%s / %s");
+        cooking("quern_flour", "Смолото! Осталось зерна: %s", "Ground! Grain left: %s");
+        cooking("quern_spilled", "Спешка — зерно просыпалось. Осталось: %s", "Too hasty — the grain spilled. Left: %s");
+
+        cooking("barrel_empty", "Положите сырое мясо или рыбу", "Put in raw meat or fish");
+        cooking("barrel_full", "Бочка полна", "The barrel is full");
+        cooking("barrel_spoiled", "Испорченное не солят", "Spoiled food is not salted");
+        cooking("barrel_salt_enough", "Соли хватает", "Enough salt");
+        cooking("barrel_need_salt", "В бочке %s, соли %s: нужно по соли на кусок", "%s in the barrel, salt %s: one salt per piece");
+        cooking("barrel_salting", "Солится %s, ждать суток: %s", "Salting %s, days left: %s");
+        cooking("barrel_take_first", "Сначала заберите готовое", "Take out what is ready first");
+        cooking("barrel_done", "Засолено: %s", "Salted: %s");
+
+        cooking("hook_empty", "Повесьте сырое мясо или рыбу — коптить, травы или грибы — сушить",
+                "Hang raw meat or fish to smoke, herbs or mushrooms to dry");
+        cooking("hook_full", "На крюке нет места", "No room on the hook");
+        cooking("hook_mixed", "Мясо и травы вместе не вешают", "Meat and herbs don't hang together");
+        cooking("hook_take_first", "Сначала снимите готовое", "Take off what is ready first");
+        cooking("hook_no_smoke", "Внизу нет огня: не коптится. Повесьте над очагом или костром",
+                "No fire below: it won't smoke. Hang it above a hearth or campfire");
+        cooking("hook_no_smoke_status", "Коптится %s%%, но внизу нет огня", "Smoked %s%%, but there is no fire below");
+        cooking("hook_smoking", "Коптится: %s%%", "Smoking: %s%%");
+        cooking("hook_drying", "Сохнет: %s%%", "Drying: %s%%");
+        cooking("hook_smoked", "Прокоптилось: %s", "Smoked: %s");
+        cooking("hook_dried", "Высохло: %s", "Dried: %s");
+    }
+
+    private void cooking(String key, String ru, String en) {
+        add("message.halgventmod.cooking." + key, russian ? ru : en);
+    }
+
+    /** Алкоголь (brewing/*): сообщения станций, опьянение, названия напитков по составу. */
+    private void brewingTranslations() {
+        brewing("press_mixed", "Разные плоды вместе не давят", "Different fruit can't be pressed together");
+        brewing("press_take_juice", "Сначала наберите сок склянкой", "Draw the juice with a bottle first");
+        brewing("press_full", "Давильня полна", "The press is full");
+        brewing("press_fruit", "Плодов: %s, сока: %s", "Fruit: %s, juice: %s");
+        brewing("press_no_juice", "Сока мало: %s из %s на склянку", "Not enough juice: %s of %s per bottle");
+        brewing("press_empty", "Засыпьте яблоки или ягоды. Сока: %s", "Fill it with apples or berries. Juice: %s");
+        brewing("press_spilled", "Неровно — плод раздавлен мимо. Осталось: %s", "Uneven — a fruit got squashed to waste. Left: %s");
+        brewing("press_juice", "Сока: %s, плодов осталось: %s", "Juice: %s, fruit left: %s");
+        brewing("press_turn", "Давите: %s/%s", "Pressing: %s/%s");
+        brewing("barrel_pour_first", "Сначала разлейте готовое", "Draw what is ready first");
+        brewing("barrel_mixed", "Разное в одну бочку не льют", "Different liquids don't go in one barrel");
+        brewing("barrel_full", "Бочка полна", "The barrel is full");
+        brewing("barrel_flavour_twice", "Эта добавка уже есть", "This extra is already in");
+        brewing("barrel_flavours_full", "Добавок не больше %s", "No more than %s extras");
+        brewing("barrel_flavour", "Добавлено: %s", "Added: %s");
+        brewing("barrel_empty", "Влейте сусло или крепкое", "Pour in must or a spirit");
+        brewing("barrel_poured_out", "Бочка вылита", "The barrel is emptied");
+        brewing("barrel_tincture_needs", "Крепкого: %s. Для настойки добавьте ягоды, травы или мёд",
+                "Spirit: %s. Add berries, herbs or honey for a tincture");
+        brewing("barrel_sour", "Передержано — уксус (%s)", "Kept too long — vinegar (%s)");
+        brewing("barrel_ready", "Перебродило: %s склянок. Скиснет через %s сут.", "Fermented: %s bottles. Sours in %s days");
+        brewing("barrel_ready_tincture", "Настоялось: %s склянок. Перестоит через %s сут.", "Steeped: %s bottles. Overdone in %s days");
+        brewing("barrel_fermenting", "Бродит: %s склянок, ещё %s сут.", "Fermenting: %s bottles, %s days left");
+        brewing("still_mixed", "Разное в куб не льют", "Different drinks don't go in the still together");
+        brewing("still_take_first", "Сначала наберите готовое крепкое", "Draw the finished spirit first");
+        brewing("still_full", "Куб полон", "The still is full");
+        brewing("still_cold", "Внизу нет огня. Залито: %s, крепкого: %s (из %s склянок — одна)",
+                "No fire below. Poured: %s, spirit: %s (one from %s bottles)");
+        brewing("still_status", "Гонит. Залито: %s, крепкого: %s (из %s склянок — одна)",
+                "Distilling. Poured: %s, spirit: %s (one from %s bottles)");
+        brewing("still_hot", "Слишком жарко — крепкое выйдет хуже. Залито: %s, крепкого: %s (из %s — одна)",
+                "Too hot — the spirit will be worse. Poured: %s, spirit: %s (one from %s)");
+        brewing("cask_full", "В бочке нет места", "No room in the cask");
+        brewing("cask_no_beer", "Пиво не выдерживают — пейте свежим", "Beer isn't aged — drink it fresh");
+        brewing("cask_empty", "Положите вино, медовуху, сидр, крепкое или настойку", "Put in wine, mead, cider, a spirit or a tincture");
+        brewing("cask_cellar", "Погреб: %s склянок, качество растёт каждые %s сут.", "Cellar: %s bottles, quality rises every %s days");
+        brewing("cask_house", "%s склянок, качество растёт каждые %s сут. В погребе — быстрее",
+                "%s bottles, quality rises every %s days. Faster in a cellar");
+        brewing("cask_exposed", "Под открытым небом не выдерживается (%s склянок)", "Doesn't age under the open sky (%s bottles)");
+        cooking("baked_malt", "Высушено: %s", "Dried: %s");
+
+        drunk("tipsy", "Вы навеселе", "You are tipsy");
+        drunk("drunk", "Вы пьяны", "You are drunk");
+        drunk("wasted", "Вы мертвецки пьяны", "You are wasted");
+        drunk("sober", "Вы протрезвели", "You are sober");
+        drunk("hangover", "Похмелье: тяжёлая голова и жажда", "Hangover: a heavy head and thirst");
+        drunk("cured", "Полегчало", "That's better");
+        add("gamerule.drunkChat", russian ? "Пьяные путают буквы в чате" : "Drunk players slur in chat");
+
+        drink("must.apple", "Яблочный сок", "Apple juice");
+        drink("must.berry", "Ягодный сок", "Berry juice");
+        drink("must.glowberry", "Сок светящихся ягод", "Glow berry juice");
+        drink("must.honey", "Медовый взвар", "Honey must");
+        drink("must.wort_pale", "Светлое сусло", "Pale wort");
+        drink("must.wort_amber", "Янтарное сусло", "Amber wort");
+        drink("must.wort_dark", "Тёмное сусло", "Dark wort");
+        drink("beer.wort_pale", "Светлое пиво", "Pale beer");
+        drink("beer.wort_amber", "Янтарное пиво", "Amber beer");
+        drink("beer.wort_dark", "Тёмное пиво", "Dark beer");
+        drink("cider.apple", "Сидр", "Cider");
+        drink("wine.berry", "Ягодное вино", "Berry wine");
+        drink("wine.glowberry", "Светящееся вино", "Glow wine");
+        drink("mead.honey", "Медовуха", "Mead");
+        drink("spirit.bread", "Хлебное вино", "Grain spirit");
+        drink("spirit.brandy", "Бренди", "Brandy");
+        drink("spirit.apple", "Яблочная водка", "Apple brandy");
+        drink("spirit.mead", "Медовая водка", "Honey spirit");
+        drink("tincture.bread", "Хлебная настойка", "Grain tincture");
+        drink("tincture.brandy", "Настойка на бренди", "Brandy tincture");
+        drink("tincture.apple", "Яблочная настойка", "Apple tincture");
+        drink("tincture.mead", "Медовая настойка", "Honey tincture");
+        drink("flag.honey", " с мёдом", " with honey");
+        drink("flag.herbs", " на травах", " with herbs");
+        drink("flag.berry", " с ягодами", " with berries");
+    }
+
+    private void brewing(String key, String ru, String en) {
+        add("message.halgventmod.brewing." + key, russian ? ru : en);
+    }
+
+    private void drunk(String key, String ru, String en) {
+        add("message.halgventmod.drunk." + key, russian ? ru : en);
+    }
+
+    private void drink(String key, String ru, String en) {
+        add("drink.halgventmod." + key, russian ? ru : en);
+    }
+
+    /** Качество снаряжения и типы урона (quality/*). Сами признаки качества — из ModTraits. */
+    private void qualityTranslations() {
+        add("tooltip.halgventmod.quality.weapon", russian ? "Урон ×%s, пробитие %s%% (%s)" : "Damage ×%s, penetration %s%% (%s)");
+        add("tooltip.halgventmod.quality.food", russian ? "Сытость и насыщение ×%s" : "Nutrition and saturation ×%s");
+        add("tooltip.halgventmod.quality.armor", russian ? "Защита ×%s, стойкость ×%s" : "Protection ×%s, resistance ×%s");
+        add("damage_kind.halgventmod.chopping", russian ? "рубящий" : "chopping");
+        add("damage_kind.halgventmod.piercing", russian ? "колющий" : "piercing");
+        add("damage_kind.halgventmod.blunt", russian ? "дробящий" : "blunt");
+        add("damage_kind.halgventmod.penetrating", russian ? "проникающий" : "penetrating");
+        add("command.halgventmod.quality.set", russian ? "Качество задано: %s" : "Quality set: %s");
+        add("command.halgventmod.quality.not_gear",
+                russian ? "Возьмите в руку оружие или броню и укажите качество" : "Hold a weapon or armor and name a quality");
     }
 
     private void squad(String key, String ru, String en) {

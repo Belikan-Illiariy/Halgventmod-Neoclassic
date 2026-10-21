@@ -84,14 +84,16 @@ public abstract class StationBlockEntity extends BlockEntity {
         }
     }
 
-    /** Отдать предмет игроку в руку или в инвентарь, а не влезет — бросить рядом. */
+    /**
+     * Отдать предмет игроку, как при подборе: сначала дополнить стопку такой же вещи (рука, карманы, сумки),
+     * потом свободная ячейка; что не влезло — бросить рядом. В пустую руку специально не кладём.
+     */
     protected static void give(Player player, ItemStack stack) {
         if (stack.isEmpty()) {
             return;
         }
-        if (player.getMainHandItem().isEmpty()) {
-            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
-        } else if (!player.getInventory().add(stack)) {
+        player.getInventory().add(stack);
+        if (!stack.isEmpty()) {
             player.drop(stack, false);
         }
     }

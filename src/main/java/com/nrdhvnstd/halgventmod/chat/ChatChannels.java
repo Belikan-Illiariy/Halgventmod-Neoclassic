@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.Permissions;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.squad.SquadCommands;
 
 import net.minecraft.ChatFormatting;
@@ -58,6 +59,7 @@ public final class ChatChannels {
             return;
         }
 
+        text = Intoxication.slur(sender, text); // пьяный путает буквы (правило drunkChat)
         sendLocal(sender, Component.translatable("chat.halgventmod.local", name(sender), text));
         LOGGER.info("[Local] <{}> {}", sender.getGameProfile().getName(), text);
     }

@@ -25,6 +25,7 @@ import com.nrdhvnstd.halgventmod.gear.ModGear;
 import com.nrdhvnstd.halgventmod.storage.ContainerType;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
+import com.nrdhvnstd.halgventmod.brewing.AlcoholItem;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
@@ -37,6 +38,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
@@ -1061,6 +1064,459 @@ public final class ModItems {
                     "E with an empty hand opens the patterns. E with leather lays it, E with the knife cuts, E with the needle sews.")
             .kg(25)
             .register(properties -> new BlockItem(ModBlocks.LEATHER_TABLE.get(), properties));
+
+    // ----- Готовка (cooking/*; станции — в ModBlocks) -----
+    // Блюда из котелка: сытость и жажда — от состава (компонент halgventmod:dish), здесь — только для чужих подсказок
+    public static final DeferredItem<Item> PORRIDGE = item("porridge", "Каша", "Porridge", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Зерно, сваренное в котелке. На молоке — сытнее.", "Grain boiled in a pot. With milk it is more filling.")
+            .stacksTo(4)
+            .grams(400)
+            .food(30, 20.0F)
+            .returns(Items.BOWL)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> VEGETABLE_SOUP = item("vegetable_soup", "Похлёбка", "Vegetable soup", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Овощи, сваренные в котелке. Утоляет и голод, и жажду.", "Vegetables boiled in a pot. Eases both hunger and thirst.")
+            .stacksTo(4)
+            .grams(400)
+            .food(25, 15.0F)
+            .thirst(20)
+            .returns(Items.BOWL)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> MUSHROOM_SOUP = item("mushroom_soup", "Грибная похлёбка", "Mushroom soup", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Грибы, сваренные в котелке.", "Mushrooms boiled in a pot.")
+            .stacksTo(4)
+            .grams(400)
+            .food(20, 12.0F)
+            .thirst(20)
+            .returns(Items.BOWL)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> MEAT_STEW = item("meat_stew", "Мясная похлёбка", "Meat stew", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Наваристое мясо с тем, что нашлось в котле.", "Rich meat with whatever was in the pot.")
+            .stacksTo(4)
+            .grams(450)
+            .food(45, 30.0F)
+            .thirst(20)
+            .returns(Items.BOWL)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> FISH_SOUP = item("fish_soup", "Уха", "Fish soup", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Рыба, сваренная в котелке.", "Fish boiled in a pot.")
+            .stacksTo(4)
+            .grams(400)
+            .food(35, 20.0F)
+            .thirst(20)
+            .returns(Items.BOWL)
+            .shelfLife(1)
+            .register();
+    public static final DeferredItem<Item> HERBAL_TEA = item("herbal_tea", "Травяной отвар", "Herbal tea", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Травы, заваренные в котелке. Хорошо утоляет жажду.", "Herbs steeped in a pot. Quenches thirst well.")
+            .stacksTo(4)
+            .grams(300)
+            .drink()
+            .thirst(35)
+            .returns(Items.GLASS_BOTTLE)
+            .shelfLife(3)
+            .register();
+
+    // Хлеб и пироги: мука с жёрнова, тесто — в верстаке, печь — хлебная
+    public static final DeferredItem<Item> WHEAT_FLOUR = item("wheat_flour", "Пшеничная мука", "Wheat flour", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Смолота на жёрнове. На кухонном столе с водой — тесто.", "Ground on a quern. With water at a kitchen table it makes dough.")
+            .stacksTo(16)
+            .grams(200)
+            .shelfLife(32)
+            .register();
+    public static final DeferredItem<Item> DOUGH = item("dough", "Тесто", "Dough", Gender.N)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить хлеб. С начинкой на кухонном столе — сырой пирог.",
+                    "E at a fired oven bakes bread. With a filling at a kitchen table — a raw pie.")
+            .stacksTo(8)
+            .grams(400)
+            .shelfLife(2)
+            .register();
+    // Рожь: семена с травы, посев на пашне, мука на жёрнове, ржаное тесто — на кухонном столе, в печи — чёрный хлеб
+    public static final DeferredItem<ItemNameBlockItem> RYE_SEEDS = item("rye_seeds", "Семена ржи", "Rye seeds", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Попадаются в траве. ПКМ по пашне — посеять.", "Found in the grass. Right-click farmland to sow.")
+            .stacksTo(64)
+            .grams(5)
+            .register(properties -> new ItemNameBlockItem(ModBlocks.RYE.get(), properties));
+    public static final DeferredItem<Item> RYE = item("rye", "Рожь", "Rye", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Зерно ржи. На жёрнове — ржаная мука, в котелке — каша.", "Rye grain. A quern grinds it into rye flour; a pot makes porridge.")
+            .stacksTo(64)
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> RYE_FLOUR = item("rye_flour", "Ржаная мука", "Rye flour", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Смолота на жёрнове. На кухонном столе с водой — ржаное тесто.", "Ground on a quern. With water at a kitchen table it makes rye dough.")
+            .stacksTo(16)
+            .grams(200)
+            .shelfLife(32)
+            .register();
+    public static final DeferredItem<Item> RYE_DOUGH = item("rye_dough", "Ржаное тесто", "Rye dough", Gender.N)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить: выйдет чёрный хлеб.", "E at a fired oven to bake it into black bread.")
+            .stacksTo(8)
+            .grams(400)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> RAW_PIE = item("raw_pie", "Сырой пирог", "Raw pie", Gender.M)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить.", "E at a fired oven to bake it.")
+            .stacksTo(4)
+            .grams(500)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> RAW_BUN = item("raw_bun", "Сырая булочка", "Raw bun", Gender.F)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.FOOD)
+            .lore("E по растопленной печи — посадить.", "E at a fired oven to bake it.")
+            .stacksTo(8)
+            .grams(150)
+            .shelfLife(2)
+            .register();
+    public static final DeferredItem<Item> SWEET_BUN = item("sweet_bun", "Сладкая булочка", "Sweet bun", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сдобная булочка на мёду.", "A rich bun made with honey.")
+            .stacksTo(8)
+            .grams(150)
+            .food(25, 20.0F)
+            .shelfLife(5)
+            .register();
+    public static final DeferredItem<Item> MEAT_PIE = item("meat_pie", "Пирог с мясом", "Meat pie", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сытный пирог из печи.", "A filling pie from the oven.")
+            .stacksTo(4)
+            .grams(500)
+            .food(60, 40.0F)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> MUSHROOM_PIE = item("mushroom_pie", "Пирог с грибами", "Mushroom pie", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Пирог из печи с грибной начинкой.", "An oven pie with a mushroom filling.")
+            .stacksTo(4)
+            .grams(500)
+            .food(45, 30.0F)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> BERRY_PIE = item("berry_pie", "Пирог с ягодами", "Berry pie", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сладкий пирог из печи.", "A sweet pie from the oven.")
+            .stacksTo(4)
+            .grams(450)
+            .food(40, 25.0F)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> BURNT_FOOD = item("burnt_food", "Горелое", "Burnt food", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Передержали на огне. Есть можно, но не стоит; горит в очаге.",
+                    "Left too long on the fire. Edible, barely; burns in a hearth.")
+            .stacksTo(16)
+            .grams(100)
+            .food(3, 0.0F)
+            .shelfLife(32)
+            .register();
+
+    // Заготовки: соль, дым, сушка — лежат во много раз дольше
+    public static final DeferredItem<Item> SALTED_MEAT = item("salted_meat", "Солонина", "Salted meat", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Мясо из засолочной бочки. Лежит долго, но солёное — хочется пить.",
+                    "Meat from the brine barrel. Keeps long, but salty — makes you thirsty.")
+            .stacksTo(8)
+            .grams(300)
+            .food(25, 10.0F)
+            .thirst(-10)
+            .shelfLife(64)
+            .register();
+    public static final DeferredItem<Item> SALTED_FISH = item("salted_fish", "Солёная рыба", "Salted fish", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Рыба из засолочной бочки.", "Fish from the brine barrel.")
+            .stacksTo(8)
+            .grams(250)
+            .food(20, 8.0F)
+            .thirst(-10)
+            .shelfLife(64)
+            .register();
+    public static final DeferredItem<Item> SMOKED_MEAT = item("smoked_meat", "Копчёное мясо", "Smoked meat", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Прокоптилось над очагом.", "Smoked over a hearth.")
+            .stacksTo(8)
+            .grams(250)
+            .food(35, 20.0F)
+            .thirst(-5)
+            .shelfLife(48)
+            .register();
+    public static final DeferredItem<Item> SMOKED_FISH = item("smoked_fish", "Копчёная рыба", "Smoked fish", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Прокоптилась над очагом.", "Smoked over a hearth.")
+            .stacksTo(8)
+            .grams(200)
+            .food(30, 15.0F)
+            .thirst(-5)
+            .shelfLife(48)
+            .register();
+    public static final DeferredItem<Item> DRIED_MUSHROOMS = item("dried_mushrooms", "Сушёные грибы", "Dried mushrooms", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Высушены на крюке. Хороши в похлёбку.", "Dried on a hook. Good in a soup.")
+            .stacksTo(16)
+            .grams(50)
+            .food(8, 4.0F)
+            .shelfLife(128)
+            .register();
+    public static final DeferredItem<Item> HERBS = item("herbs", "Травы", "Herbs", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Срезаны с травы серпом, косой или ножом. Приправа в котелок, с одной водой — отвар.",
+                    "Cut from grass with a sickle, scythe or knife. A seasoning for the pot; with just water — a tea.")
+            .stacksTo(16)
+            .grams(20)
+            .shelfLife(4)
+            .register();
+    public static final DeferredItem<Item> DRIED_HERBS = item("dried_herbs", "Сушёные травы", "Dried herbs", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Высушены на крюке. Лежат почти вечно.", "Dried on a hook. Keep almost forever.")
+            .stacksTo(16)
+            .grams(10)
+            .shelfLife(192)
+            .register();
+
+    // Посуда и станции
+    public static final DeferredItem<Item> FIREWOOD = item("firewood", "Дрова", "Firewood", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Колотые поленья. E по очагу или печи — подложить; горят дольше досок.",
+                    "Split logs. E at a hearth or oven to add them; they burn longer than planks.")
+            .stacksTo(16)
+            .kg(1.5)
+            .register();
+    public static final DeferredItem<Item> LADLE = item("ladle", "Половник", "Ladle", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по котелку — помешать, пока не пригорело (чадит и булькает).",
+                    "E at a pot stirs it before it scorches (it smokes and bubbles).")
+            .grams(150)
+            .register();
+    public static final DeferredItem<Item> COOKING_POT = item("cooking_pot", "Котелок", "Cooking pot", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по очагу — поставить на огонь. Shift + E пустой рукой — снять пустой.",
+                    "E at a hearth puts it on the fire. Shift + E with an empty hand takes an empty one off.")
+            .kg(1.5)
+            .register();
+    public static final DeferredItem<BlockItem> HEARTH = item("hearth", "Очаг", "Hearth", Gender.M)
+            .category(Category.TOOLS)
+            .lore("Дрова и огниво — огонь. На нём — котелок, а без котелка жарят прямо на углях. Золу выгребают лопатой.",
+                    "Firewood and a flint make a fire. A pot goes on top, or meat is grilled right on the coals. Shovel out the ash.")
+            .kg(20)
+            .register(properties -> new BlockItem(ModBlocks.HEARTH.get(), properties));
+    public static final DeferredItem<BlockItem> BAKING_OVEN = item("baking_oven", "Хлебная печь", "Baking oven", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Дрова и огниво — растопить. E тестом или сырым пирогом — посадить, пустой рукой — вынуть.",
+                    "Firewood and a flint fire it up. E with dough or a raw pie to bake, an empty hand takes it out.")
+            .kg(60)
+            .register(properties -> new BlockItem(ModBlocks.BAKING_OVEN.get(), properties));
+    public static final DeferredItem<BlockItem> QUERN = item("quern", "Жёрнов", "Quern", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E пшеницей или рожью — засыпать, пустой рукой — крутить. Не спешите — зерно просыпется.",
+                    "E with wheat or rye to fill, an empty hand to turn. Don't rush — the grain spills.")
+            .kg(30)
+            .register(properties -> new BlockItem(ModBlocks.QUERN.get(), properties));
+    public static final DeferredItem<BlockItem> KITCHEN_TABLE = item("kitchen_table", "Кухонный стол", "Kitchen table", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E пустой рукой — рецепты. Продукты, вода и соль — на доску, пустой рукой — месить. Тесто и пироги — здесь.",
+                    "E with an empty hand shows recipes. Food, water and salt go on the board, an empty hand kneads. Dough and pies are made here.")
+            .kg(20)
+            .register(properties -> new BlockItem(ModBlocks.KITCHEN_TABLE.get(), properties));
+    public static final DeferredItem<BlockItem> BRINE_BARREL = item("brine_barrel", "Засолочная бочка", "Brine barrel", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Сырое мясо или рыба и по соли на кусок — через двое суток солонина.",
+                    "Raw meat or fish and a salt per piece — salted in two days.")
+            .kg(15)
+            .register(properties -> new BlockItem(ModBlocks.BRINE_BARREL.get(), properties));
+    public static final DeferredItem<BlockItem> SMOKING_HOOK = item("smoking_hook", "Крюк", "Hook", Gender.M)
+            .category(Category.TOOLS)
+            .lore("Повесьте над очагом: мясо и рыба коптятся. Травы и грибы на нём сохнут.",
+                    "Hang it above a hearth: meat and fish get smoked. Herbs and mushrooms dry on it.")
+            .grams(500)
+            .register(properties -> new BlockItem(ModBlocks.SMOKING_HOOK.get(), properties));
+
+    // ----- Пчеловодство (beekeeping/*) -----
+    public static final DeferredItem<Item> HONEY = item("honey", "Мёд", "Honey", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Отжат из сот на кухонном столе. Не портится. В котелок — сладость, в выпечку — начинка.",
+                    "Pressed from combs at a kitchen table. Never spoils. Sweetens a pot, fills a pastry.")
+            .stacksTo(16)
+            .grams(300)
+            .food(15, 12.0F)
+            .register();
+    public static final DeferredItem<Item> HONEYCOMB_FULL = item("honeycomb_full", "Медовые соты", "Honeycomb", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Срезаны ножом из улья. На кухонном столе — мёд и воск.",
+                    "Cut from a hive with a knife. At a kitchen table they give honey and wax.")
+            .stacksTo(16)
+            .grams(250)
+            .shelfLife(32)
+            .register();
+    public static final DeferredItem<Item> BEESWAX = item("beeswax", "Воск", "Beeswax", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Остаётся от сот. Пропитывает кожу и смазывает кожаные вещи.",
+                    "Left from the combs. Dresses leather and oils leather goods.")
+            .stacksTo(16)
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> BEE_SMOKER = item("bee_smoker", "Дымарь", "Bee smoker", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по улью — окурить: пчёлы притихают на полминуты, и соты можно резать без укусов.",
+                    "E at a hive smokes it: the bees calm down for half a minute, so the combs can be cut unstung.")
+            .durability(64)
+            .grams(400)
+            .register();
+    public static final DeferredItem<BlockItem> SKEP = item("skep", "Улей", "Skep", Gender.M)
+            .category(Category.TOOLS)
+            .lore("Поставьте у цветов: весной или летом в него заселится рой. Копит мёд, зимой пчёлы его едят — оставьте им запас.",
+                    "Place it near flowers: a swarm settles in during spring or summer. It stores honey; in winter the bees eat it — leave them some.")
+            .kg(3)
+            .register(properties -> new BlockItem(ModBlocks.SKEP.get(), properties));
+
+    // ----- Алкоголь (brewing/*) -----
+    // Сусло и напитки: что именно — из состава (компонент halgventmod:brew), название собирает AlcoholItem
+    public static final DeferredItem<AlcoholItem> MUST = item("must", "Сусло", "Must", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Сок с давильни, пивное сусло или медовый взвар из котелка. Влейте в бродильную бочку.",
+                    "Juice from a press, beer wort or honey must from a pot. Pour it into a fermenting barrel.")
+            .stacksTo(8).grams(400)
+            .drink().food(4, 2.0F).thirst(10).returns(Items.GLASS_BOTTLE).shelfLife(3)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> BEER = item("beer", "Пиво", "Beer", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Слабое и сытное, хорошо утоляет жажду. Пьют свежим — скисает за неделю. Снимает похмелье.",
+                    "Weak and filling, quenches thirst well. Drunk fresh — sours within a week. Cures a hangover.")
+            .stacksTo(8).grams(500)
+            .drink().food(10, 5.0F).thirst(15).returns(Items.GLASS_BOTTLE).shelfLife(7)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> CIDER = item("cider", "Сидр", "Cider", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Яблочный, лёгкий. В бочке для выдержки становится лучше.", "Light, made of apples. Improves in an aging cask.")
+            .stacksTo(8).grams(500)
+            .drink().food(6, 3.0F).thirst(12).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> WINE = item("wine", "Вино", "Wine", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Ягодное или «болотное». Выдержанное — лучше.", "Berry or marsh wine. Better when aged.")
+            .stacksTo(8).grams(500)
+            .drink().food(6, 3.0F).thirst(6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> MEAD = item("mead", "Медовуха", "Mead", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCOHOL)
+            .lore("Медовый взвар, перебродивший неделю. Выдержанная — лучше.", "Honey must fermented for a week. Better when aged.")
+            .stacksTo(8).grams(500)
+            .drink().food(8, 4.0F).thirst(6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> SPIRIT = item("spirit", "Крепкое", "Spirit", Gender.N)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ALCOHOL)
+            .lore("Из перегонного куба. Валит с ног быстро; с ягодами, травами или мёдом в бродильной бочке — настойка.",
+                    "From a still. Knocks you down fast; with berries, herbs or honey in a fermenting barrel it becomes a tincture.")
+            .stacksTo(8).grams(400)
+            .drink().food(0, 0.0F).thirst(-10).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> TINCTURE = item("tincture", "Настойка", "Tincture", Gender.F)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.ALCOHOL)
+            .lore("Крепкое, настоянное на ягодах, травах или мёде. Мягче крепкого.", "A spirit steeped with berries, herbs or honey. Gentler than a plain spirit.")
+            .stacksTo(8).grams(400)
+            .drink().food(2, 1.0F).thirst(-6).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    public static final DeferredItem<AlcoholItem> VINEGAR = item("vinegar", "Уксус", "Vinegar", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.FOOD)
+            .lore("Так бывает, если передержать брожение. Пить не стоит.", "What happens when fermentation goes too long. Better not to drink it.")
+            .stacksTo(8).grams(400)
+            .drink().food(0, 0.0F).thirst(-4).returns(Items.GLASS_BOTTLE)
+            .register(AlcoholItem::new);
+    // Солод: замочить на кухонном столе, прорастить на крюке, высушить в печи
+    public static final DeferredItem<Item> WET_GRAIN = item("wet_grain", "Замоченное зерно", "Soaked grain", Gender.N)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("Повесьте на крюк — прорастёт.", "Hang it on a hook to sprout.")
+            .stacksTo(16).grams(60).shelfLife(4).register();
+    public static final DeferredItem<Item> GREEN_MALT = item("green_malt", "Пророщенное зерно", "Green malt", Gender.N)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("Высушите в хлебной печи: недолго — светлый солод, дольше — янтарный, ещё дольше — тёмный.",
+                    "Dry it in a baking oven: briefly for pale malt, longer for amber, longer still for dark.")
+            .stacksTo(16).grams(50).shelfLife(4).register();
+    public static final DeferredItem<Item> PALE_MALT = item("pale_malt", "Светлый солод", "Pale malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — пивное сусло.", "Into a pot with water for beer wort.").stacksTo(16).grams(40).register();
+    public static final DeferredItem<Item> AMBER_MALT = item("amber_malt", "Янтарный солод", "Amber malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — сусло для янтарного пива.", "Into a pot with water for amber beer wort.").stacksTo(16).grams(40).register();
+    public static final DeferredItem<Item> DARK_MALT = item("dark_malt", "Тёмный солод", "Dark malt", Gender.M)
+            .traits(ModTraits.COMMON).category(Category.MATERIALS)
+            .lore("В котелок с водой — сусло для тёмного пива.", "Into a pot with water for dark beer wort.").stacksTo(16).grams(40).register();
+    // Станции
+    public static final DeferredItem<BlockItem> WINE_PRESS = item("wine_press", "Давильня", "Wine press", Gender.F)
+            .category(Category.TOOLS)
+            .lore("E яблоками или ягодами — засыпать, пустой рукой — давить, склянкой — набрать сусло.",
+                    "E with apples or berries to fill, an empty hand to press, a bottle to draw the must.")
+            .kg(40).register(properties -> new BlockItem(ModBlocks.WINE_PRESS.get(), properties));
+    public static final DeferredItem<BlockItem> FERMENTING_BARREL = item("fermenting_barrel", "Бродильная бочка", "Fermenting barrel", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Передержите — уксус.",
+                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Too long and it is vinegar.")
+            .kg(15).register(properties -> new BlockItem(ModBlocks.FERMENTING_BARREL.get(), properties));
+    public static final DeferredItem<BlockItem> STILL = item("still", "Перегонный куб", "Still", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E по очагу — поставить на огонь (или над костром). Пиво, вино, сидр, медовуха — залить; из четырёх склянок одна крепкого.",
+                    "E on a hearth puts it on the fire (or place it above a campfire). Pour in beer, wine, cider or mead; four bottles make one spirit.")
+            .kg(30).register(properties -> new BlockItem(ModBlocks.STILL.get(), properties));
+    public static final DeferredItem<BlockItem> AGING_CASK = item("aging_cask", "Бочка для выдержки", "Aging cask", Gender.F)
+            .category(Category.TOOLS)
+            .lore("Вино, медовуха, сидр, крепкое и настойки становятся лучше с каждой неделей. В погребе — быстрее.",
+                    "Wine, mead, cider, spirits and tinctures get better every week. Faster in a cellar.")
+            .kg(25).register(properties -> new BlockItem(ModBlocks.AGING_CASK.get(), properties));
 
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)

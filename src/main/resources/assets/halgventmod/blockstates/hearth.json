@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east,lit=false,pot=false": { "model": "conquest:block/cooking_brazier" },
+    "facing=east,lit=false,pot=true": { "model": "conquest:block/cooking_brazier_2" },
+    "facing=east,lit=true,pot=false": { "model": "conquest:block/cooking_brazier_1" },
+    "facing=east,lit=true,pot=true": { "model": "conquest:block/cooking_brazier_2" },
+    "facing=south,lit=false,pot=false": { "model": "conquest:block/cooking_brazier", "y": 90 },
+    "facing=south,lit=false,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 90 },
+    "facing=south,lit=true,pot=false": { "model": "conquest:block/cooking_brazier_1", "y": 90 },
+    "facing=south,lit=true,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 90 },
+    "facing=west,lit=false,pot=false": { "model": "conquest:block/cooking_brazier", "y": 180 },
+    "facing=west,lit=false,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 180 },
+    "facing=west,lit=true,pot=false": { "model": "conquest:block/cooking_brazier_1", "y": 180 },
+    "facing=west,lit=true,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 180 },
+    "facing=north,lit=false,pot=false": { "model": "conquest:block/cooking_brazier", "y": 270 },
+    "facing=north,lit=false,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 270 },
+    "facing=north,lit=true,pot=false": { "model": "conquest:block/cooking_brazier_1", "y": 270 },
+    "facing=north,lit=true,pot=true": { "model": "conquest:block/cooking_brazier_2", "y": 270 }
+  }
+}

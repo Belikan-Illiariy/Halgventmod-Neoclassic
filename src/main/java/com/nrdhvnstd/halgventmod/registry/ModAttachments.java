@@ -1,6 +1,9 @@
 package com.nrdhvnstd.halgventmod.registry;
 
+import java.util.List;
+
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.draw.Drawing;
 import com.nrdhvnstd.halgventmod.gear.GearInventory;
@@ -99,6 +102,18 @@ public final class ModAttachments {
             ATTACHMENTS.register("point_discovery", () -> AttachmentType.builder(() -> new PointDiscovery())
                     .serialize(PointDiscovery.CODEC)
                     .copyOnDeath()
+                    .build());
+
+    // Последние съеденные блюда (Diet: приедается одно и то же). Сохраняется, после смерти — заново
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<List<String>>> RECENT_MEALS =
+            ATTACHMENTS.register("recent_meals", () -> AttachmentType.<List<String>>builder(() -> List.of())
+                    .serialize(Codec.STRING.listOf())
+                    .build());
+
+    // Опьянение и похмелье (brewing/Intoxication). Сохраняется; после смерти — трезв
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Intoxication.Data>> INTOXICATION =
+            ATTACHMENTS.register("intoxication", () -> AttachmentType.builder(() -> Intoxication.Data.NONE)
+                    .serialize(Intoxication.Data.CODEC)
                     .build());
 
     private ModAttachments() {}

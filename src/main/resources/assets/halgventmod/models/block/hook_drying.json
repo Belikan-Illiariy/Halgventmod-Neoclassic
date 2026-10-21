@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/hanging_herbs",
+  "render_type": "minecraft:cutout"
+}

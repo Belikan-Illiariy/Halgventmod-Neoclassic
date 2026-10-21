@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.leather.LeatherQuality;
+import com.nrdhvnstd.halgventmod.quality.GearQuality;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 
 import io.netty.buffer.ByteBuf;
@@ -105,7 +106,7 @@ public final class ModArmor {
         /** Защита этого стака: у шлема с опущенным забралом — с прибавкой; у кожаной вещи — с поправкой на качество. */
         public Protection protection(ItemStack stack) {
             Protection base = visor && !visorRaised(stack) ? protection.plus(visorBonus) : protection;
-            return base.times(LeatherQuality.protectionFactor(stack));
+            return base.times(LeatherQuality.protectionFactor(stack) * GearQuality.get(stack).protection());
         }
 
         /** Порядок отрисовки: больше — ближе к внешней стороне. */

@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.food;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
@@ -45,12 +46,12 @@ public final class Freshness {
     /** Сколько суток осталось; 0 и меньше — испорчено; null — не портится или ещё не помечено. */
     @Nullable
     public static Integer daysLeft(ItemStack stack, Level level) {
-        ModFoods.FoodInfo info = ModFoods.get(stack);
+        int shelfLife = ModFoods.shelfLife(stack);
         Integer created = stack.get(ModComponents.CREATED_DAY.get());
-        if (info == null || info.shelfLifeDays() <= 0 || created == null) {
+        if (shelfLife <= 0 || created == null) {
             return null;
         }
-        return created + info.shelfLifeDays() - currentDay(level);
+        return created + shelfLife - currentDay(level);
     }
 
     public static boolean isSpoiled(ItemStack stack, Level level) {
@@ -100,13 +101,16 @@ public final class Freshness {
             return;
         }
         ItemStack used = event.getItem(); // копия предмета до того, как его съели
-        if (!used.has(DataComponents.FOOD)) {
-            return;
+        if (!used.has(DataComponents.FOOD) && !ModFoods.perishable(used)) {
+            return; // не еда (молоко — еда без компонента FOOD, у него срок есть)
         }
 
+        // У блюда из котелка жажда своя (Dish), у остального — из описания еды
         ModFoods.FoodInfo info = ModFoods.get(used);
-        if (info != null && info.thirst() != 0) {
-            Thirst.add(player, info.thirst());
+        Dish dish = used.get(ModComponents.DISH.get());
+        int thirst = dish != null ? dish.thirst() : info != null ? info.thirst() : 0;
+        if (thirst != 0) {
+            Thirst.add(player, thirst);
         }
 
         if (isSpoiled(used, player.level())) {

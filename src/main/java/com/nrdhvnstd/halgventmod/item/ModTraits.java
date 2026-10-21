@@ -35,6 +35,14 @@ public final class ModTraits {
     public static final Trait LEGENDARY = trait("legendary", "Легендарный", "Легендарная", "Легендарное", "Легендарные", "Legendary", 0xe6a500);
     public static final Trait MYTHICAL = trait("mythical", "Мифический", "Мифическая", "Мифическое", "Мифические", "Mythical", 0xf500b9);
 
+    // ===== Качество снаряжения (GearQuality): только у оружия и брони, меняет урон, защиту, пробитие и стойкость =====
+    public static final Trait TERRIBLE = trait("terrible", "Ужасный", "Ужасная", "Ужасное", "Ужасные", "Terrible", 0x8C3B32);
+    public static final Trait POOR = trait("poor", "Плохой", "Плохая", "Плохое", "Плохие", "Poor", 0xB0705A);
+    public static final Trait MEDIOCRE = trait("mediocre", "Посредственный", "Посредственная", "Посредственное", "Посредственные", "Mediocre", 0xA8A8A8);
+    public static final Trait FINE = trait("fine", "Добротный", "Добротная", "Добротное", "Добротные", "Fine", 0xD9CBA3);
+    public static final Trait EXCELLENT = trait("excellent", "Отменный", "Отменная", "Отменное", "Отменные", "Excellent", 0x8FC6E8);
+    public static final Trait MASTERWORK = trait("masterwork", "Шедевр", "Masterwork", 0xE6B84A); // существительное — не склоняется
+
     // ===== Состояния =====
     public static final Trait RAW = trait("raw", "Сырой", "Сырая", "Сырое", "Сырые", "Raw", 0xffffff);
 

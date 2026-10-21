@@ -2,6 +2,10 @@
   "values": [
     "#minecraft:crops",
     "minecraft:pumpkin",
-    "minecraft:melon"
+    "minecraft:melon",
+    "minecraft:short_grass",
+    "minecraft:fern",
+    "minecraft:tall_grass",
+    "minecraft:large_fern"
   ]
 }

@@ -12,6 +12,8 @@ import com.nrdhvnstd.halgventmod.banner.BannerRegistry;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.quality.QualityDisplay;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -48,6 +50,14 @@ public final class ItemTooltipHandler {
         ItemStack stack = event.getItemStack();
         Item item = stack.getItem();
         List<String> traits = stack.get(ModComponents.TRAITS.get());
+        // Качество снаряжения — не признак, а отдельная плашка рядом (QualityBadge); у старых вещей оно могло лечь в признаки
+        if (traits != null) {
+            traits = traits.stream().filter(id -> GearQuality.Grade.byId(id) == null).toList();
+        }
+        boolean quality = QualityDisplay.of(stack) != null; // снаряжение, еда, кожа — плашкой (QualityBadge)
+        if (traits != null && (stack.has(ModComponents.FOOD_QUALITY.get()) || stack.has(ModComponents.LEATHER_QUALITY.get()))) {
+            traits = QualityDisplay.ownRarity(stack, traits); // у старых вещей качество было записано в редкость
+        }
         ModLore.Entry lore = ModLore.get(item);
         ArmorSlot armorSlot = ModArmor.slotOf(stack);
 
@@ -59,7 +69,7 @@ public final class ItemTooltipHandler {
         }
 
         boolean hasTraits = traits != null && !traits.isEmpty();
-        if (!hasTraits && lore == null && armorSlot == null) {
+        if (!hasTraits && !quality && lore == null && armorSlot == null) {
             return;
         }
 
@@ -67,10 +77,14 @@ public final class ItemTooltipHandler {
         List<Component> tooltip = event.getToolTip();
         int index = Math.min(1, tooltip.size());
 
-        if (hasTraits) {
+        if (hasTraits || quality) {
             ModItems.Definition def = ModItems.definition(item);
             Gender gender = def != null ? def.gender() : Gender.M;
-            tooltip.add(index++, traitsLine(traits, gender));
+            Component line = hasTraits ? traitsLine(traits, gender) : Component.empty();
+            if (quality) {
+                QualityBadge.host(line, stack);
+            }
+            tooltip.add(index++, line);
         }
         if (lore != null) {
             for (Component line : loreLines(ModLore.langKey(item), lore.color())) {
