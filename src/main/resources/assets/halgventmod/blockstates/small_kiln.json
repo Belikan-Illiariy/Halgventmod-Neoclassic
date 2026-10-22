@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "broken=false,facing=north,lit=false": { "model": "halgventmod:block/kiln_small" },
+    "broken=true,facing=north,lit=false": { "model": "halgventmod:block/kiln_broken" },
+    "broken=false,facing=north,lit=true": { "model": "halgventmod:block/kiln_small_lit" },
+    "broken=true,facing=north,lit=true": { "model": "halgventmod:block/kiln_broken" },
+    "broken=false,facing=east,lit=false": { "model": "halgventmod:block/kiln_small", "y": 90 },
+    "broken=true,facing=east,lit=false": { "model": "halgventmod:block/kiln_broken", "y": 90 },
+    "broken=false,facing=east,lit=true": { "model": "halgventmod:block/kiln_small_lit", "y": 90 },
+    "broken=true,facing=east,lit=true": { "model": "halgventmod:block/kiln_broken", "y": 90 },
+    "broken=false,facing=south,lit=false": { "model": "halgventmod:block/kiln_small", "y": 180 },
+    "broken=true,facing=south,lit=false": { "model": "halgventmod:block/kiln_broken", "y": 180 },
+    "broken=false,facing=south,lit=true": { "model": "halgventmod:block/kiln_small_lit", "y": 180 },
+    "broken=true,facing=south,lit=true": { "model": "halgventmod:block/kiln_broken", "y": 180 },
+    "broken=false,facing=west,lit=false": { "model": "halgventmod:block/kiln_small", "y": 270 },
+    "broken=true,facing=west,lit=false": { "model": "halgventmod:block/kiln_broken", "y": 270 },
+    "broken=false,facing=west,lit=true": { "model": "halgventmod:block/kiln_small_lit", "y": 270 },
+    "broken=true,facing=west,lit=true": { "model": "halgventmod:block/kiln_broken", "y": 270 }
+  }
+}

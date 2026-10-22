@@ -16,6 +16,10 @@ import com.nrdhvnstd.halgventmod.leather.DryingRackBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.TanningVatBlockEntity;
+import com.nrdhvnstd.halgventmod.pottery.ClayBarrelBlockEntity;
+import com.nrdhvnstd.halgventmod.pottery.DryingShelfBlockEntity;
+import com.nrdhvnstd.halgventmod.pottery.KilnBlockEntity;
+import com.nrdhvnstd.halgventmod.pottery.PotteryWheelBlockEntity;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlockEntity;
 
 import net.minecraft.core.registries.Registries;
@@ -81,6 +85,20 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HookBlockEntity>> SMOKING_HOOK =
             BLOCK_ENTITIES.register("smoking_hook", () -> BlockEntityType.Builder
                     .of(HookBlockEntity::new, ModBlocks.SMOKING_HOOK.get()).build(null));
+
+    // Гончарное дело (pottery/*)
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ClayBarrelBlockEntity>> CLAY_BARREL =
+            BLOCK_ENTITIES.register("clay_barrel", () -> BlockEntityType.Builder
+                    .of(ClayBarrelBlockEntity::new, ModBlocks.CLAY_BARREL.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PotteryWheelBlockEntity>> POTTERY_WHEEL =
+            BLOCK_ENTITIES.register("pottery_wheel", () -> BlockEntityType.Builder
+                    .of(PotteryWheelBlockEntity::new, ModBlocks.POTTERY_WHEEL.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DryingShelfBlockEntity>> DRYING_SHELF =
+            BLOCK_ENTITIES.register("drying_shelf", () -> BlockEntityType.Builder
+                    .of(DryingShelfBlockEntity::new, ModBlocks.DRYING_SHELF.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<KilnBlockEntity>> KILN =
+            BLOCK_ENTITIES.register("kiln", () -> BlockEntityType.Builder
+                    .of(KilnBlockEntity::new, ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get()).build(null));
 
     private ModBlockEntities() {}
 

@@ -26,7 +26,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Очаг: жаровня Conquest Reforged. Горит на дровах; на нём — котелок (модель с котлом) или жарка прямо на углях.
+ * Очаг: жаровня Conquest Reforged. Горит на дровах; на нём — горшок (модель с котлом) или жарка прямо на углях.
  * Над очагом дымно: коптильный крюк выше него коптит.
  */
 public class HearthBlock extends StationBlock {

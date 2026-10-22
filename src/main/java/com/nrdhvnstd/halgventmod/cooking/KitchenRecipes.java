@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,6 +24,9 @@ import net.minecraft.world.item.Items;
  */
 public final class KitchenRecipes {
     public static final int MAX_EXTRAS = 3;
+    /** Ягоды для пирогов и морса: halgventmod:berries. */
+    public static final TagKey<Item> BERRY_TAG = TagKey.create(Registries.ITEM,
+            ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "berries"));
 
     /** Обязательный продукт: что подходит, сколько, чем показывать. */
     public record Need(Predicate<ItemStack> matches, int count, Supplier<Item> icon) {}
@@ -43,6 +50,9 @@ public final class KitchenRecipes {
     private static final Need FLOUR = new Need(stack -> stack.is(ModItems.WHEAT_FLOUR.get()), 2, ModItems.WHEAT_FLOUR::get);
     private static final Need DOUGH = new Need(stack -> stack.is(ModItems.DOUGH.get()), 1, ModItems.DOUGH::get);
     private static final Need SWEETENER = new Need(stack -> stack.is(ModItems.HONEY.get()), 1, ModItems.HONEY::get);
+    // Пряные травы — свежие или сушёные (чеснок и пряности — отдельно)
+    private static final Need HERB_NEED = new Need(stack -> stack.is(ModItems.HERBS.get()) || stack.is(ModItems.DRIED_HERBS.get()),
+            1, ModItems.HERBS::get);
 
     private static Extra extra(Item item, float saturation) {
         return new Extra(stack -> stack.is(item), () -> item, saturation);
@@ -61,8 +71,10 @@ public final class KitchenRecipes {
     private static final Extra SALO = extra(ModItems.SALO, 10);
     private static final Extra HONEY = extra(ModItems.HONEY, 10);
     private static final Extra APPLE = extra(Items.APPLE, 6);
-    private static final Extra BERRIES = new Extra(stack -> stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES),
+    private static final Extra BERRIES = new Extra(stack -> stack.is(BERRY_TAG) || stack.is(Items.GLOW_BERRIES),
             () -> Items.SWEET_BERRIES, 6);
+    private static final Extra GARLIC = extra(ModItems.GARLIC, 4);
+    private static final Extra ONION = extra(ModItems.ONION, 4);
 
     private static final List<Recipe> ALL = List.of(
             new Recipe("dough", () -> new ItemStack(ModItems.DOUGH.get(), 2), () -> ItemStack.EMPTY, 6, true, true,
@@ -77,12 +89,30 @@ public final class KitchenRecipes {
                     List.of(DOUGH, new Need(stack -> stack.is(Cookery.Kind.MUSHROOM.tag()), 1, () -> Items.BROWN_MUSHROOM)),
                     List.of(EGG, CHEESE, HERBS, POTATO, SALO)),
             new Recipe("berry_pie", () -> pie("berry"), () -> ItemStack.EMPTY, 3, false, false,
-                    List.of(DOUGH, new Need(stack -> stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES)
-                            || stack.is(Items.APPLE), 1, () -> Items.SWEET_BERRIES)),
+                    List.of(DOUGH, new Need(stack -> stack.is(BERRY_TAG) || stack.is(Items.GLOW_BERRIES)
+                            || stack.is(Items.APPLE), 2, () -> Items.SWEET_BERRIES)),
                     List.of(HONEY, APPLE, BERRIES, EGG)),
             new Recipe("sweet_bun", () -> new ItemStack(ModItems.RAW_BUN.get(), 2), () -> ItemStack.EMPTY, 4, false, false,
                     List.of(DOUGH, SWEETENER),
                     List.of(EGG, BERRIES, APPLE, CHEESE, HONEY)),
+            // Блюда для печи: рыба или мясо с приправами; соль — по желанию, +качество
+            new Recipe("salmon_herbs", () -> RawDishItem.of(RawDishItem.Kind.SALMON_HERBS), () -> ItemStack.EMPTY, 2, false, true,
+                    List.of(new Need(stack -> stack.is(Items.SALMON), 1, () -> Items.SALMON), HERB_NEED),
+                    List.of(ONION, GARLIC)),
+            new Recipe("hare_herbs", () -> RawDishItem.of(RawDishItem.Kind.HARE_HERBS), () -> ItemStack.EMPTY, 2, false, true,
+                    List.of(new Need(stack -> stack.is(Items.RABBIT), 1, () -> Items.RABBIT), HERB_NEED),
+                    List.of(ONION, GARLIC, CARROT)),
+            new Recipe("exquisite_mutton", () -> RawDishItem.of(RawDishItem.Kind.EXQUISITE_MUTTON), () -> ItemStack.EMPTY, 3,
+                    false, true,
+                    List.of(new Need(stack -> stack.is(Items.MUTTON), 1, () -> Items.MUTTON),
+                            new Need(stack -> stack.is(ModItems.SPICES.get()), 1, ModItems.SPICES::get),
+                            new Need(stack -> stack.is(ModItems.GARLIC.get()), 1, ModItems.GARLIC::get)),
+                    List.of(ONION, HERBS)),
+            // Морс: ягоды с водой — в склянку
+            new Recipe("berry_juice", () -> new ItemStack(ModItems.BERRY_JUICE.get()), () -> ItemStack.EMPTY, 2, true, false,
+                    List.of(new Need(stack -> stack.is(BERRY_TAG), 3, () -> Items.SWEET_BERRIES),
+                            new Need(stack -> stack.is(Items.GLASS_BOTTLE), 1, () -> Items.GLASS_BOTTLE)),
+                    List.of(HONEY)),
             new Recipe("soak_grain", () -> new ItemStack(ModItems.WET_GRAIN.get(), 4), () -> ItemStack.EMPTY, 1, true, false,
                     List.of(new Need(stack -> stack.is(Items.WHEAT) || stack.is(ModItems.RYE.get()), 4, () -> Items.WHEAT)),
                     List.of()),

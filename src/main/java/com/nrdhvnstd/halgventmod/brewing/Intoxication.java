@@ -31,7 +31,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *   <li><b>Мертвецки пьян</b> ({@link #WASTED}+): медлительность, мутит чаще, в глазах темнеет.</li>
  * </ul>
  * Протрезвел после «Пьян» и выше — <b>похмелье</b> на {@link #HANGOVER_TICKS} тиков: усталость в руках, жажда вдвое.
- * Снимают кружкой пива («опохмелиться»), солониной, солёной рыбой или водой из котелка-отвара.
+ * Снимают кружкой пива («опохмелиться»), солониной, солёной рыбой или водой из горшка-отвара.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Intoxication {

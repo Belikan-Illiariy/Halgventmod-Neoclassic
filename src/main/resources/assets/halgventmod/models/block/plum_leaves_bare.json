@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/plum_tree_leaves",
+  "render_type": "minecraft:cutout_mipped"
+}

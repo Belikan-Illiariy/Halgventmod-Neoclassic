@@ -598,6 +598,11 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.BURDEN.get(), russian ? "Обуза" : "Burden");
         add(ModEffects.ENCUMBERED.get(), russian ? "Скованность" : "Encumbered");
         add(ModEffects.OVERLOADED.get(), russian ? "Тяжесть" : "Overloaded");
+        // Еда (food/FoodEffects)
+        add(ModEffects.SATIETY.get(), russian ? "Сытость" : "Satiety");
+        add(ModEffects.WELL_FED.get(), russian ? "Улучшенное насыщение" : "Well fed");
+        add(ModEffects.POISONING.get(), russian ? "Отравление" : "Food poisoning");
+        foodTranslations();
 
         // Субтитры звуков: обычные события и голоса (один ключ на вид крика для всех наборов)
         for (ModSounds.Definition sound : ModSounds.definitions()) {
@@ -612,12 +617,16 @@ public class ModLanguageProvider extends LanguageProvider {
         cookingTranslations();
         qualityTranslations();
         brewingTranslations();
+        potteryTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
     private void leatherTranslations() {
         for (Animals.Kind kind : Animals.all()) {
             add(Animals.langKey(kind.id()), russian ? kind.nameRu() : kind.nameEn());
+            // «солёная волчья шкура», «мех волка» (HideItem)
+            add(Animals.langKey(kind.id()) + ".lower", russian ? kind.nameRu().toLowerCase(java.util.Locale.ROOT) : kind.nameEn().toLowerCase(java.util.Locale.ROOT));
+            add(Animals.langKey(kind.id()) + ".of", russian ? kind.ofRu() : kind.nameEn());
         }
         for (Tannage tannage : Tannage.values()) {
             add(tannage.langKey(), russian ? switch (tannage) {
@@ -639,6 +648,9 @@ public class ModLanguageProvider extends LanguageProvider {
         solution(Solution.ALUM, "квасцовый раствор", "alum bath");
         solution(Solution.FAT, "жировой раствор", "fat liquor");
 
+        add("item.halgventmod.raw_hide.of", russian ? "%s шкура" : "%s hide");
+        add("item.halgventmod.salted_hide.of", russian ? "Солёная %s шкура" : "Salted %s hide");
+        add("item.halgventmod.dressed_fur.of", russian ? "Мех %s" : "%s fur");
         add("tooltip.halgventmod.hide", russian ? "%s шкура · кусков кожи: %s" : "%s hide · leather pieces: %s");
         add("tooltip.halgventmod.fleshed", russian ? "Мездра снята" : "Fleshed");
         add("tooltip.halgventmod.not_fleshed", russian ? "Мездра не снята" : "Not fleshed");
@@ -744,7 +756,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.halgventmod.leather." + key, russian ? ru : en);
     }
 
-    /** Готовка: очаг, котелок, жарка, печь, жёрнов, заготовки (cooking/*). */
+    /** Готовка: очаг, горшок, жарка, печь, жёрнов, заготовки (cooking/*). */
     private void cookingTranslations() {
         add("tooltip.halgventmod.dish_food", russian ? "Сытость %s, жажда %s" : "Nutrition %s, thirst %s");
         add("tooltip.halgventmod.dish_of", russian ? "Сварено из: %s" : "Made of: %s");
@@ -777,13 +789,12 @@ public class ModLanguageProvider extends LanguageProvider {
         cooking("kitchen_spoiled", "Испорченное не берут", "Spoiled food won't do");
         cooking("kitchen_wrong", "Это не по рецепту", "Not in this recipe");
         cooking("kitchen_need", "Нужно ещё: %s × %s", "Still needed: %s × %s");
-        cooking("kitchen_need_water", "Полейте водой из ведра", "Pour in water from a bucket");
+        cooking("kitchen_need_water", "Полейте водой из ведра или кувшина", "Pour in water from a bucket or a jug");
         cooking("kitchen_ready_to_knead", "Всё на доске: месите пустой рукой", "All on the board: knead with an empty hand");
         cooking("kitchen_knead", "%s / %s", "%s / %s");
         cooking("kitchen_kneaded", "Уже замешано — доделайте", "Already kneaded — finish it");
         cooking("kitchen_done", "Готово: %s", "Done: %s");
         cooking("diet_bored", "%s приелось: сытость %s%%", "Tired of %s: %s%% as filling");
-        cooking("raw_sick", "Сырое пошло не впрок", "The raw food did not sit well");
 
         cooking("fuel_full", "Дров хватит: больше не положить", "Enough firewood: no room for more");
         cooking("fuel_added", "Подложили дров: запас %s%%", "Firewood added: %s%% stocked");
@@ -793,16 +804,16 @@ public class ModLanguageProvider extends LanguageProvider {
         cooking("fire_status", "Жар %s, дров %s%%", "Heat %s, firewood %s%%");
         cooking("fire_out", "Огонь не горит (дров %2$s%%)", "The fire is out (firewood %2$s%%)");
 
-        cooking("pot_already", "Котелок уже стоит", "A pot is already on");
+        cooking("pot_already", "Горшок уже стоит", "A pot is already on");
         cooking("grill_busy", "Сначала снимите всё с углей", "Take everything off the coals first");
-        cooking("still_pot", "Сначала снимите котелок", "Take the pot off first");
+        cooking("still_pot", "Сначала снимите горшок", "Take the pot off first");
         cooking("still_blocked", "Над очагом нет места для куба", "No room above the hearth for the still");
         cooking("pot_has_water", "Вода уже налита", "There is water already");
-        cooking("need_water", "Налейте в котелок воды ведром", "Pour water into the pot with a bucket");
+        cooking("need_water", "Налейте в горшок воды: ведро или полный кувшин", "Pour water into the pot: a bucket or a full jug");
         cooking("pot_water_only", "Одна вода: положите продукты", "Just water: add some food");
-        cooking("pot_full", "Котелок полон", "The pot is full");
-        cooking("pot_serving", "Из котелка уже разливают — сначала доешьте", "The pot is being served — finish it first");
-        cooking("pot_busy", "В котелке варится — не снять", "Something is cooking — can't take it off");
+        cooking("pot_full", "Горшок полон", "The pot is full");
+        cooking("pot_serving", "Из горшка уже разливают — сначала доешьте", "The pot is being served — finish it first");
+        cooking("pot_busy", "В горшке варится — не снять", "Something is cooking — can't take it off");
         cooking("pot_cold", "Положено %s из %s. Огонь не горит", "%s of %s added. The fire is out");
         cooking("pot_cooking", "Варится: %s%%, положено %s из %s", "Cooking: %s%%, %s of %s added");
         cooking("pot_stir", "Пригорает! Помешайте половником (%s%%, %s из %s)", "Scorching! Stir it with a ladle (%s%%, %s of %s)");
@@ -825,8 +836,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         cooking("quern_full", "Жёрнов полон", "The quern is full");
         cooking("quern_grain", "Засыпано зерна: %s", "Grain in: %s");
-        cooking("quern_empty", "Засыпьте пшеницу или рожь", "Pour in some wheat or rye");
-        cooking("quern_mixed", "Сначала домелите или заберите то зерно", "Finish grinding or take back the other grain first");
+        cooking("quern_empty", "Засыпьте пшеницу, рожь или черепки", "Pour in some wheat, rye or sherds");
+        cooking("quern_mixed", "Сначала домелите или заберите то, что засыпано", "Finish grinding or take back what is in first");
         cooking("quern_turn", "%s / %s", "%s / %s");
         cooking("quern_flour", "Смолото! Осталось зерна: %s", "Ground! Grain left: %s");
         cooking("quern_spilled", "Спешка — зерно просыпалось. Осталось: %s", "Too hasty — the grain spilled. Left: %s");
@@ -934,6 +945,259 @@ public class ModLanguageProvider extends LanguageProvider {
         drink("flag.honey", " с мёдом", " with honey");
         drink("flag.herbs", " на травах", " with herbs");
         drink("flag.berry", " с ягодами", " with berries");
+    }
+
+    /** Гончарное дело (pottery/*): бочка для замеса, круг, полка, горн, посуда. */
+    private void potteryTranslations() {
+        String[][] forms = {
+                {"cup", "Кружка", "кружка", "Cup"}, {"bowl", "Миска", "миска", "Bowl"},
+                {"jug", "Кувшин", "кувшин", "Jug"}, {"pot", "Горшок", "горшок", "Pot"},
+                {"amphora", "Корчага", "корчага", "Amphora"}, {"lamp", "Светильник", "светильник", "Lamp"}};
+        for (String[] form : forms) {
+            add("pottery.halgventmod.form." + form[0], russian ? form[1] : form[3]);
+            add("pottery.halgventmod.form_lower." + form[0], russian ? form[2] : form[3].toLowerCase());
+        }
+        add("item.halgventmod.greenware.named", russian ? "Сырец: %s" : "Greenware: %s");
+        add("item.halgventmod.greenware.dried", russian ? "Сухой сырец: %s" : "Dry greenware: %s");
+        add("item.halgventmod.greenware.cracked", russian ? "Треснувший сырец: %s" : "Cracked greenware: %s");
+
+        // Подсказки
+        potteryTip("fat_clay", "Жирная глина: трескается чаще", "Fat clay: cracks more often");
+        potteryTip("grog_clay", "На шамоте: трескается реже", "Tempered with grog: cracks less often");
+        potteryTip("wet", "Сырой — просушите на полке", "Wet — dry it on a shelf");
+        potteryTip("dried", "Высох — можно в горн", "Dry — ready for the kiln");
+        potteryTip("cracked", "Треснул — размочите в бочке для замеса", "Cracked — soak it back in a clay barrel");
+        potteryTip("black", "Чернолощёная", "Black burnished");
+        potteryTip("burnished", "Залощена", "Burnished");
+        potteryTip("underfired", "Недожог: хрупкая", "Underfired: brittle");
+        potteryTip("overfired", "Пережог: повело", "Overfired: warped");
+        potteryTip("water", "Воды: %s из %s мер", "Water: %s of %s measures");
+        potteryTip("inside", "Внутри: %s ×%s", "Inside: %s ×%s");
+        potteryTip("inside_sealed", "Внутри: %s ×%s, под воском", "Inside: %s ×%s, sealed with wax");
+        potteryTip("keeps", "Свежо ещё %s сут.; портится в %s раза медленнее", "Fresh for %s more days; spoils %s times slower");
+        potteryTip("pot_uses", "Варок: %s из %s", "Cooked in: %s of %s times");
+        potteryTip("lamp_lit", "Горит, масла на %s мин.", "Burning, oil for %s min.");
+        potteryTip("lamp_fuel", "Масла на %s мин.", "Oil for %s min.");
+        potteryTip("served_in", "В глиняной миске", "In a clay bowl");
+
+        // Посуда в инвентаре
+        pottery("amphora_has_drink", "В корчаге питьё — воды не налить", "There is a drink in the amphora — no room for water");
+        pottery("water_poured", "Вылили воду", "Poured the water out");
+        pottery("ware_cracked", "Треснула посуда: %s. Пользоваться ей больше нельзя", "Your %s has cracked and can't be used any more");
+        pottery("ware_cracked_use", "Посуда треснула: можно только опорожнить. Shift + ПКМ — разбить на черепки",
+                "It's cracked: you can only empty it. Shift + right-click to smash it into sherds");
+        potteryTip("ware_cracked", "Треснула: только опорожнить, Shift + ПКМ — разбить", "Cracked: empty it only, Shift + right-click to smash");
+        potteryTip("wear_chance", "Может треснуть: %s%% за раз", "May crack: %s%% per use");
+        pottery("lamp_no_fuel", "Светильник пуст: положите на него сало или воск", "The lamp is empty: drop fat or wax onto it");
+        pottery("lamp_no_fire", "Нечем зажечь: нужно огниво или факел", "Nothing to light it with: you need a flint and steel or a torch");
+        pottery("lamp_full", "Светильник полон", "The lamp is full");
+        pottery("empty_first", "Сначала опорожните", "Empty it first");
+        pottery("has_water", "Внутри вода — сначала вылейте (Shift + ПКМ)", "There is water inside — pour it out first (Shift + right-click)");
+        pottery("sealed", "Запечатано воском — ПКМ по сосуду, чтобы вскрыть", "Sealed with wax — right-click the vessel to break it");
+        pottery("other_inside", "Внутри другое: в сосуде одно к одному", "Something else is inside: one kind per vessel");
+        pottery("full", "Больше не влезет", "No more fits");
+        pottery("seal_broken", "Печать сломана", "The seal is broken");
+        pottery("need_bottle", "Наберите пустой склянкой", "Draw it with an empty bottle");
+        pottery("seal_empty", "Запечатывать нечего — внутри пусто", "Nothing to seal — it is empty");
+        pottery("sealed_now", "Запечатано воском", "Sealed with wax");
+
+        // Бочка для замеса
+        pottery("barrel_take_first", "Сначала заберите промятую глину (Shift + E)", "Take the kneaded clay first (Shift + E)");
+        pottery("barrel_has_water", "Вода уже налита", "There is water already");
+        pottery("barrel_temper_full", "Отощителя хватит", "Enough temper");
+        pottery("barrel_full", "Больше %s комьев не замесить", "No more than %s lumps per batch");
+        pottery("barrel_empty", "В бочке пусто: положите глину", "The barrel is empty: put some clay in");
+        pottery("barrel_need_water", "Налейте воды: ведро или полный кувшин", "Pour in water: a bucket or a full jug");
+        pottery("barrel_ready", "Промято! Гончарной глины: %s. Shift + E — забрать; полежит трое суток — станет лучше",
+                "Kneaded! Potter's clay: %s. Shift + E to take it; left for three days it gets better");
+        pottery("barrel_knead", "Месите: %s / %s", "Kneading: %s / %s");
+        pottery("barrel_bubble", "Спешка — в глине пузыри (%s / %s)", "Too hasty — air bubbles in the clay (%s / %s)");
+        pottery("barrel_aged", "Глина вылежалась: %s комьев. Shift + E — забрать", "The clay has aged: %s lumps. Shift + E to take it");
+        pottery("barrel_aging", "Промятой глины: %s. Лежит %s из %s суток", "Kneaded clay: %s. Aging %s of %s days");
+        pottery("barrel_mix_empty", "Отощителя: %s, вода: %s. Положите глину", "Temper: %s, water: %s. Put some clay in");
+        pottery("barrel_mix_dry", "Глины: %s, отощителя: %s (%s%%). Налейте воды", "Clay: %s, temper: %s (%s%%). Pour in water");
+        pottery("barrel_mix", "Глины: %s, отощителя: %s (%s%%, лучше около 33%%). Месите пустой рукой",
+                "Clay: %s, temper: %s (%s%%, about 33%% is best). Knead with an empty hand");
+        pottery("barrel_not_ready", "Сначала промните глину", "Knead the clay first");
+
+        // Гончарный круг
+        pottery("wheel_full", "На круге уже %s комьев", "There are %s lumps on the wheel already");
+        pottery("wheel_lumps", "На круге: %s из %s комьев. E пустой рукой — сесть за круг",
+                "On the wheel: %s of %s lumps. E with an empty hand to sit at it");
+        pottery("wheel_empty", "Положите на круг гончарную глину", "Put potter's clay on the wheel");
+        pottery("wheel_not_enough", "Не хватает глины: нужно %s комьев", "Not enough clay: %s lumps needed");
+        pottery("wheel_unlike", "Не похоже на образец «%s» (сходство %s%%)", "Doesn't look like a %s (likeness %s%%)");
+        pottery("wheel_done", "Готово: %s (сходство %s%%)", "Done: %s (likeness %s%%)");
+        wheel("title", "Гончарный круг", "Potter's wheel");
+        wheel("reset", "Смять", "Crumple");
+        wheel("reset_done", "Смяли — ком заново", "Crumpled — a fresh lump");
+        wheel("done", "Готово", "Done");
+        wheel("mode_body", "К кругу", "Back to the wheel");
+        wheel("mode_details", "Детали", "Details");
+        wheel("spin_first", "Раскрутите круг: пробел", "Spin the wheel: space");
+        wheel("no_scraps", "Нет обрезков: сначала срежьте лишнее", "No scraps: cut away some clay first");
+        wheel("no_support", "Не на что опереться", "Nothing to rest on");
+        wheel("cant_pull", "Вытягивать некуда", "Nowhere to pull it");
+        wheel("smudged", "Круг медленный — глина смялась", "The wheel is slow — the clay got smudged");
+        wheel("wrenched", "Ком сорвало с круга!", "The lump flew off the wheel!");
+        wheel("flung", "Слишком быстро — нависающее сорвало", "Too fast — the overhang flew off");
+        wheel("collapsed", "Обвал: глина без опоры", "Collapse: the clay had no support");
+        wheel("detail_loose", "Не держится: лепите к сосуду или к детали", "It won't hold: build onto the vessel or a detail");
+        wheel("need_lumps", "Нужно комьев: %s", "Lumps needed: %s");
+        wheel("stopped_for_details", "Круг остановлен: лепите детали", "The wheel is stopped: shape the details");
+        wheel("lumps", "Глины: %s", "Clay: %s");
+        wheel("on_wheel", "На круге: %s", "On the wheel: %s");
+        wheel("section", "Разрез через ось", "Section through the axis");
+        wheel("slice", "Срез %s из %s (колесо мыши)", "Slice %s of %s (mouse wheel)");
+        wheel("stopped", "стоит", "stopped");
+        wheel("speed", "маховик", "flywheel");
+        wheel("stats", "Глина %s/%s · обрезки %s · сходство %s%% · неровности %s",
+                "Clay %s/%s · scraps %s · likeness %s%% · unevenness %s");
+        wheel("unlike", "Сходство с образцом меньше %s%%", "Likeness is under %s%%");
+        wheel("forecast", "Выйдет: %s сырец", "Result: %s greenware");
+        wheel("hint_body", "ЛКМ — срезать, ПКМ — налепить, Shift+ЛКМ — вытянуть, пробел — маховик",
+                "LMB cut, RMB add, Shift+LMB pull up, space spins");
+        wheel("hint_details", "ЛКМ — убрать, ПКМ — налепить воксель, колесо мыши — глубина",
+                "LMB remove, RMB add a voxel, mouse wheel — depth");
+        wheel("problem.no_bottom", "Нет дна", "No bottom");
+        wheel("problem.loose", "Что-то не держится", "Something won't hold");
+        wheel("problem.details", "Не хватает ручки или носика", "A handle or a spout is missing");
+        wheel("problem.too_much", "Глины больше, чем было", "More clay than there was");
+
+        // Полка
+        pottery("shelf_empty", "Полка пуста", "The shelf is empty");
+        pottery("shelf_not_dry", "Сняли недосохшим (%s%%)", "Taken off before it dried (%s%%)");
+        pottery("shelf_full", "На полке нет места", "No room on the shelf");
+        pottery("shelf_open", "Под открытым небом: высохнет за %s сут., но может треснуть; дождь размочит",
+                "Under the open sky: dries in %s days but may crack; rain will soak it");
+        pottery("shelf_roof", "Под крышей: высохнет за %s сут.", "Under a roof: dries in %s days");
+        pottery("burnish_nothing", "Лощить нечего: нужен сырец на полке", "Nothing to burnish: put greenware on the shelf");
+        pottery("burnish_done_already", "Уже залощено", "Already burnished");
+        pottery("burnish_too_dry", "Пересох — лощить поздно", "Too dry to burnish");
+        pottery("burnish_too_wet", "Ещё сырой (%s%%) — лощат подсохший до кожетвёрдого",
+                "Still wet (%s%%) — burnish it once it is leather-hard");
+        pottery("burnished", "Залощили: в дыму горна станет чернолощёным", "Burnished: kiln smoke will turn it black");
+
+        // Горн
+        pottery("kiln_fuel_full", "Дров хватит", "Enough firewood");
+        pottery("kiln_damper_open", "Заслонка открыта: жарче, дрова горят вдвое быстрее", "Damper open: hotter, firewood burns twice as fast");
+        pottery("kiln_damper_closed", "Заслонка закрыта: жар ровнее, в горне дым", "Damper closed: steadier heat, smoke inside");
+        pottery("kiln_already_fired", "Уже обожжено", "Already fired");
+        pottery("kiln_cracked", "Треснувшее не обжигают — размочите в бочке", "Cracked pieces aren't fired — soak them in the barrel");
+        pottery("kiln_wet", "Сначала высушите на полке", "Dry it on a shelf first");
+        pottery("kiln_busy", "Горн горячий или в нём обожжённое — сначала выньте и остудите",
+                "The kiln is hot or holds fired ware — take it out and let it cool first");
+        pottery("kiln_full", "В горне нет места (%s)", "The kiln is full (%s)");
+        pottery("kiln_loaded", "В горне: %s из %s. Дрова, огниво — и первую минуту не больше 350°",
+                "In the kiln: %s of %s. Firewood, a flint — and keep it under 350° for the first minute");
+        pottery("kiln_lit_already", "Уже горит", "Already burning");
+        pottery("kiln_no_fuel", "Сначала дрова", "Firewood first");
+        pottery("kiln_status_empty", "Жар %s°, дров %s%%. Обжигов: %s из %s", "Heat %s°, firewood %s%%. Firings: %s of %s");
+        pottery("kiln_status", "Жар %s°, дров %s%%, обжиг %s%%. Дрова тянут к %s° (держите 600–850°)",
+                "Heat %s°, firewood %s%%, firing %s%%. The fuel pulls toward %s° (hold 600–850°)");
+        pottery("kiln_status_closed", "Жар %s°, дров %s%%, обжиг %s%%, заслонка закрыта. Дрова тянут к %s°",
+                "Heat %s°, firewood %s%%, firing %s%%, damper closed. The fuel pulls toward %s°");
+        pottery("kiln_hot", "Горячо: %s°, обжиг %s%%! Вынутое горячим трескается. E ещё раз — вынуть всё равно",
+                "Hot: %s°, firing %s%%! Ware taken out hot cracks. E again to take it anyway");
+        pottery("kiln_cracked_out", "%s треснул в горне", "%s cracked in the kiln");
+        pottery("kiln_broken", "Горн развалился: почините кирпичом (%s / %s)", "The kiln has fallen apart: mend it with bricks (%s / %s)");
+        pottery("kiln_repaired", "Горн починен", "The kiln is mended");
+
+        // Состояние станций по ПКМ (StationBlockEntity.report)
+        add("hud.halgventmod.use.status", russian ? "Состояние: %s" : "Status: %s");
+        pottery("shelf_where_open", "Под небом: сохнет %s сут., дождь размочит", "Under the sky: dries in %s days, rain soaks it");
+        pottery("shelf_where_roof", "Под крышей: сохнет %s сут.", "Under a roof: dries in %s days");
+        pottery("shelf_drying", "%s%%, ещё ~%s мин.", "%s%%, ~%s min. left");
+        pottery("shelf_dry", "сухой — в горн", "dry — into the kiln");
+        pottery("shelf_cracked", "треснул", "cracked");
+        pottery("shelf_soaked", "размок", "soaked");
+        pottery("damper_open", "открыта", "open");
+        pottery("damper_closed", "закрыта (дым)", "closed (smoke)");
+        pottery("kiln_report_loaded", "Загружено %s из %s. Дрова и огниво; первую минуту — не выше %s°",
+                "Loaded %s of %s. Firewood and a flint; keep it under %s° for the first minute");
+        pottery("kiln_report_temper", "Закал: %s° (не выше %s°), ещё ~%s мин. Дров %s%% → %s°",
+                "Tempering: %s° (keep under %s°), ~%s min. left. Firewood %s%% → %s°");
+        pottery("kiln_report_temper_hot", "Закал: %s° — выше %s°, будут трещины! Ещё ~%s мин. Дров %s%% → %s°",
+                "Tempering: %s° — over %s°, it will crack! ~%s min. left. Firewood %s%% → %s°");
+        pottery("kiln_report_firing", "Обжиг %s%%: %s° (держите %s–%s°), дров %s%% → %s°, заслонка %s, ещё ~%8$s мин.",
+                "Firing %s%%: %s° (hold %s–%s°), firewood %s%% → %s°, damper %s, ~%8$s min. left");
+        pottery("kiln_report_low", "Обжиг %s%%: %s° — холодно, нужно %s–%s°. Подкиньте дров (%s%% → %s°)",
+                "Firing %s%%: %s° — too cold, need %s–%s°. Add firewood (%s%% → %s°)");
+        pottery("kiln_report_over", "Обжиг %s%%: %s° — пережог! Держите не выше %4$s° (дров %5$s%% → %6$s°, заслонка %7$s)",
+                "Firing %s%%: %s° — overfiring! Keep it under %4$s° (firewood %5$s%% → %6$s°, damper %7$s)");
+        pottery("kiln_report_out", "Огонь погас: обжиг %s%%, %s°. Подкиньте дров и разожгите",
+                "The fire is out: firing %s%%, %s°. Add firewood and light it");
+        pottery("kiln_report_cooling", "Обожжено! Остывает: %s° — вынимайте ниже %s°", "Fired! Cooling: %s° — take it out below %s°");
+        pottery("kiln_report_ready", "Обожжено и остыло (%s°): E — вынимать", "Fired and cool (%s°): E to take it out");
+        leather("vat_report_done", "готово", "ready");
+        leather("vat_report_idle", "не в этом растворе", "wrong bath");
+        leather("vat_report_fire", "%s%%, нужен огонь под чаном", "%s%%, needs a fire under the vat");
+        leather("vat_report_progress", "%s%%, ещё ~%s мин.", "%s%%, ~%s min. left");
+        leather("rack_report_drying", "Сохнет: %s%%, ещё ~%s мин.", "Drying: %s%%, ~%s min. left");
+        leather("rack_report_rain", "Дождь — не сохнет (%s%%)", "Rain — not drying (%s%%)");
+        leather("rack_report_dry", "Высохла: E — снять; колотушка, жир или воск — отделка",
+                "Dry: E to take it off; a mallet, fat or wax to finish it");
+        leather("rack_report_finished", "Высохла и отделана: E — снять", "Dry and finished: E to take it off");
+        cooking("hook_ready", "Готово (%s): E пустой рукой — снять", "Ready (%s): E with an empty hand to take it");
+
+        // Очаг с глиняным горшком
+        cooking("clay_pot_empty_first", "Сначала опорожните горшок", "Empty the pot first");
+        cooking("clay_pot_cracked", "Горшок вываривался и треснул — остались черепки", "The pot wore out and cracked — only sherds left");
+    }
+
+    /**
+     * Еда по таблице баланса: ванильные продукты под своими названиями, заготовки, эффекты в подсказке.
+     * Новые предметы называются в ModItems.
+     */
+    private void foodTranslations() {
+        if (russian) {
+            add(net.minecraft.world.item.Items.PORKCHOP, "Свинина");
+            add(net.minecraft.world.item.Items.BEEF, "Говядина");
+            add(net.minecraft.world.item.Items.CHICKEN, "Курица");
+            add(net.minecraft.world.item.Items.RABBIT, "Зайчатина");
+            add(net.minecraft.world.item.Items.MUTTON, "Баранина");
+            add(net.minecraft.world.item.Items.COOKED_PORKCHOP, "Жареная свинина");
+            add(net.minecraft.world.item.Items.COOKED_BEEF, "Жареная говядина");
+            add(net.minecraft.world.item.Items.COOKED_CHICKEN, "Жареная курица");
+            add(net.minecraft.world.item.Items.COOKED_RABBIT, "Жареный заяц");
+            add(net.minecraft.world.item.Items.COOKED_MUTTON, "Жареная баранина");
+            add(net.minecraft.world.item.Items.SALMON, "Лосось");
+            add(net.minecraft.world.item.Items.COOKED_SALMON, "Жареный лосось");
+            add(net.minecraft.world.item.Items.POTATO, "Картофель");
+            add(net.minecraft.world.item.Items.BAKED_POTATO, "Печёный картофель");
+            add(net.minecraft.world.item.Items.CARROT, "Морковь");
+            add(net.minecraft.world.item.Items.BEETROOT, "Свёкла");
+            add(net.minecraft.world.item.Items.APPLE, "Яблоко");
+        }
+        add("item.halgventmod.raw_dish.named", russian ? "Заготовка: %s" : "Raw dish: %s");
+        add("tooltip.halgventmod.food_effect.satiety", russian ? "Сытость: %s с" : "Satiety: %s s");
+        add("tooltip.halgventmod.food_effect.well_fed", russian ? "Улучшенное насыщение: %s с" : "Well fed: %s s");
+        add("tooltip.halgventmod.food_effect.raw", russian ? "Сырое: может отравить" : "Raw: may poison you");
+        cooking("poisoned", "Отравление: мутит, еда идёт впрок вдвое хуже", "Food poisoning: you feel sick, food does half as much good");
+
+        // Посадки: у грядок нет своих предметов, называем блоки
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.RYE.get(), russian ? "Рожь" : "Rye");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.BARLEY_CROP.get(), russian ? "Ячмень" : "Barley");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.OATS_CROP.get(), russian ? "Овёс" : "Oats");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.ONION_CROP.get(), russian ? "Лук" : "Onions");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.GARLIC_CROP.get(), russian ? "Чеснок" : "Garlic");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.TURNIP_CROP.get(), russian ? "Репа" : "Turnips");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.BEANS_CROP.get(), russian ? "Бобы" : "Beans");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.CABBAGE_CROP.get(), russian ? "Капуста" : "Cabbage");
+        add("entity.halgventmod.goose", russian ? "Гусь" : "Goose");
+        add("message.halgventmod.farming.not_ripe", russian ? "Ещё не поспело" : "Not ripe yet");
+    }
+
+    private void pottery(String key, String ru, String en) {
+        add("message.halgventmod.pottery." + key, russian ? ru : en);
+    }
+
+    private void potteryTip(String key, String ru, String en) {
+        add("tooltip.halgventmod.pottery." + key, russian ? ru : en);
+    }
+
+    private void wheel(String key, String ru, String en) {
+        add("gui.halgventmod.wheel." + key, russian ? ru : en);
     }
 
     private void brewing(String key, String ru, String en) {

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item", "name": "halgventmod:onion",
+              "conditions": [ { "condition": "minecraft:block_state_property", "block": "halgventmod:onion_crop", "properties": { "age": "7" } } ],
+              "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2, "max": 4 } } ]
+            },
+            { "type": "minecraft:item", "name": "halgventmod:onion" }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "halgventmod:blocks/onion_crop"
+}

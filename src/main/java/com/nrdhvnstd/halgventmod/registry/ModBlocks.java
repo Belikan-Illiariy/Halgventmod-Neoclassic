@@ -1,11 +1,16 @@
 package com.nrdhvnstd.halgventmod.registry;
 
+import java.util.function.Supplier;
+
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.beekeeping.SkepBlock;
 import com.nrdhvnstd.halgventmod.brewing.AgingCaskBlock;
 import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlock;
 import com.nrdhvnstd.halgventmod.brewing.StillBlock;
 import com.nrdhvnstd.halgventmod.brewing.WinePressBlock;
+import com.nrdhvnstd.halgventmod.farming.BerryBushBlock;
+import com.nrdhvnstd.halgventmod.farming.FieldCropBlock;
+import com.nrdhvnstd.halgventmod.farming.FruitLeavesBlock;
 import com.nrdhvnstd.halgventmod.farming.RyeCropBlock;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
@@ -17,8 +22,14 @@ import com.nrdhvnstd.halgventmod.leather.DryingRackBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlock;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlock;
 import com.nrdhvnstd.halgventmod.leather.TanningVatBlock;
+import com.nrdhvnstd.halgventmod.pottery.ClayBarrelBlock;
+import com.nrdhvnstd.halgventmod.pottery.DryingShelfBlock;
+import com.nrdhvnstd.halgventmod.pottery.KilnBlock;
+import com.nrdhvnstd.halgventmod.pottery.PotteryWheelBlock;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlock;
 
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -93,6 +104,56 @@ public final class ModBlocks {
                     .sound(SoundType.CHAIN)
                     .noCollission()
                     .noOcclusion()));
+
+    // Грядки (farming/FieldCropBlock): сажают сам урожай. Модели — Conquest Reforged, у лука и чеснока — свои
+    public static final DeferredBlock<FieldCropBlock> BARLEY_CROP = crop("barley_crop", () -> ModItems.BARLEY.get());
+    public static final DeferredBlock<FieldCropBlock> OATS_CROP = crop("oats_crop", () -> ModItems.OATS.get());
+    public static final DeferredBlock<FieldCropBlock> ONION_CROP = crop("onion_crop", () -> ModItems.ONION.get());
+    public static final DeferredBlock<FieldCropBlock> GARLIC_CROP = crop("garlic_crop", () -> ModItems.GARLIC.get());
+    public static final DeferredBlock<FieldCropBlock> TURNIP_CROP = crop("turnip_crop", () -> ModItems.TURNIP.get());
+    public static final DeferredBlock<FieldCropBlock> BEANS_CROP = crop("beans_crop", () -> ModItems.BEANS.get());
+    public static final DeferredBlock<FieldCropBlock> CABBAGE_CROP = crop("cabbage_crop", () -> ModItems.CABBAGE.get());
+    // Ягодные кусты (farming/BerryBushBlock) — растут в лесах и на болотах, ягоды собирают на E
+    public static final DeferredBlock<BerryBushBlock> BLUEBERRY_BUSH = bush("blueberry_bush", () -> ModItems.BLUEBERRY.get());
+    public static final DeferredBlock<BerryBushBlock> LINGONBERRY_BUSH = bush("lingonberry_bush", () -> ModItems.LINGONBERRY.get());
+    public static final DeferredBlock<BerryBushBlock> CRANBERRY_BUSH = bush("cranberry_bush", () -> ModItems.CRANBERRY.get());
+    // Плодовая листва (farming/FruitLeavesBlock) — сады строят строители, плоды собирают на E
+    public static final DeferredBlock<FruitLeavesBlock> CHERRY_LEAVES = fruitLeaves("cherry_leaves", () -> ModItems.CHERRY.get());
+    public static final DeferredBlock<FruitLeavesBlock> PLUM_LEAVES = fruitLeaves("plum_leaves", () -> ModItems.PLUM.get());
+    public static final DeferredBlock<FruitLeavesBlock> PEAR_LEAVES = fruitLeaves("pear_leaves", () -> ModItems.PEAR.get());
+    public static final DeferredBlock<FruitLeavesBlock> ORANGE_LEAVES = fruitLeaves("orange_leaves", () -> ModItems.ORANGE.get());
+    public static final DeferredBlock<FruitLeavesBlock> OLIVE_LEAVES = fruitLeaves("olive_leaves", () -> ModItems.OLIVES.get());
+    public static final DeferredBlock<FruitLeavesBlock> GRAPE_VINE = fruitLeaves("grape_vine", () -> ModItems.GRAPE.get());
+    public static final DeferredBlock<FruitLeavesBlock> APPLE_LEAVES = fruitLeaves("apple_leaves", () -> Items.APPLE);
+
+    private static DeferredBlock<FieldCropBlock> crop(String id, Supplier<Item> seed) {
+        return BLOCKS.register(id, () -> new FieldCropBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHEAT), seed));
+    }
+
+    private static DeferredBlock<BerryBushBlock> bush(String id, Supplier<Item> berry) {
+        return BLOCKS.register(id, () -> new BerryBushBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.PLANT).randomTicks().noCollission().strength(0.2F)
+                .sound(SoundType.SWEET_BERRY_BUSH).noOcclusion().pushReaction(PushReaction.DESTROY).ignitedByLava(), berry));
+    }
+
+    private static DeferredBlock<FruitLeavesBlock> fruitLeaves(String id, Supplier<Item> fruit) {
+        return BLOCKS.register(id, () -> new FruitLeavesBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.PLANT).randomTicks().strength(0.2F).sound(SoundType.GRASS).noOcclusion()
+                .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)
+                .isValidSpawn((state, level, pos, type) -> false).ignitedByLava(), fruit));
+    }
+
+    // Гончарное дело (pottery/*). Модели — из Conquest Reforged
+    public static final DeferredBlock<ClayBarrelBlock> CLAY_BARREL = BLOCKS.register("clay_barrel",
+            () -> new ClayBarrelBlock(wood()));
+    public static final DeferredBlock<PotteryWheelBlock> POTTERY_WHEEL = BLOCKS.register("pottery_wheel",
+            () -> new PotteryWheelBlock(wood()));
+    public static final DeferredBlock<DryingShelfBlock> DRYING_SHELF = BLOCKS.register("drying_shelf",
+            () -> new DryingShelfBlock(wood()));
+    public static final DeferredBlock<KilnBlock> SMALL_KILN = BLOCKS.register("small_kiln",
+            () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 11 : 0), 4, 1.32F));
+    public static final DeferredBlock<KilnBlock> TALL_KILN = BLOCKS.register("tall_kiln",
+            () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 12 : 0), 10, 1.7F));
 
     private static BlockBehaviour.Properties stone() {
         return BlockBehaviour.Properties.of()

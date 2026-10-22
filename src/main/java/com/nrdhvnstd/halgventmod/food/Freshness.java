@@ -8,8 +8,6 @@ import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -28,12 +26,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Freshness {
-    // ===== Испорченная еда — как тухлятина. Меняйте здесь =====
-    public static final float SPOILED_HUNGER_CHANCE = 0.8F; // шанс «Голода»
-    public static final int SPOILED_HUNGER_SECONDS = 30;
-    public static final float SPOILED_NAUSEA_CHANCE = 0.3F; // шанс «Тошноты»
-    public static final int SPOILED_NAUSEA_SECONDS = 10;
-
+    // Испорченная еда даёт «Отравление» (FoodEffects)
     private static final int SCAN_INTERVAL = 20; // проверка инвентаря раз в секунду
 
     private Freshness() {}
@@ -94,7 +87,7 @@ public final class Freshness {
         }
     }
 
-    // Съел или выпил: жажда и последствия испорченного
+    // Съел или выпил: жажда (отравление испорченным — FoodEffects)
     @SubscribeEvent
     public static void onFinishUsing(LivingEntityUseItemEvent.Finish event) {
         if (!(event.getEntity() instanceof Player player) || player.level().isClientSide) {
@@ -105,7 +98,7 @@ public final class Freshness {
             return; // не еда (молоко — еда без компонента FOOD, у него срок есть)
         }
 
-        // У блюда из котелка жажда своя (Dish), у остального — из описания еды
+        // У блюда из горшка жажда своя (Dish), у остального — из описания еды
         ModFoods.FoodInfo info = ModFoods.get(used);
         Dish dish = used.get(ModComponents.DISH.get());
         int thirst = dish != null ? dish.thirst() : info != null ? info.thirst() : 0;
@@ -113,13 +106,5 @@ public final class Freshness {
             Thirst.add(player, thirst);
         }
 
-        if (isSpoiled(used, player.level())) {
-            if (player.getRandom().nextFloat() < SPOILED_HUNGER_CHANCE) {
-                player.addEffect(new MobEffectInstance(MobEffects.HUNGER, SPOILED_HUNGER_SECONDS * 20, 0));
-            }
-            if (player.getRandom().nextFloat() < SPOILED_NAUSEA_CHANCE) {
-                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, SPOILED_NAUSEA_SECONDS * 20, 0));
-            }
-        }
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.food.Freshness;
+import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -14,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -238,16 +240,14 @@ public class TanningVatBlockEntity extends StationBlockEntity {
         if (stack.isEmpty()) {
             return takeOut(player);
         }
-        if (stack.is(Items.WATER_BUCKET)) {
+        if (Pottery.isWater(stack, Pottery.BUCKET_MEASURES)) {
             if (solution != Solution.NONE || !items().isEmpty()) {
                 say(player, "vat_busy");
                 return true;
             }
             solution = Solution.WATER;
             resetAdditives();
-            if (!player.getAbilities().instabuild) {
-                player.setItemInHand(hand, new ItemStack(Items.BUCKET));
-            }
+            Pottery.takeWater(player, hand, stack, Pottery.BUCKET_MEASURES); // ведро или полный кувшин
             sound(SoundEvents.BUCKET_EMPTY, 1.0F, 1.0F);
             changed();
             return true;
@@ -409,6 +409,42 @@ public class TanningVatBlockEntity extends StationBlockEntity {
             say(player, "vat_status", Component.translatable(solution.langKey()), uses);
         }
         return true;
+    }
+
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ: какой раствор и на сколько его хватит, и по каждой шкуре — проценты, сколько ждать, нужен ли огонь. */
+    @Override
+    public void report(Player player) {
+        MutableComponent line = solution == Solution.NONE ? Component.translatable("message.halgventmod.leather.vat_dry")
+                : solution == Solution.WATER ? Component.translatable("message.halgventmod.leather.additives",
+                        ash, ASH_NEEDED, bark, BARK_NEEDED, alum, ALUM_NEEDED, salt, fat, FAT_NEEDED)
+                : Component.translatable("message.halgventmod.leather.vat_status", Component.translatable(solution.langKey()), uses);
+        boolean heat = heated(level, worldPosition);
+        for (int i = 0; i < SLOTS; i++) {
+            if (slots[i].isEmpty()) {
+                continue;
+            }
+            Process process = done[i] ? null : process(slots[i]);
+            Component state;
+            if (done[i]) {
+                state = Component.translatable("message.halgventmod.leather.vat_report_done");
+            } else if (process == null) {
+                state = Component.translatable("message.halgventmod.leather.vat_report_idle");
+            } else if (process.heat && !heat) {
+                state = Component.translatable("message.halgventmod.leather.vat_report_fire", percent(progress[i], process.required()));
+            } else {
+                long left = Math.max(0, process.required() - progress[i]);
+                long minutes = process == Process.BOIL ? Math.max(1, (left + 1199) / 1200) : realMinutes(left);
+                state = Component.translatable("message.halgventmod.leather.vat_report_progress",
+                        percent(progress[i], process.required()), minutes);
+            }
+            line.append(Component.literal(" · ")).append(slots[i].getHoverName()).append(": ").append(state);
+        }
+        player.displayClientMessage(line, true);
     }
 
     private int inProcess() {

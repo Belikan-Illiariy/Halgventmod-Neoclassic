@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": { "item": "halgventmod:venison" },
+  "result": { "id": "halgventmod:cooked_venison" },
+  "experience": 0.35,
+  "cookingtime": 600
+}

@@ -234,6 +234,17 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         lastDayTime = -1;
     }
 
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ — как идёт дело (то же, что E пустой рукой). */
+    @Override
+    public void report(Player player) {
+        status(player);
+    }
+
     private void status(Player player) {
         if (portions <= 0) {
             tell(player, "barrel_empty");

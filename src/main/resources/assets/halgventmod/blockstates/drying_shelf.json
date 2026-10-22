@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/drying_shelf" },
+    "facing=east": { "model": "halgventmod:block/drying_shelf", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/drying_shelf", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/drying_shelf", "y": 270 }
+  }
+}

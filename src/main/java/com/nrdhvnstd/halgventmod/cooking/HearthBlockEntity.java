@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
+import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModBlocks;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
@@ -32,11 +34,12 @@ import net.neoforged.neoforge.common.ItemAbilities;
  *   <li><b>огонь</b>: дрова (бревно, доски, палки, уголь) — запас топлива; огниво, огненный заряд или факел — разжечь.
  *       Жар 1–3 зависит от запаса; без подкладки огонь гаснет, под дождём горит втрое быстрее. Прогоревшее даёт
  *       золу — забрать лопатой;</li>
- *   <li><b>котелок</b> (предмет «Котелок» на очаг): ведро воды, до {@link Cookery#CAPACITY} продуктов, варится
- *       {@link #COOK_TIME} единиц жара. Каждые {@link #STIR_EVERY} тиков варево надо помешать половником — иначе через
- *       {@link #STIR_GRACE} тиков пригорает (качество −1). Готовое черпают миской (отвар — склянкой).
- *       Shift + E пустой рукой — вынуть последнее положенное (пока не начало вариться) или снять пустой котелок;</li>
- *   <li><b>жарка</b> (без котелка): мясо, рыбу, картофель кладут на угли — до {@link #CELLS} кусков, каждый в свою
+ *   <li><b>горшок</b> (глиняный горшок на очаг, на огне выглядит котелком — модель жаровни Conquest с котлом): ведро или кувшин воды, до {@link Cookery#CAPACITY}
+ *       продуктов, варится {@link #COOK_TIME} единиц жара. Каждые {@link #STIR_EVERY} тиков варево надо помешать
+ *       половником — иначе через {@link #STIR_GRACE} тиков пригорает (качество −1). Готовое черпают миской, деревянной
+ *       или глиняной (отвар — склянкой). Горшок изнашивается: выварен — трескается (Pottery.potUses).
+ *       Shift + E пустой рукой — вынуть последнее положенное (пока не начало вариться) или снять пустой горшок;</li>
+ *   <li><b>жарка</b> (без горшка): мясо, рыбу, картофель кладут на угли — до {@link #CELLS} кусков, каждый в свою
  *       четверть. Жарится нижняя сторона; E пустой рукой по куску — перевернуть, по прожаренному с двух сторон — снять
  *       (Shift + E — снять сразу). Сторона готова с {@link #READY}, пережарена с {@link #OVER}, сгорела с
  *       {@link #BURNT}. Что пора переворачивать, видно по дыму: белый — готово, чёрный — горит.</li>
@@ -64,7 +67,8 @@ public class HearthBlockEntity extends StationBlockEntity {
     private int fuel;
     private int burned;
     private int ash;
-    // котелок
+    // горшок на огне — с формой и износом (пустой стак у старых очагов с горшком: снимется новым горшком)
+    private ItemStack clayPot = ItemStack.EMPTY;
     private boolean water;
     private final List<ItemStack> contents = new ArrayList<>();
     private int progress;
@@ -97,6 +101,15 @@ public class HearthBlockEntity extends StationBlockEntity {
         return getBlockState().getValue(HearthBlock.POT);
     }
 
+    /** Горшок на огне (пустой стак — ничего или горшок из прежних версий). */
+    public ItemStack clayPot() {
+        return clayPot;
+    }
+
+    public boolean hasWater() {
+        return water;
+    }
+
     public int heat() {
         return !lit() ? 0 : fuel > HOT_FUEL ? 3 : fuel > WARM_FUEL ? 2 : 1;
     }
@@ -127,7 +140,7 @@ public class HearthBlockEntity extends StationBlockEntity {
     public List<ItemStack> contents() {
         List<ItemStack> all = new ArrayList<>();
         if (hasPot()) {
-            all.add(new ItemStack(ModItems.COOKING_POT.get()));
+            all.add(clayPot.isEmpty() ? new ItemStack(ModItems.CLAY_POT.get()) : clayPot.copy());
         }
         if (portions == 0) {
             contents.forEach(stack -> all.add(stack.copy()));
@@ -154,7 +167,8 @@ public class HearthBlockEntity extends StationBlockEntity {
             return;
         }
         boolean exposed = level.isRainingAt(pos.above());
-        int burn = exposed ? 3 : 1;
+        // Дрова прогорают через тик
+        int burn = level.getGameTime() % 2 != 0 ? 0 : exposed ? 3 : 1;
         hearth.fuel -= burn;
         hearth.burned += burn;
         if (hearth.burned >= ASH_EVERY) {
@@ -219,6 +233,9 @@ public class HearthBlockEntity extends StationBlockEntity {
         portion = outcome.portion();
         portions = outcome.portions();
         ladled = false;
+        if (!clayPot.isEmpty()) {
+            clayPot.set(ModComponents.POT_USES.get(), Pottery.potUsed(clayPot) + 1); // глиняный горшок изнашивается
+        }
         sound(SoundEvents.BREWING_STAND_BREW, 0.6F, 0.8F);
     }
 
@@ -281,7 +298,7 @@ public class HearthBlockEntity extends StationBlockEntity {
         if (level.getBlockEntity(worldPosition.above()) instanceof com.nrdhvnstd.halgventmod.brewing.StillBlockEntity still) {
             return still.use(player, hand, stack, hit);
         }
-        if (stack.is(ModItems.COOKING_POT.get())) {
+        if (stack.is(ModItems.CLAY_POT.get())) {
             return placePot(player, stack);
         }
         return hasPot() ? usePot(player, stack) : useGrill(player, stack, hit);
@@ -333,7 +350,7 @@ public class HearthBlockEntity extends StationBlockEntity {
         return 0;
     }
 
-    // ---------------------------------------------------------------- котелок
+    // ---------------------------------------------------------------- горшок
 
     /** E перегонным кубом — поставить его на очаг (блок над очагом, модель опущена на огонь). */
     private boolean placeStill(Player player, ItemStack stack) {
@@ -372,11 +389,32 @@ public class HearthBlockEntity extends StationBlockEntity {
                 return true;
             }
         }
+        if (Pottery.cracked(stack)) {
+            Pottery.say(player, "ware_cracked_use");
+            return true;
+        }
+        if (stack.has(ModComponents.STORED.get()) || Pottery.water(stack) > 0) {
+            tell(player, "clay_pot_empty_first");
+            return true;
+        }
+        clayPot = stack.copyWithCount(1);
         consumeOne(player, stack);
         level.setBlock(worldPosition, getBlockState().setValue(HearthBlock.POT, true), 3);
-        sound(SoundEvents.LANTERN_PLACE, 1.0F, 0.8F);
+        sound(SoundEvents.DECORATED_POT_PLACE, 1.0F, 0.8F);
         changed();
         return true;
+    }
+
+    /** Последнюю порцию вычерпали: износившийся глиняный горшок трескается — остаются черепки. */
+    private void wearOut(Player player) {
+        if (clayPot.isEmpty() || Pottery.potUsed(clayPot) < Pottery.potUses(clayPot)) {
+            return;
+        }
+        give(player, Pottery.sherds(clayPot));
+        clayPot = ItemStack.EMPTY;
+        level.setBlock(worldPosition, getBlockState().setValue(HearthBlock.POT, false), 3);
+        sound(SoundEvents.DECORATED_POT_SHATTER, 1.0F, 1.0F);
+        tell(player, "clay_pot_cracked");
     }
 
     private boolean usePot(Player player, ItemStack stack) {
@@ -387,15 +425,13 @@ public class HearthBlockEntity extends StationBlockEntity {
             potStatus(player);
             return true;
         }
-        if (stack.is(Items.WATER_BUCKET)) {
+        if (Pottery.isWater(stack, Pottery.BUCKET_MEASURES)) {
             if (water) {
                 tell(player, "pot_has_water");
                 return true;
             }
             water = true;
-            if (!player.getAbilities().instabuild) {
-                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
-            }
+            Pottery.takeWater(player, InteractionHand.MAIN_HAND, stack, Pottery.BUCKET_MEASURES);
             sound(SoundEvents.BUCKET_EMPTY, 1.0F, 1.0F);
             changed();
             return true;
@@ -414,20 +450,31 @@ public class HearthBlockEntity extends StationBlockEntity {
         }
         if (portions > 0) {
             Cookery.Result result = resultOfPortion();
-            if (result != null && stack.is(result.container())) {
+            // В глиняную миску тоже черпают: она запоминается в порции и вернётся после еды
+            boolean clayBowl = result != null && result.container() == Items.BOWL && stack.is(ModItems.CLAY_BOWL.get());
+            if (clayBowl && Pottery.cracked(stack)) {
+                Pottery.say(player, "ware_cracked_use");
+                return true;
+            }
+            if (result != null && (stack.is(result.container()) || clayBowl)) {
+                ItemStack served = portion.copy();
+                if (clayBowl) {
+                    served.set(ModComponents.SERVED_IN.get(), stack.copyWithCount(1));
+                }
                 consumeOne(player, stack);
-                give(player, portion.copy());
+                give(player, served);
                 ladled = true;
                 sound(SoundEvents.BOTTLE_FILL, 0.8F, 0.9F);
                 if (--portions == 0) {
                     clearPot();
+                    wearOut(player);
                 } else {
                     tell(player, "portions_left", portions);
                 }
                 changed();
                 return true;
             }
-            if (stack.is(Items.BOWL) || stack.is(Items.GLASS_BOTTLE)) {
+            if (stack.is(Items.BOWL) || stack.is(Items.GLASS_BOTTLE) || stack.is(ModItems.CLAY_BOWL.get())) {
                 tell(player, result == Cookery.Result.HERBAL_TEA ? "need_bottle" : "need_bowl");
                 return true;
             }
@@ -483,7 +530,8 @@ public class HearthBlockEntity extends StationBlockEntity {
             return true;
         }
         if (!water && contents.isEmpty()) {
-            give(player, new ItemStack(ModItems.COOKING_POT.get()));
+            give(player, clayPot.isEmpty() ? new ItemStack(ModItems.CLAY_POT.get()) : clayPot);
+            clayPot = ItemStack.EMPTY;
             clearPot();
             level.setBlock(worldPosition, getBlockState().setValue(HearthBlock.POT, false), 3);
             changed();
@@ -491,6 +539,21 @@ public class HearthBlockEntity extends StationBlockEntity {
         }
         tell(player, "pot_busy");
         return true;
+    }
+
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ: с горшком — как варится; без него — жар и запас дров. */
+    @Override
+    public void report(Player player) {
+        if (hasPot()) {
+            potStatus(player);
+        } else {
+            tell(player, lit() ? "fire_status" : "fire_out", heat(), Math.round(100.0F * fuel / MAX_FUEL));
+        }
     }
 
     private void potStatus(Player player) {
@@ -608,6 +671,9 @@ public class HearthBlockEntity extends StationBlockEntity {
         tag.putInt("Burned", burned);
         tag.putInt("Ash", ash);
         tag.putBoolean("Water", water);
+        if (!clayPot.isEmpty()) {
+            tag.put("ClayPot", clayPot.save(registries));
+        }
         ListTag list = new ListTag();
         contents.forEach(stack -> list.add(stack.save(registries)));
         tag.put("Contents", list);
@@ -641,6 +707,7 @@ public class HearthBlockEntity extends StationBlockEntity {
         burned = tag.getInt("Burned");
         ash = tag.getInt("Ash");
         water = tag.getBoolean("Water");
+        clayPot = tag.contains("ClayPot") ? ItemStack.parseOptional(registries, tag.getCompound("ClayPot")) : ItemStack.EMPTY;
         contents.clear();
         ListTag list = tag.getList("Contents", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {

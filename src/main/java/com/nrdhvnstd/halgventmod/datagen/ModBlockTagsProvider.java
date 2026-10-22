@@ -26,6 +26,17 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         // Рожь — посев, как пшеница: ванильные правила посевов, серп и коса
         tag(BlockTags.CROPS).add(ModBlocks.RYE.get());
         tag(BlockTags.MAINTAINS_FARMLAND).add(ModBlocks.RYE.get());
+        // Остальные грядки — так же
+        for (var crop : java.util.List.of(ModBlocks.BARLEY_CROP, ModBlocks.OATS_CROP, ModBlocks.ONION_CROP,
+                ModBlocks.GARLIC_CROP, ModBlocks.TURNIP_CROP, ModBlocks.BEANS_CROP, ModBlocks.CABBAGE_CROP)) {
+            tag(BlockTags.CROPS).add(crop.get());
+            tag(BlockTags.MAINTAINS_FARMLAND).add(crop.get());
+        }
+
+        // Плодовая листва и лоза считаются листвой (ломаются мотыгой, как листва)
+        tag(BlockTags.LEAVES).add(ModBlocks.CHERRY_LEAVES.get(), ModBlocks.PLUM_LEAVES.get(), ModBlocks.PEAR_LEAVES.get(),
+                ModBlocks.ORANGE_LEAVES.get(), ModBlocks.OLIVE_LEAVES.get(), ModBlocks.GRAPE_VINE.get(),
+                ModBlocks.APPLE_LEAVES.get());
 
         tag(FarmingRules.HARVESTABLE)
                 .addTag(BlockTags.CROPS)
@@ -49,5 +60,10 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                 .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get(),
                         ModBlocks.WINE_PRESS.get(), ModBlocks.FERMENTING_BARREL.get(), ModBlocks.AGING_CASK.get());
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STILL.get());
+
+        // Гончар: горны — киркой, деревянное — топором
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get());
+        tag(BlockTags.MINEABLE_WITH_AXE)
+                .add(ModBlocks.CLAY_BARREL.get(), ModBlocks.POTTERY_WHEEL.get(), ModBlocks.DRYING_SHELF.get());
     }
 }

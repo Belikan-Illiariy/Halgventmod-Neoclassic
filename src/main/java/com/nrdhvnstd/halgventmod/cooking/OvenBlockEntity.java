@@ -90,7 +90,7 @@ public class OvenBlockEntity extends StationBlockEntity {
         player.displayClientMessage(Component.translatable("message.halgventmod.cooking." + key, args), true);
     }
 
-    /** Что выходит из этого: тесто — хлеб, сырой пирог — пирог по начинке, сырая булочка — сладкая. Пусто — не печётся. */
+    /** Что выходит из этого: тесто — хлеб, сырой пирог — пирог по начинке, сырая булочка — сладкая, заготовка — блюдо. Пусто — не печётся. */
     public static ItemStack baked(ItemStack raw) {
         if (raw.is(ModItems.GREEN_MALT.get())) {
             return new ItemStack(ModItems.PALE_MALT.get()); // по пропечённости — светлый, янтарный или тёмный (takeOut)
@@ -103,6 +103,10 @@ public class OvenBlockEntity extends StationBlockEntity {
         }
         if (raw.is(ModItems.DOUGH.get())) {
             return new ItemStack(ModItems.WHEAT_BREAD.get());
+        }
+        if (raw.is(ModItems.RAW_DISH.get())) {
+            RawDishItem.Kind kind = RawDishItem.kind(raw);
+            return kind == null ? ItemStack.EMPTY : new ItemStack(kind.baked());
         }
         if (raw.is(ModItems.RAW_PIE.get())) {
             String filling = raw.getOrDefault(ModComponents.PIE_FILLING.get(), "berry");
@@ -121,7 +125,9 @@ public class OvenBlockEntity extends StationBlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, OvenBlockEntity oven) {
         boolean sync = false;
         if (oven.lit()) {
-            oven.fuel--;
+            if (level.getGameTime() % 2 == 0) {
+                oven.fuel--; // дрова прогорают через тик
+            }
             oven.temperature = Math.min(100, oven.temperature + 100.0F / HEAT_UP);
             if (oven.fuel <= 0) {
                 oven.fuel = 0;
@@ -204,6 +210,17 @@ public class OvenBlockEntity extends StationBlockEntity {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ — как идёт дело (то же, что E пустой рукой). */
+    @Override
+    public void report(Player player) {
+        status(player);
     }
 
     private void status(Player player) {

@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:drying_shelf" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "random_sequence": "halgventmod:blocks/drying_shelf"
+}

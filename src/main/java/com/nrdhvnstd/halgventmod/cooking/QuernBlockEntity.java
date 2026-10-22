@@ -18,8 +18,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Жёрнов. E пшеницей или рожью — засыпать (одно зерно за раз) (до {@link #CAPACITY}); E пустой рукой — повернуть камень. Каждые {@link #TURNS}
- * поворота — мука. Крутить надо ровно, дожидаясь замаха: в спешке зерно с шансом {@link #SPILL_CHANCE}
+ * Жёрнов. E пшеницей, рожью или черепками — засыпать (одно за раз) (до {@link #CAPACITY}); E пустой рукой — повернуть камень. Каждые {@link #TURNS}
+ * поворота — мука (из черепков — шамот). Крутить надо ровно, дожидаясь замаха: в спешке зерно с шансом {@link #SPILL_CHANCE}
  * просыпается мимо. Shift + E пустой рукой — забрать зерно назад.
  */
 public class QuernBlockEntity extends StationBlockEntity {
@@ -29,9 +29,49 @@ public class QuernBlockEntity extends StationBlockEntity {
     public static final float SPILL_CHANCE = 0.3F;
     public static final int SPIN_TICKS = 8;
 
+    /** Что мелют: пшеницу и рожь — в муку, черепки — в шамот. */
+    private enum Grist {
+        WHEAT, RYE, SHERDS;
+
+        net.minecraft.world.item.Item input() {
+            return switch (this) {
+                case WHEAT -> Items.WHEAT;
+                case RYE -> ModItems.RYE.get();
+                case SHERDS -> ModItems.SHERDS.get();
+            };
+        }
+
+        net.minecraft.world.item.Item output() {
+            return switch (this) {
+                case WHEAT -> ModItems.WHEAT_FLOUR.get();
+                case RYE -> ModItems.RYE_FLOUR.get();
+                case SHERDS -> ModItems.GROG.get();
+            };
+        }
+
+        @javax.annotation.Nullable
+        static Grist of(ItemStack stack) {
+            for (Grist grist : values()) {
+                if (stack.is(grist.input())) {
+                    return grist;
+                }
+            }
+            return null;
+        }
+
+        static Grist byName(String name) {
+            for (Grist grist : values()) {
+                if (grist.name().equals(name)) {
+                    return grist;
+                }
+            }
+            return WHEAT;
+        }
+    }
+
     private int grain;
     private int turns;
-    private boolean rye; // что засыпано: рожь или пшеница (вместе не засыпают)
+    private Grist grist = Grist.WHEAT; // что засыпано (разное вместе не засыпают)
     private int spins;                // сколько раз повернули камень — для анимации у клиента
     private long spinStart = -100;    // клиент: когда начался последний поворот
 
@@ -55,18 +95,19 @@ public class QuernBlockEntity extends StationBlockEntity {
     }
 
     private net.minecraft.world.item.Item grainItem() {
-        return rye ? ModItems.RYE.get() : Items.WHEAT;
+        return grist.input();
     }
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
-        if (stack.is(Items.WHEAT) || stack.is(ModItems.RYE.get())) {
-            boolean isRye = stack.is(ModItems.RYE.get());
-            if (grain > 0 && isRye != rye) {
+        Grist kind = Grist.of(stack);
+        if (kind != null) {
+            boolean other = kind != grist;
+            if (grain > 0 && other) {
                 tell(player, "quern_mixed");
                 return true;
             }
-            rye = isRye;
+            grist = kind;
             int moved = Math.min(CAPACITY - grain, stack.getCount());
             if (moved <= 0) {
                 tell(player, "quern_full");
@@ -111,7 +152,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         if (++turns >= TURNS) {
             turns = 0;
             grain--;
-            give(player, new ItemStack(rye ? ModItems.RYE_FLOUR.get() : ModItems.WHEAT_FLOUR.get()));
+            give(player, new ItemStack(grist.output()));
             tell(player, "quern_flour", grain);
         } else {
             tell(player, "quern_turn", turns, TURNS);
@@ -125,7 +166,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         super.saveAdditional(tag, registries);
         tag.putInt("Grain", grain);
         tag.putInt("Turns", turns);
-        tag.putBoolean("Rye", rye);
+        tag.putString("Grist", grist.name());
         tag.putInt("Spins", spins);
     }
 
@@ -134,7 +175,7 @@ public class QuernBlockEntity extends StationBlockEntity {
         super.loadAdditional(tag, registries);
         grain = tag.getInt("Grain");
         turns = tag.getInt("Turns");
-        rye = tag.getBoolean("Rye");
+        grist = tag.contains("Grist") ? Grist.byName(tag.getString("Grist")) : tag.getBoolean("Rye") ? Grist.RYE : Grist.WHEAT;
         int newSpins = tag.getInt("Spins");
         if (level != null && level.isClientSide && newSpins != spins) {
             spinStart = level.getGameTime();

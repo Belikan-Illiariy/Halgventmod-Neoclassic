@@ -176,6 +176,17 @@ public class StillBlockEntity extends StationBlockEntity {
         return true;
     }
 
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ — как идёт дело (то же, что E пустой рукой). */
+    @Override
+    public void report(Player player) {
+        status(player);
+    }
+
     private void status(Player player) {
         int heat = heat(level, worldPosition);
         tell(player, heat == 0 ? "still_cold" : heat >= 3 ? "still_hot" : "still_status",

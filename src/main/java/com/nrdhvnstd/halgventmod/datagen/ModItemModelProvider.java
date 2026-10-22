@@ -1,12 +1,16 @@
 package com.nrdhvnstd.halgventmod.datagen;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.leather.Animals;
+import com.nrdhvnstd.halgventmod.leather.HideItem;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
@@ -31,8 +35,8 @@ public class ModItemModelProvider extends ItemModelProvider {
     }
 
     private void categoryItem(ModItems.Definition def) {
-        if (def.item().get() instanceof BlockItem) {
-            return; // у предметов-блоков модель будет браться от блока
+        if (def.item().get() instanceof BlockItem && !(def.item().get() instanceof ItemNameBlockItem)) {
+            return; // у предметов-блоков модель будет браться от блока; сажаемое (зерно, лук) — своя иконка
         }
         String id = def.item().getId().getPath();
         ResourceLocation texture = modLoc("item/" + def.category().folder() + "/" + id);
@@ -43,6 +47,22 @@ public class ModItemModelProvider extends ItemModelProvider {
         }
         // Оружие держится в руке наискосок, как меч; остальное — как обычный предмет
         ResourceLocation parent = mcLoc(def.category().handheld() ? "item/handheld" : "item/generated");
-        withExistingParent(id, parent).texture("layer0", texture);
+        ItemModelBuilder model = withExistingParent(id, parent).texture("layer0", texture);
+        if (def.item().get() instanceof HideItem) {
+            animalOverrides(model, id, def.category().folder());
+        }
+    }
+
+    /** Шкура и мех: своя иконка для каждого зверя (materials/hide/<предмет>_<зверь>), если она нарисована. */
+    private void animalOverrides(ItemModelBuilder model, String id, String folder) {
+        for (Animals.Kind kind : Animals.all()) {
+            ResourceLocation texture = modLoc("item/" + folder + "/hide/" + id + "_" + kind.id());
+            if (!files.exists(texture, TEXTURE)) {
+                continue;
+            }
+            ItemModelBuilder variant = withExistingParent("item/hide/" + id + "_" + kind.id(), mcLoc("item/generated"))
+                    .texture("layer0", texture);
+            model.override().predicate(HideItem.ANIMAL, Animals.index(kind.id())).model(variant).end();
+        }
     }
 }

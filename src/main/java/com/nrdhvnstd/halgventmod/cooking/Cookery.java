@@ -35,15 +35,17 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
 /**
- * Правила котелка: что чем считается и что из этого выходит. Меняйте здесь.
+ * Правила горшка: что чем считается и что из этого выходит. Меняйте здесь.
  *
- * <p>Что положено в котелок, делится по тегам halgventmod:cooking/*. Блюдо решает основа, которой больше всего
- * (при равенстве — по порядку {@link Kind}): мясо → мясная похлёбка, рыба → уха, зерно → каша, грибы → грибная
- * похлёбка, овощи → похлёбка. Только травы с водой — отвар. Соль и травы — приправы: порций не дают, поднимают
- * качество. Молоко — к любой основе, прибавляет сытости (каша на молоке — молочная). Мёд — сладость:
- * +качество и немного сытости (каша на мёду, отвар с мёдом).
+ * <p>Что положено в горшок, делится по тегам halgventmod:cooking/*. Блюдо решает основа, которой больше всего
+ * (при равенстве — по порядку {@link Kind}): мясо → мясная похлёбка, рыба → уха, зерно → каша по зерну, которого
+ * больше (пшеничная, ржаная, ячменная, овсяная), грибы → грибная похлёбка, овощи → картофельная похлёбка (если из
+ * овощей один картофель, лук и чеснок не в счёт) или овощная. Только травы с водой — отвар. Соль, травы, чеснок,
+ * пряности — приправы: порций не дают, поднимают качество. Молоко — к любой основе, прибавляет сытости. Мёд —
+ * сладость: +качество и немного сытости (отвар с мёдом).
  *
- * <p>Порций — по числу основ (у отвара — по 2 на пучок трав). Сытость порции — сумма сытости основ
+ * <p>Порций — по числу основ (у отвара — по 2 на пучок трав). Сытость и жажда порции у блюд из таблицы баланса
+ * (похлёбки мясная, картофельная, овощная, каши) — постоянные, из ModItems; у прочих — сумма сытости основ
  * × {@link #COOKING_BONUS} / порций. Сырое мясо в котле проваривается: риск отравления у похлёбки нет.
  */
 public final class Cookery {
@@ -57,7 +59,7 @@ public final class Cookery {
     public static final int TEA_PORTIONS_PER_HERB = 2;
     public static final int CAPACITY = 6;
 
-    /** Чем считается положенное в котелок. */
+    /** Чем считается положенное в горшок. */
     public enum Kind {
         MEAT, FISH, GRAIN, MUSHROOM, VEGETABLE, MILK, SALT, HERB, SWEET, MALT;
 
@@ -71,9 +73,10 @@ public final class Cookery {
         }
     }
 
-    /** Что выходит из котелка. */
+    /** Что выходит из горшка. */
     public enum Result {
-        MEAT_STEW, FISH_SOUP, PORRIDGE, MUSHROOM_SOUP, VEGETABLE_SOUP, HERBAL_TEA, WORT, HONEY_MUST;
+        MEAT_STEW, FISH_SOUP, PORRIDGE, MUSHROOM_SOUP, VEGETABLE_SOUP, HERBAL_TEA, WORT, HONEY_MUST,
+        POTATO_STEW, WHEAT_PORRIDGE, RYE_PORRIDGE, BARLEY_PORRIDGE, OAT_PORRIDGE;
 
         public Item item() {
             return switch (this) {
@@ -82,6 +85,11 @@ public final class Cookery {
                 case PORRIDGE -> ModItems.PORRIDGE.get();
                 case MUSHROOM_SOUP -> ModItems.MUSHROOM_SOUP.get();
                 case VEGETABLE_SOUP -> ModItems.VEGETABLE_SOUP.get();
+                case POTATO_STEW -> ModItems.POTATO_STEW.get();
+                case WHEAT_PORRIDGE -> ModItems.WHEAT_PORRIDGE.get();
+                case RYE_PORRIDGE -> ModItems.RYE_PORRIDGE.get();
+                case BARLEY_PORRIDGE -> ModItems.BARLEY_PORRIDGE.get();
+                case OAT_PORRIDGE -> ModItems.OAT_PORRIDGE.get();
                 case HERBAL_TEA -> ModItems.HERBAL_TEA.get();
                 case WORT, HONEY_MUST -> ModItems.MUST.get(); // сусло для бродильной бочки
             };
@@ -221,9 +229,9 @@ public final class Cookery {
         Result result = switch (base) {
             case MEAT -> Result.MEAT_STEW;
             case FISH -> Result.FISH_SOUP;
-            case GRAIN -> Result.PORRIDGE;
+            case GRAIN -> porridge(contents);
             case MUSHROOM -> Result.MUSHROOM_SOUP;
-            default -> Result.VEGETABLE_SOUP;
+            default -> onlyPotatoes(contents) ? Result.POTATO_STEW : Result.VEGETABLE_SOUP;
         };
         if (counts.containsKey(Kind.SALT)) {
             quality++;
@@ -239,10 +247,57 @@ public final class Cookery {
         }
         int nutrition = Math.min(100, Math.round(total * COOKING_BONUS / mains));
         int thirst = result == Result.PORRIDGE ? (counts.containsKey(Kind.MILK) ? 5 : 0) : SOUP_THIRST;
+        float saturation = nutrition * SATURATION_SHARE;
+        // Блюда из таблицы баланса: сытость и жажда порции — постоянные, из описания блюда (ModItems)
+        ModFoods.FoodInfo table = ModFoods.get(result.item());
+        if (TABLE_DISHES.contains(result) && table != null && table.nutrition() >= 0) {
+            nutrition = table.nutrition();
+            saturation = table.saturation();
+            thirst = table.thirst();
+        }
         ItemStack portion = new ItemStack(result.item());
-        portion.set(ModComponents.DISH.get(),
-                new Dish(nutrition, nutrition * SATURATION_SHARE, thirst, List.copyOf(names)));
+        portion.set(ModComponents.DISH.get(), new Dish(nutrition, saturation, thirst, List.copyOf(names)));
         return new Outcome(result, mains, FoodQuality.set(portion, quality));
+    }
+
+    /** Блюда, у которых сытость и жажда порции — из таблицы, а не из суммы продуктов. */
+    private static final Set<Result> TABLE_DISHES = java.util.EnumSet.of(Result.MEAT_STEW, Result.VEGETABLE_SOUP,
+            Result.POTATO_STEW, Result.WHEAT_PORRIDGE, Result.RYE_PORRIDGE, Result.BARLEY_PORRIDGE, Result.OAT_PORRIDGE);
+
+    /** Каша — по зерну, которого больше: пшеница, рожь, ячмень или овёс (мука — как её зерно). */
+    private static Result porridge(List<ItemStack> contents) {
+        Map<Result, Integer> grains = new EnumMap<>(Result.class);
+        for (ItemStack stack : contents) {
+            Result kind = stack.is(Items.WHEAT) || stack.is(ModItems.WHEAT_FLOUR.get()) ? Result.WHEAT_PORRIDGE
+                    : stack.is(ModItems.RYE.get()) || stack.is(ModItems.RYE_FLOUR.get()) ? Result.RYE_PORRIDGE
+                    : stack.is(ModItems.BARLEY.get()) ? Result.BARLEY_PORRIDGE
+                    : stack.is(ModItems.OATS.get()) ? Result.OAT_PORRIDGE : null;
+            if (kind != null) {
+                grains.merge(kind, 1, Integer::sum);
+            }
+        }
+        Result best = Result.WHEAT_PORRIDGE;
+        int most = 0;
+        for (Map.Entry<Result, Integer> grain : grains.entrySet()) {
+            if (grain.getValue() > most) {
+                best = grain.getKey();
+                most = grain.getValue();
+            }
+        }
+        return best;
+    }
+
+    /** Из овощей один картофель (лук и чеснок — не в счёт): картофельная похлёбка, иначе — овощная. */
+    private static boolean onlyPotatoes(List<ItemStack> contents) {
+        for (ItemStack stack : contents) {
+            boolean vegetable = kind(stack) == Kind.VEGETABLE;
+            boolean potato = stack.is(Items.POTATO) || stack.is(Items.BAKED_POTATO);
+            boolean seasoning = stack.is(ModItems.ONION.get()) || stack.is(ModItems.GARLIC.get());
+            if (vegetable && !potato && !seasoning) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // ---------------------------------------------------------------- жарка

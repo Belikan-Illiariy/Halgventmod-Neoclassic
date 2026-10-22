@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item", "name": "halgventmod:goose",
+          "functions": [
+            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1, "max": 2 } },
+            { "function": "minecraft:furnace_smelt", "conditions": [ { "condition": "minecraft:entity_properties", "entity": "this", "predicate": { "flags": { "is_on_fire": true } } } ] }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:feather", "functions": [ { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 0, "max": 2 } } ] }
+      ]
+    }
+  ],
+  "random_sequence": "halgventmod:entities/goose"
+}

@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "17"; // 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
+    private static final String VERSION = "18"; // 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -52,5 +52,7 @@ public final class ModNetwork {
         registrar.playToServer(PatternChoosePayload.TYPE, PatternChoosePayload.STREAM_CODEC, PatternChoosePayload::handle);
         registrar.playToClient(KitchenOpenPayload.TYPE, KitchenOpenPayload.STREAM_CODEC, KitchenOpenPayload::handle);
         registrar.playToServer(KitchenChoosePayload.TYPE, KitchenChoosePayload.STREAM_CODEC, KitchenChoosePayload::handle);
+        registrar.playToClient(WheelOpenPayload.TYPE, WheelOpenPayload.STREAM_CODEC, WheelOpenPayload::handle);
+        registrar.playToServer(WheelResultPayload.TYPE, WheelResultPayload.STREAM_CODEC, WheelResultPayload::handle);
     }
 }

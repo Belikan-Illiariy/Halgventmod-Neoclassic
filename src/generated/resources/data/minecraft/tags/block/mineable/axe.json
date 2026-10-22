@@ -9,6 +9,9 @@
     "halgventmod:skep",
     "halgventmod:wine_press",
     "halgventmod:fermenting_barrel",
-    "halgventmod:aging_cask"
+    "halgventmod:aging_cask",
+    "halgventmod:clay_barrel",
+    "halgventmod:pottery_wheel",
+    "halgventmod:drying_shelf"
   ]
 }

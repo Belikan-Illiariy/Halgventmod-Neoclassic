@@ -72,7 +72,7 @@ public final class Hunger {
     }
 
     /**
-     * Съеден предмет. Свои значения из ModItems/ModFoods важнее ванильных, у блюда из котелка — свои (Dish).
+     * Съеден предмет. Свои значения из ModItems/ModFoods важнее ванильных, у блюда из горшка — свои (Dish).
      * Сверху — качество еды (FoodQuality) и разнообразие стола (Diet; питьё не считается).
      */
     public static void eat(Player player, ItemStack stack, FoodProperties food) {
@@ -96,6 +96,9 @@ public final class Hunger {
             saturation += extras.saturation();
         }
         float quality = FoodQuality.factor(stack);
+        if (FoodEffects.poisoned(player)) {
+            quality *= FoodEffects.POISON_NUTRITION; // мутит: еда идёт впрок вдвое хуже
+        }
         nutrition = Math.round(nutrition * quality);
         saturation *= quality;
         if (!(stack.getItem() instanceof DrinkItem) && !player.level().isClientSide) {
@@ -127,8 +130,11 @@ public final class Hunger {
             addExhaustion(player, perSecond(PASSIVE_PER_DAY) * overweight);
         }
 
-        // Усталость съедает сначала насыщение, потом сытость
-        if (data.exhaustion >= EXHAUSTION_PER_POINT) {
+        // Усталость съедает сначала насыщение, потом сытость. Сытно поел («Сытость») — голод не убывает
+        boolean fed = FoodEffects.fed(player);
+        if (fed) {
+            data.exhaustion = 0;
+        } else if (data.exhaustion >= EXHAUSTION_PER_POINT) {
             data.exhaustion -= EXHAUSTION_PER_POINT;
             if (data.saturation > 0) {
                 data.saturation = Math.max(data.saturation - 1.0F, 0.0F);
@@ -151,7 +157,7 @@ public final class Hunger {
                 data.timer = 0;
             }
         } else if (naturalRegen && data.level >= REGEN_AT && player.isHurt()) {
-            if (++data.timer >= REGEN_INTERVAL) {
+            if (++data.timer >= (fed ? Math.round(REGEN_INTERVAL / FoodEffects.FED_REGEN) : REGEN_INTERVAL)) {
                 player.heal(1.0F);
                 addExhaustion(player, REGEN_EXHAUSTION);
                 data.timer = 0;

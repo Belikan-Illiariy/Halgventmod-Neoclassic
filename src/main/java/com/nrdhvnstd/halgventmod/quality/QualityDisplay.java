@@ -14,7 +14,8 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Качество для плашки рядом с признаками — одна шкала для всего: Ужасный … Шедевр (GearQuality.Grade).
  * Снаряжение — своё качество, еда — качество приготовления (0–5, Посредственное — 2), кожа — качество кожи
- * (0–4, сдвиг на одну ступень, как у вещей со стола кожевника). Редкость предмета качество не трогает.
+ * (0–4, сдвиг на одну ступень, как у вещей со стола кожевника), гончарное — 0–5, как у еды. Редкость предмета
+ * качество не трогает.
  */
 public final class QualityDisplay {
     private static final List<String> RARITY = List.of(
@@ -37,6 +38,10 @@ public final class QualityDisplay {
         Integer leather = stack.get(ModComponents.LEATHER_QUALITY.get());
         if (leather != null) {
             return grades[Math.clamp(leather + 1, 0, grades.length - 1)];
+        }
+        Integer pottery = stack.get(ModComponents.POTTERY_QUALITY.get());
+        if (pottery != null) {
+            return grades[Math.clamp(pottery, 0, grades.length - 1)];
         }
         return null;
     }

@@ -1,18 +1,9 @@
 {
   "values": [
-    "minecraft:beef",
-    "minecraft:porkchop",
-    "minecraft:chicken",
-    "minecraft:mutton",
-    "minecraft:rabbit",
-    "minecraft:cooked_beef",
-    "minecraft:cooked_porkchop",
-    "minecraft:cooked_chicken",
-    "minecraft:cooked_mutton",
-    "minecraft:cooked_rabbit",
-    "halgventmod:salo",
-    "halgventmod:salted_meat",
-    "halgventmod:smoked_meat",
+    "minecraft:beef", "minecraft:porkchop", "minecraft:chicken", "minecraft:mutton", "minecraft:rabbit",
+    "minecraft:cooked_beef", "minecraft:cooked_porkchop", "minecraft:cooked_chicken", "minecraft:cooked_mutton", "minecraft:cooked_rabbit",
+    "halgventmod:venison", "halgventmod:goose", "halgventmod:cooked_venison", "halgventmod:cooked_goose",
+    "halgventmod:salo", "halgventmod:salted_meat", "halgventmod:smoked_meat",
     { "id": "#c:foods/raw_meat", "required": false },
     { "id": "#c:foods/cooked_meat", "required": false }
   ]

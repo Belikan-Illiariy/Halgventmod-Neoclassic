@@ -26,8 +26,9 @@ public final class ModFoods {
     //   срок: 0 — не портится
     // food("othermod:item", жажда, срок)
     // Сытость такой еды — ванильная ×5 (Hunger.VANILLA_SCALE): хлеб 5 → 25 из 100.
+    // food(Items.<ПРЕДМЕТ>, сытость, насыщение, жажда, срок) — свои сытость и насыщение вместо ванильных ×5
     static {
-        // Сырое мясо и рыба — быстро
+        // Сырое мясо и рыба — быстро (таблица баланса: мясо 2 суток, рыба 1)
         food(Items.BEEF, 0, 2);
         food(Items.PORKCHOP, 0, 2);
         food(Items.MUTTON, 0, 2);
@@ -37,15 +38,15 @@ public final class ModFoods {
         food(Items.SALMON, 0, 1);
         food(Items.TROPICAL_FISH, 0, 1);
         food(Items.PUFFERFISH, 0, 1);
-        // Жареное
-        food(Items.COOKED_BEEF, 0, 4);
-        food(Items.COOKED_PORKCHOP, 0, 4);
-        food(Items.COOKED_MUTTON, 0, 4);
-        food(Items.COOKED_CHICKEN, 0, 4);
-        food(Items.COOKED_RABBIT, 0, 4);
+        // Жареное (таблица баланса: свинина, говядина, баранина +30 −15; курица, заяц, лосось +25 −10)
+        food(Items.COOKED_BEEF, 30, 15, -15, 3);
+        food(Items.COOKED_PORKCHOP, 30, 15, -15, 3);
+        food(Items.COOKED_MUTTON, 30, 15, -15, 3);
+        food(Items.COOKED_CHICKEN, 25, 12.5F, -10, 3);
+        food(Items.COOKED_RABBIT, 25, 12.5F, -10, 3);
         food(Items.COOKED_COD, 0, 3);
-        food(Items.COOKED_SALMON, 0, 3);
-        food(Items.BAKED_POTATO, 0, 3);
+        food(Items.COOKED_SALMON, 25, 12.5F, -10, 2);
+        food(Items.BAKED_POTATO, 10, 5, -3, 2);
         // Похлёбки и выпечка
         food(Items.MUSHROOM_STEW, 15, 2);
         food(Items.BEETROOT_SOUP, 15, 2);
@@ -54,12 +55,12 @@ public final class ModFoods {
         food(Items.BREAD, 0, 6);
         food(Items.PUMPKIN_PIE, 0, 4);
         food(Items.COOKIE, 0, 12);
-        // Овощи, фрукты, ягоды
-        food(Items.APPLE, 0, 16);
-        food(Items.CARROT, 0, 16);
-        food(Items.POTATO, 0, 24);
+        // Овощи, фрукты, ягоды (таблица баланса: овощи не портятся; картофель сырым не насыщает)
+        food(Items.APPLE, 5, 2.5F, 3, 3);
+        food(Items.CARROT, 3, 1.5F, 0, 0);
+        food(Items.POTATO, 0, 0, 0, 0);
         food(Items.POISONOUS_POTATO, 0, 8);
-        food(Items.BEETROOT, 0, 16);
+        food(Items.BEETROOT, 4, 2, 0, 0);
         food(Items.MELON_SLICE, 10, 3);
         food(Items.SWEET_BERRIES, 3, 4);
         food(Items.GLOW_BERRIES, 3, 6);
@@ -86,6 +87,10 @@ public final class ModFoods {
 
     public static void food(ItemLike item, int thirst, int shelfLifeDays) {
         put(BuiltInRegistries.ITEM.getKey(item.asItem()), new FoodInfo(-1, 0, thirst, shelfLifeDays));
+    }
+
+    public static void food(ItemLike item, int nutrition, float saturation, int thirst, int shelfLifeDays) {
+        put(BuiltInRegistries.ITEM.getKey(item.asItem()), new FoodInfo(nutrition, saturation, thirst, shelfLifeDays));
     }
 
     public static void food(String itemId, int thirst, int shelfLifeDays) {

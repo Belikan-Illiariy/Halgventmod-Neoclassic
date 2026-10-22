@@ -1,0 +1,5 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": ["minecraft:river", "minecraft:swamp", "minecraft:plains", "minecraft:meadow", "minecraft:sunflower_plains"],
+  "spawners": { "type": "halgventmod:goose", "weight": 8, "minCount": 2, "maxCount": 4 }
+}

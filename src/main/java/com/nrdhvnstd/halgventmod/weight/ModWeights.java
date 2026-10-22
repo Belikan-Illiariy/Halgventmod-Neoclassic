@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.gear.GearInventory;
+import com.nrdhvnstd.halgventmod.pottery.Stored;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import net.minecraft.core.component.DataComponents;
@@ -19,6 +20,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,6 +33,7 @@ public final class ModWeights {
     // Вес предметов, для которых он нигде не задан
     public static final double DEFAULT_ITEM_GRAMS = 100;   // обычный предмет
     public static final double DEFAULT_BLOCK_GRAMS = 1000; // блок
+    public static final double WATER_MEASURE_GRAMS = 250;  // мера воды в кружке, кувшине, корчаге
 
     // Должны стоять ВЫШЕ блока с весами
     private static final Map<ResourceLocation, Double> BY_ID = new HashMap<>();
@@ -49,6 +52,25 @@ public final class ModWeights {
         // Примеры:
         // kg(Items.COBBLESTONE, 2);
         // kg(ItemTags.LOGS, 3);
+
+        // Еда — таблица баланса
+        kg(Items.PORKCHOP, 0.5);
+        kg(Items.BEEF, 0.5);
+        kg(Items.CHICKEN, 0.4);
+        kg(Items.RABBIT, 0.4);
+        kg(Items.MUTTON, 0.5);
+        kg(Items.COOKED_PORKCHOP, 0.4);
+        kg(Items.COOKED_BEEF, 0.4);
+        kg(Items.COOKED_CHICKEN, 0.3);
+        kg(Items.COOKED_RABBIT, 0.3);
+        kg(Items.COOKED_MUTTON, 0.4);
+        kg(Items.SALMON, 1.0);
+        kg(Items.COOKED_SALMON, 0.8);
+        kg(Items.POTATO, 0.2);
+        kg(Items.BAKED_POTATO, 0.2);
+        kg(Items.CARROT, 0.1);
+        kg(Items.BEETROOT, 0.3);
+        kg(Items.APPLE, 0.2);
     }
 
     private ModWeights() {}
@@ -118,10 +140,12 @@ public final class ModWeights {
                 return tagWeight.grams();
             }
         }
-        return stack.getItem() instanceof BlockItem ? DEFAULT_BLOCK_GRAMS : DEFAULT_ITEM_GRAMS;
+        // Семена и корнеплоды — «блоки», но весят как мелочь
+        boolean block = stack.getItem() instanceof BlockItem && !(stack.getItem() instanceof ItemNameBlockItem);
+        return block ? DEFAULT_BLOCK_GRAMS : DEFAULT_ITEM_GRAMS;
     }
 
-    /** Вес всего стака, вместе с содержимым шалкеров, сумок и колчана. */
+    /** Вес всего стака, вместе с содержимым шалкеров, сумок, колчана, горшка и корчаги. */
     public static double stackGrams(ItemStack stack) {
         return stackGrams(stack, 0);
     }
@@ -149,6 +173,14 @@ public final class ModWeights {
                 for (ItemStack inner : bag.nonEmptyItems()) {
                     one += stackGrams(inner, depth + 1);
                 }
+            }
+            Stored stored = stack.get(ModComponents.STORED.get());
+            if (stored != null) {
+                one += stackGrams(stored.stack(), depth + 1);
+            }
+            Integer water = stack.get(ModComponents.WATER.get());
+            if (water != null) {
+                one += water * WATER_MEASURE_GRAMS;
             }
             List<ItemStack> ring = stack.get(ModComponents.KEY_RING.get());
             if (ring != null) {

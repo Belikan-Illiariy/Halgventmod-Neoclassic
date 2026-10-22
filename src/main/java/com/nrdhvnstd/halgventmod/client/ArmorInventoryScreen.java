@@ -49,6 +49,7 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
     private static final int PANEL_PADDING = 4;
     private static final int ICON_SCALE = 4;
     private static final int ICON_SIZE = 16 * ICON_SCALE;
+    private static final float MIN_TEXT_SCALE = 0.5F; // мельче шрифт в панели предмета не становится
 
     // Строка нагрузки над окном: зазор до верхнего края окна
     private static final int LOAD_GAP = 2;
@@ -186,45 +187,74 @@ public class ArmorInventoryScreen extends EffectRenderingInventoryScreen<PlayerA
         int top = topPos + PlayerArmorMenu.PANEL_TOP;
         int bottom = topPos + PlayerArmorMenu.PANEL_BOTTOM;
         int width = right - left - 2 * PANEL_PADDING;
+        List<Component> tooltip = getTooltipFromContainerItem(stack);
+
+        // Всё должно влезть над кнопками: длинная подсказка сначала уменьшает большую иконку, потом шрифт
+        int iconY = top + PANEL_PADDING;
+        float iconScale = ICON_SCALE;
+        float textScale = 1.0F;
+        Wrapped wrapped = null;
+        search:
+        for (float icon : new float[] {ICON_SCALE, ICON_SCALE * 0.6F, ICON_SCALE * 0.4F}) {
+            int available = topPos + BUTTONS_Y - (iconY + Math.round(16 * icon) + PANEL_PADDING);
+            for (float scale = 1.0F; scale >= MIN_TEXT_SCALE - 0.001F; scale -= 0.1F) {
+                wrapped = wrap(tooltip, Math.round(width / scale));
+                iconScale = icon;
+                textScale = scale;
+                if (wrapped.height() * scale <= available) {
+                    break search;
+                }
+            }
+        }
 
         // Большая иконка: та же картинка, увеличенная без сглаживания
-        int iconX = left + (right - left - ICON_SIZE) / 2;
-        int iconY = top + PANEL_PADDING;
+        int iconSize = Math.round(16 * iconScale);
+        int iconX = left + (right - left - iconSize) / 2;
         graphics.pose().pushPose();
         graphics.pose().translate(iconX, iconY, 0);
-        graphics.pose().scale(ICON_SCALE, ICON_SCALE, 1);
+        graphics.pose().scale(iconScale, iconScale, 1);
         graphics.renderItem(stack, 0, 0);
         graphics.pose().popPose();
 
         // Имя, признаки, описание, характеристики — те же строки, что в обычной подсказке
         // Строка признаков с качеством — с плашкой качества справа (QualityBadge)
+        int textTop = iconY + iconSize + PANEL_PADDING;
+        graphics.enableScissor(left, top, right, Math.min(bottom, topPos + BUTTONS_Y));
+        graphics.pose().pushPose();
+        graphics.pose().translate(left + PANEL_PADDING, textTop, 0);
+        graphics.pose().scale(textScale, textScale, 1);
+        int y = 0;
+        for (int i = 0; i < wrapped.lines().size(); i++) {
+            FormattedCharSequence line = wrapped.lines().get(i);
+            graphics.drawString(font, line, 0, y, 0xFFFFFF, true);
+            if (i == wrapped.badgeLine()) {
+                int text = font.width(line);
+                QualityBadge.render(graphics, font, text + (text > 0 ? 4 : 0), y,
+                        QualityBadge.label(stack, wrapped.badge()), wrapped.badge());
+            }
+            y += font.lineHeight + (i == wrapped.badgeLine() ? 3 : 1);
+        }
+        graphics.pose().popPose();
+        graphics.disableScissor();
+    }
+
+    /** Строки подсказки, перенесённые по ширине; где плашка качества и какая; высота в пикселях без масштаба. */
+    private record Wrapped(List<FormattedCharSequence> lines, int badgeLine, GearQuality.Grade badge, int height) {}
+
+    private Wrapped wrap(List<Component> tooltip, int width) {
         List<FormattedCharSequence> lines = new ArrayList<>();
         int badgeLine = -1;
         GearQuality.Grade badge = null;
-        for (Component line : getTooltipFromContainerItem(stack)) {
+        for (Component line : tooltip) {
             GearQuality.Grade grade = QualityBadge.gradeFor(line);
             if (grade != null) {
                 badge = grade;
                 badgeLine = lines.size();
             }
-            List<FormattedCharSequence> wrapped = font.split(line, width);
-            lines.addAll(wrapped.isEmpty() ? List.of(FormattedCharSequence.EMPTY) : wrapped);
+            List<FormattedCharSequence> split = font.split(line, width);
+            lines.addAll(split.isEmpty() ? List.of(FormattedCharSequence.EMPTY) : split);
         }
-        int y = iconY + ICON_SIZE + PANEL_PADDING;
-        graphics.enableScissor(left, top, right, bottom);
-        for (int i = 0; i < lines.size(); i++) {
-            FormattedCharSequence line = lines.get(i);
-            if (y + font.lineHeight > topPos + BUTTONS_Y) {
-                break;
-            }
-            graphics.drawString(font, line, left + PANEL_PADDING, y, 0xFFFFFF, true);
-            if (i == badgeLine) {
-                int text = font.width(line);
-                QualityBadge.render(graphics, font, left + PANEL_PADDING + text + (text > 0 ? 4 : 0), y,
-                        QualityBadge.label(stack, badge), badge);
-            }
-            y += font.lineHeight + (i == badgeLine ? 3 : 1);
-        }
-        graphics.disableScissor();
+        int height = lines.size() * (font.lineHeight + 1) + (badgeLine >= 0 ? 2 : 0);
+        return new Wrapped(lines, badgeLine, badge, height);
     }
 }

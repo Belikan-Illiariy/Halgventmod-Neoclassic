@@ -125,6 +125,17 @@ public class AgingCaskBlockEntity extends StationBlockEntity {
         return true;
     }
 
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ — как идёт дело (то же, что E пустой рукой). */
+    @Override
+    public void report(Player player) {
+        status(player);
+    }
+
     private void status(Player player) {
         if (bottles.isEmpty()) {
             tell(player, "cask_empty");

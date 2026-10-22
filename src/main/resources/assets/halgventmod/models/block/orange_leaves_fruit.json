@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/orange_tree_leaves_fruit",
+  "render_type": "minecraft:cutout_mipped"
+}
