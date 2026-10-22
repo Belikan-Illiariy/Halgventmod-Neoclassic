@@ -4,18 +4,23 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.Cookery;
+import com.nrdhvnstd.halgventmod.cooking.FirePitBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.QuernBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -23,15 +28,30 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
-/** Что видно на очаге: куски на углях — сырые, прожаренные или сгоревшие (по верхней стороне). Горшок на огне — котёл из модели жаровни. */
+/**
+ * Что видно на очаге и костре: куски на углях — сырые, прожаренные или сгоревшие (по верхней стороне). Горшок на
+ * очаге — котёл из модели жаровни; на костре — чугунный котелок Conquest ({@link #FIRE_PIT_POT}), стоит в огне.
+ */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class CookingRenderers {
     private CookingRenderers() {}
 
+    /** Котелок на костре. */
+    static final ModelResourceLocation FIRE_PIT_POT = ModelResourceLocation.standalone(
+            ResourceLocation.fromNamespaceAndPath("conquest", "block/cast_iron_cooking_pot_1"));
+
+    @SubscribeEvent
+    public static void registerModels(ModelEvent.RegisterAdditional event) {
+        event.register(FIRE_PIT_POT);
+    }
+
     @SubscribeEvent
     public static void register(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.HEARTH.get(), HearthRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.FIRE_PIT.get(), HearthRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.KITCHEN_TABLE.get(), KitchenRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.QUERN.get(), QuernRenderer::new);
     }
@@ -39,6 +59,8 @@ public final class CookingRenderers {
     static final class HearthRenderer implements BlockEntityRenderer<HearthBlockEntity> {
         /** Верх углей в модели жаровни Conquest. */
         private static final float COALS = 0.39F;
+        /** Верх поленьев в модели костра Conquest. */
+        private static final float PIT_COALS = 0.47F;
         private static final float SCALE = 0.32F;
         private final ItemRenderer items;
         private final ItemStack burnt = new ItemStack(ModItems.BURNT_FOOD.get());
@@ -55,9 +77,21 @@ public final class CookingRenderers {
                 return;
             }
             int light = LevelRenderer.getLightColor(level, hearth.getBlockPos().above());
+            boolean pit = hearth.getBlockState().getBlock() instanceof FirePitBlock;
             if (hearth.hasPot()) {
-                return; // горшок на огне — котёл из модели жаровни
+                if (pit) {
+                    // Котелок стоит в огне костра
+                    var model = Minecraft.getInstance().getModelManager().getModel(FIRE_PIT_POT);
+                    pose.pushPose();
+                    pose.translate(0.0F, 0.28F, 0.0F);
+                    Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(pose.last(),
+                            buffers.getBuffer(RenderType.cutout()), hearth.getBlockState(), model, 1.0F, 1.0F, 1.0F, light,
+                            packedOverlay, ModelData.EMPTY, RenderType.cutout());
+                    pose.popPose();
+                }
+                return; // на очаге горшок — котёл из модели жаровни
             }
+            float coals = pit ? PIT_COALS : COALS;
             for (int cell = 0; cell < HearthBlockEntity.CELLS; cell++) {
                 ItemStack raw = hearth.piece(cell);
                 if (raw.isEmpty()) {
@@ -70,7 +104,7 @@ public final class CookingRenderers {
                     shown = cooked.isEmpty() ? raw : cooked;
                 }
                 pose.pushPose();
-                pose.translate(0.5F + HearthBlockEntity.cellOffset(cell % 2), COALS + SCALE / 16.0F,
+                pose.translate(0.5F + HearthBlockEntity.cellOffset(cell % 2), coals + SCALE / 16.0F,
                         0.5F + HearthBlockEntity.cellOffset(cell / 2));
                 pose.mulPose(Axis.YP.rotationDegrees(cell * 67));
                 pose.mulPose(Axis.XP.rotationDegrees(-90));

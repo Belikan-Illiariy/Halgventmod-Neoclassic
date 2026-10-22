@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.client.leather;
 import org.lwjgl.glfw.GLFW;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.TextFit;
 import com.nrdhvnstd.halgventmod.network.SewingResultPayload;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -19,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Мини-игра шитья на столе кожевника. По шву из отметок бегает игла; ЛКМ или Пробел, когда игла над
+ * Мини-игра шитья на шитейном столе. По шву из отметок бегает игла; ЛКМ или Пробел, когда игла над
  * следующей отметкой, — стежок, иначе промах. С каждым стежком игла быстрее. Итог (число промахов)
  * уходит на сервер ({@link SewingResultPayload}), там же решается качество. Esc — бросить: раскроенная
  * вещь остаётся на столе.
@@ -100,7 +101,7 @@ public class SewingScreen extends Screen {
         int x = left();
         int y = top();
         g.blitSprite(PANEL, x, y, WIDTH, HEIGHT);
-        g.drawCenteredString(font, title, width / 2, y + 10, 0xFFE9DCB4);
+        TextFit.drawCentered(g, font, title, width / 2, y + 10, WIDTH - 20, 0xFFE9DCB4);
 
         // Кусок кожи
         g.fill(x + 18, y + 40, x + WIDTH - 18, y + 112, LEATHER_DARK);
@@ -143,8 +144,8 @@ public class SewingScreen extends Screen {
         Component progress = finishedAt >= 0
                 ? Component.translatable("gui.halgventmod.sewing.done")
                 : Component.translatable("gui.halgventmod.sewing.progress", done, stitches, misses);
-        g.drawString(font, progress, x + 38, y + 118, 0xFFE9DCB4, false);
-        g.drawString(font, Component.translatable("gui.halgventmod.sewing.hint"), x + 38, y + 130, 0xFFAA9C80, false);
+        TextFit.draw(g, font, progress, x + 38, y + 118, WIDTH - 50, 0xFFE9DCB4);
+        TextFit.draw(g, font, Component.translatable("gui.halgventmod.sewing.hint"), x + 38, y + 130, WIDTH - 50, 0xFFAA9C80);
 
         if (finishedAt >= 0 && now - finishedAt > FINISH_DELAY_MS) {
             send();

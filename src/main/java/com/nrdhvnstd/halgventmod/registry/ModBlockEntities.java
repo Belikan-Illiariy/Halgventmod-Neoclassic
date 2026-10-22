@@ -21,6 +21,7 @@ import com.nrdhvnstd.halgventmod.pottery.DryingShelfBlockEntity;
 import com.nrdhvnstd.halgventmod.pottery.KilnBlockEntity;
 import com.nrdhvnstd.halgventmod.pottery.PotteryWheelBlockEntity;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlockEntity;
+import com.nrdhvnstd.halgventmod.weaving.LoomBlockEntity;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -51,6 +52,11 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("leather_table", () -> BlockEntityType.Builder
                     .of(LeatherTableBlockEntity::new, ModBlocks.LEATHER_TABLE.get()).build(null));
 
+    // Ткачество (weaving/*)
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoomBlockEntity>> LOOM =
+            BLOCK_ENTITIES.register("loom", () -> BlockEntityType.Builder
+                    .of(LoomBlockEntity::new, ModBlocks.LOOM.get()).build(null));
+
     // Алкоголь
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WinePressBlockEntity>> WINE_PRESS =
             BLOCK_ENTITIES.register("wine_press", () -> BlockEntityType.Builder.of(WinePressBlockEntity::new, ModBlocks.WINE_PRESS.get()).build(null));
@@ -70,6 +76,9 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HearthBlockEntity>> HEARTH =
             BLOCK_ENTITIES.register("hearth", () -> BlockEntityType.Builder
                     .of(HearthBlockEntity::new, ModBlocks.HEARTH.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HearthBlockEntity>> FIRE_PIT =
+            BLOCK_ENTITIES.register("fire_pit", () -> BlockEntityType.Builder
+                    .of(HearthBlockEntity::firePit, ModBlocks.FIRE_PIT.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OvenBlockEntity>> OVEN =
             BLOCK_ENTITIES.register("baking_oven", () -> BlockEntityType.Builder
                     .of(OvenBlockEntity::new, ModBlocks.BAKING_OVEN.get()).build(null));

@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.brewing;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
+import com.nrdhvnstd.halgventmod.cooking.KitchenRecipes;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
@@ -16,7 +17,9 @@ import net.minecraft.world.level.Level;
  *
  * <pre>
  * сусло (давильня, горшок)  →  бродильная бочка  →  пиво, сидр, вино, медовуха (или уксус, если передержать)
- * пиво, сидр, вино, медовуха →  перегонный куб    →  крепкое: хлебное вино, бренди, яблочный бренди, крепкий мёд
+ * пиво, сидр, вино, медовуха →  перегонный куб    →  крепкое: хлебное вино, бренди, яблочная и грушевая водка,
+ *                                                    вишнёвка, сливовица, медовая водка
+ * сок: яблоки, груши — сидр; виноград — вино; вишня, слива — вишнёвое и сливовое вино; прочие ягоды — ягодное
  * крепкое + ягоды/травы/мёд  →  бродильная бочка  →  настойка
  * вино, медовуха, сидр, крепкое, настойки → бочка для выдержки → качество растёт
  * </pre>
@@ -56,9 +59,9 @@ public final class Brewing {
             return ModItems.BEER.get();
         }
         return switch (kind) {
-            case "apple" -> ModItems.CIDER.get();
+            case "apple", "pear" -> ModItems.CIDER.get();
             case "honey" -> ModItems.MEAD.get();
-            default -> ModItems.WINE.get(); // berry, glowberry
+            default -> ModItems.WINE.get(); // berry, grape, cherry, plum, glowberry
         };
     }
 
@@ -73,7 +76,7 @@ public final class Brewing {
             return BEER_DAYS;
         }
         return switch (kind) {
-            case "apple" -> CIDER_DAYS;
+            case "apple", "pear" -> CIDER_DAYS;
             case "honey" -> MEAD_DAYS;
             default -> WINE_DAYS;
         };
@@ -91,17 +94,22 @@ public final class Brewing {
         return Calendar.date(Calendar.today(level)).season() == Calendar.Season.WINTER;
     }
 
-    /** Основа крепкого после перегонки: пиво — хлебное вино, вино — бренди, сидр — яблочный, медовуха — крепкий мёд. */
+    /**
+     * Основа крепкого после перегонки: пиво — хлебное вино; вино — бренди (вишнёвое — вишнёвка, сливовое — сливовица);
+     * сидр — яблочная водка (грушевый — грушевая); медовуха — медовая водка.
+     */
     @Nullable
     public static String distillsInto(ItemStack drink) {
+        Brew brew = brew(drink);
+        String kind = brew == null ? "" : brew.kind();
         if (drink.is(ModItems.BEER.get())) {
             return "bread";
         }
         if (drink.is(ModItems.WINE.get())) {
-            return "brandy";
+            return kind.equals("cherry") || kind.equals("plum") ? kind : "brandy";
         }
         if (drink.is(ModItems.CIDER.get())) {
-            return "apple";
+            return kind.equals("pear") ? "pear" : "apple";
         }
         if (drink.is(ModItems.MEAD.get())) {
             return "mead";
@@ -124,8 +132,8 @@ public final class Brewing {
         if (stack.is(ModItems.HERBS.get()) || stack.is(ModItems.DRIED_HERBS.get())) {
             return "herbs";
         }
-        if (stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES)) {
-            return "berry";
+        if (stack.is(KitchenRecipes.BERRY_TAG) || stack.is(Items.GLOW_BERRIES)) {
+            return "berry"; // любые ягоды: черника, брусника, клюква, вишня, слива…
         }
         return null;
     }

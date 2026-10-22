@@ -37,6 +37,7 @@ import com.nrdhvnstd.halgventmod.leather.HideItem;
 import com.nrdhvnstd.halgventmod.pottery.GreenwareItem;
 import com.nrdhvnstd.halgventmod.pottery.VesselForm;
 import com.nrdhvnstd.halgventmod.pottery.WareItem;
+import com.nrdhvnstd.halgventmod.weaving.FiberToolItem;
 import com.nrdhvnstd.halgventmod.weight.ModWeights;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -1026,7 +1027,7 @@ public final class ModItems {
 
     // ----- Кожевенное дело (leather/*; станции — в ModBlocks) -----
     // Цепочка: парная шкура → (соль) солёная → колода: мездра → чан с золой: золёная → колода, струг: голье →
-    // чан (кора / квасцы) или жир для меха → мокрая кожа → рама → кожа → стол кожевника → вещь.
+    // чан (кора / квасцы) или жир для меха → мокрая кожа → рама → кожа → шитейный стол → вещь.
     // Шкура и качество идут компонентами halgventmod:hide и halgventmod:leather_quality (LeatherQuality).
     public static final DeferredItem<HideItem> RAW_HIDE = item("raw_hide", "Парная шкура", "Raw hide", Gender.F)
             .traits(ModTraits.COMMON, ModTraits.RAW)
@@ -1184,8 +1185,8 @@ public final class ModItems {
     public static final DeferredItem<Item> THREADS = item("threads", "Нитки", "Thread", Gender.PL)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
-            .lore("Для шитья на столе кожевника. Подойдёт и простая нить.",
-                    "For sewing at the leatherworker's table. Plain string will do too.")
+            .lore("Для шитья на шитейном столе. Подойдёт и простая нить; из мотка льняной пряжи — две пачки.",
+                    "For sewing at the sewing table. Plain string will do; a skein of linen yarn makes two.")
             .grams(30)
             .register();
 
@@ -1219,12 +1220,12 @@ public final class ModItems {
             .grams(600)
             .draw(DrawType.TOOL)
             .register();
-    // Простой нож. Кроить на столе кожевника можно и охотничьими ножами Conquest (тег halgventmod:knives)
+    // Простой нож. Кроить на шитейном столе можно и охотничьими ножами Conquest (тег halgventmod:knives)
     public static final DeferredItem<Item> KNIFE = item("knife", "Нож", "Knife", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
-            .lore("E по столу кожевника — раскроить выложенную кожу по выбранной выкройке.",
-                    "E at the leatherworker's table cuts the laid leather to the chosen pattern.")
+            .lore("Кроит кожу на шитейном столе: «Раскроить» в окне стола. Нож берётся из инвентаря.",
+                    "Cuts leather at the sewing table: \"Cut\" in the table window. Taken from your inventory.")
             .durability(300)
             .grams(200)
             .draw(DrawType.TOOL)
@@ -1232,10 +1233,10 @@ public final class ModItems {
     public static final DeferredItem<Item> NEEDLE = item("needle", "Игла", "Needle", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
-            .lore("E по столу кожевника с раскроенной вещью — шить: прокалывайте, когда игла над отметкой. "
-                            + "Нитки берутся из инвентаря.",
-                    "E at the leatherworker's table with a cut piece sews it: pierce when the needle is over a mark. "
-                            + "Thread is taken from your inventory.")
+            .lore("Шьёт на шитейном столе: «Шить» в окне стола, прокалывайте, когда игла над отметкой. "
+                            + "Игла и нитки берутся из инвентаря.",
+                    "Sews at the sewing table: \"Sew\" in the table window, pierce when the needle is over a mark. "
+                            + "The needle and thread are taken from your inventory.")
             .durability(250)
             .grams(10)
             .register();
@@ -1259,10 +1260,12 @@ public final class ModItems {
                     "E with wet leather or a pelt stretches it. Dries in a day in summer, four in winter. Rain gets in the way.")
             .kg(10)
             .register(properties -> new BlockItem(ModBlocks.DRYING_RACK.get(), properties));
-    public static final DeferredItem<BlockItem> LEATHER_TABLE = item("leather_table", "Стол кожевника", "Leatherworker's table", Gender.M)
+    public static final DeferredItem<BlockItem> LEATHER_TABLE = item("leather_table", "Шитейный стол", "Sewing table", Gender.M)
             .category(Category.TOOLS)
-            .lore("E пустой рукой — окно выкроек. E кожей — выложить, E ножом — кроить, E иглой — шить.",
-                    "E with an empty hand opens the patterns. E with leather lays it, E with the knife cuts, E with the needle sews.")
+            .lore("E — окно стола: выберите выкройку, положите кожу или ткань в ячейки, «Раскроить» ножом или ножницами, "
+                            + "затем «Шить» иглой.",
+                    "E opens the table: pick a pattern, put leather or cloth into the slots, \"Cut\" with a knife or shears, "
+                            + "then \"Sew\" with a needle.")
             .kg(25)
             .register(properties -> new BlockItem(ModBlocks.LEATHER_TABLE.get(), properties));
 
@@ -1697,23 +1700,25 @@ public final class ModItems {
     // Станции
     public static final DeferredItem<BlockItem> WINE_PRESS = item("wine_press", "Давильня", "Wine press", Gender.F)
             .category(Category.TOOLS)
-            .lore("E яблоками или ягодами — засыпать, пустой рукой — давить, склянкой — набрать сусло.",
-                    "E with apples or berries to fill, an empty hand to press, a bottle to draw the must.")
+            .lore("E яблоками, грушами, виноградом, вишней, сливой или ягодами — засыпать, пустой рукой — давить, склянкой, "
+                            + "корчагой или кувшином — набрать сусло.",
+                    "E with apples, pears, grapes, cherries, plums or berries to fill, an empty hand to press, a bottle, "
+                            + "amphora or jug to draw the must.")
             .kg(40).register(properties -> new BlockItem(ModBlocks.WINE_PRESS.get(), properties));
     public static final DeferredItem<BlockItem> FERMENTING_BARREL = item("fermenting_barrel", "Бродильная бочка", "Fermenting barrel", Gender.F)
             .category(Category.TOOLS)
-            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Передержите — уксус.",
-                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Too long and it is vinegar.")
+            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Бродит запечатанной; передержите — уксус. ПКМ — окно бочки.",
+                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Ferments sealed; too long and it is vinegar. Right-click opens the barrel.")
             .kg(15).register(properties -> new BlockItem(ModBlocks.FERMENTING_BARREL.get(), properties));
     public static final DeferredItem<BlockItem> STILL = item("still", "Перегонный куб", "Still", Gender.M)
             .category(Category.TOOLS)
-            .lore("E по очагу — поставить на огонь (или над костром). Пиво, вино, сидр, медовуха — залить; из четырёх склянок одна крепкого.",
-                    "E on a hearth puts it on the fire (or place it above a campfire). Pour in beer, wine, cider or mead; four bottles make one spirit.")
+            .lore("E по очагу — поставить на огонь (или над костром). Пиво, вино, сидр, медовуха — залить; из четырёх склянок одна крепкого — в склянку или корчагу. ПКМ — окно куба.",
+                    "E on a hearth puts it on the fire (or place it above a campfire). Pour in beer, wine, cider or mead; four bottles make one spirit — into a bottle or an amphora. Right-click opens the still.")
             .kg(30).register(properties -> new BlockItem(ModBlocks.STILL.get(), properties));
     public static final DeferredItem<BlockItem> AGING_CASK = item("aging_cask", "Бочка для выдержки", "Aging cask", Gender.F)
             .category(Category.TOOLS)
-            .lore("Вино, медовуха, сидр, крепкое и настойки становятся лучше с каждой неделей. В погребе — быстрее.",
-                    "Wine, mead, cider, spirits and tinctures get better every week. Faster in a cellar.")
+            .lore("Вино, медовуха, сидр, крепкое и настойки становятся лучше с каждой неделей. В погребе — быстрее. ПКМ — окно.",
+                    "Wine, mead, cider, spirits and tinctures get better every week. Faster in a cellar. Right-click opens it.")
             .kg(25).register(properties -> new BlockItem(ModBlocks.AGING_CASK.get(), properties));
 
     // ----- Гончарное дело (pottery/*; станции — в ModBlocks) -----
@@ -1757,6 +1762,14 @@ public final class ModItems {
             .grams(800)
             .draw(DrawType.TOOL)
             .register();
+    public static final DeferredItem<Item> RAW_LOOM_WEIGHT = item("raw_loom_weight", "Грузило-сырец", "Raw loom weight", Gender.N)
+            .traits(ModTraits.COMMON, ModTraits.RAW)
+            .category(Category.POTTERY)
+            .lore("Ком промятой глины, проткнутый палочкой. Сохнет на полке, обжигается в горне — будет грузило для станка.",
+                    "A lump of kneaded clay pierced with a stick. Dry it on a shelf, fire it in a kiln — a weight for the loom.")
+            .stacksTo(16)
+            .grams(600)
+            .register();
     public static final DeferredItem<GreenwareItem> GREENWARE = item("greenware", "Сырец", "Greenware", Gender.M)
             .traits(ModTraits.COMMON, ModTraits.RAW)
             .category(Category.POTTERY)
@@ -1783,8 +1796,10 @@ public final class ModItems {
     public static final DeferredItem<WareItem> CLAY_JUG = item("clay_jug", "Кувшин", "Clay jug", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
-            .lore("Четыре меры воды: ПКМ по воде — набрать, ПКМ — пить. Полный заменяет ведро воды в бочке, горшке и чане.",
-                    "Four measures of water: right-click water to fill, right-click to drink. A full one does for a bucket in a barrel, pot or vat.")
+            .lore("Четыре меры воды или четыре склянки питья: ПКМ по воде — набрать, ПКМ — пить. Питьё — положите склянку "
+                            + "на кувшин или налейте у куба, бочки, давильни. Полный водой заменяет ведро в бочке, горшке и чане.",
+                    "Four measures of water or four bottles of a drink: right-click water to fill, right-click to drink. "
+                            + "Drop a bottle onto it or fill it at a still, barrel or press. Full of water it does for a bucket.")
             .stacksTo(1)
             .grams(900)
             .register(properties -> new WareItem(properties, VesselForm.JUG));
@@ -1835,16 +1850,122 @@ public final class ModItems {
             .register(properties -> new BlockItem(ModBlocks.DRYING_SHELF.get(), properties));
     public static final DeferredItem<BlockItem> SMALL_KILN = item("small_kiln", "Малый горн", "Small kiln", Gender.M)
             .category(Category.TOOLS)
-            .lore("Четыре сырца. Сухой сырец — загрузить, дрова, огниво; первую минуту жар малый, потом держать 600–850°.",
-                    "Four pieces. Load dry greenware, add firewood, light it; keep it low for the first minute, then hold 600–850°.")
+            .lore("Четыре сырца. ПКМ — окно горна: сырец, дрова, огниво; жар — тягой: первую минуту тяга 1, потом 3–4 (600–850°).",
+                    "Four pieces. Right-click opens the kiln: greenware, firewood, a flint; heat is set by draft: draft 1 for a minute, then 3–4 (600–850°).")
             .kg(200)
             .register(properties -> new BlockItem(ModBlocks.SMALL_KILN.get(), properties));
     public static final DeferredItem<BlockItem> TALL_KILN = item("tall_kiln", "Большой горн", "Tall kiln", Gender.M)
             .category(Category.TOOLS)
-            .lore("Десять сырцов. Обжиг — как в малом горне. Закрытая заслонка — дым: залощённое выйдет чернолощёным.",
-                    "Ten pieces. Fires like the small kiln. A closed damper smokes burnished ware black.")
+            .lore("Десять сырцов. Обжиг — как в малом горне. Слабая тяга в жару — дым: залощённое выйдет чернолощёным.",
+                    "Ten pieces. Fires like the small kiln. Low draft while hot smokes burnished ware black.")
             .kg(400)
             .register(properties -> new BlockItem(ModBlocks.TALL_KILN.get(), properties));
+
+    // ----- Ткачество (weaving/*): лён и шерсть → чесалка → кудель → веретено → пряжа → станок → ткань → шитейный стол -----
+    public static final DeferredItem<ItemNameBlockItem> FLAX_SEEDS = item("flax_seeds", "Льняное семя", "Flaxseed", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Попадается в траве. ПКМ по пашне — посеять лён.", "Found in the grass. Right-click farmland to sow flax.")
+            .grams(5)
+            .register(properties -> new ItemNameBlockItem(ModBlocks.FLAX_CROP.get(), properties));
+    public static final DeferredItem<Item> FLAX = item("flax", "Лён", "Flax", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Стебли льна. Чесалкой — в кудель; с горсти падает и пакля.",
+                    "Flax stalks. Comb them into fibre with the carding comb; tow falls out too.")
+            .grams(100)
+            .register();
+    public static final DeferredItem<Item> FLAX_FIBER = item("flax_fiber", "Льняная кудель", "Flax fibre", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Расчёсанный лён. Веретеном — в льняную пряжу.", "Combed flax. Spin it into linen yarn with the spindle.")
+            .grams(80)
+            .register();
+    public static final DeferredItem<Item> WOOL_ROVING = item("wool_roving", "Шерстяная кудель", "Wool roving", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Расчёсанная шерсть. Веретеном — в шерстяную пряжу.", "Combed wool. Spin it into woollen yarn with the spindle.")
+            .grams(80)
+            .register();
+    public static final DeferredItem<Item> TOW = item("tow", "Пакля", "Tow", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Короткое волокно, что остаётся при чесании льна. Набивка для акетонов и стёганых вещей.",
+                    "The short fibre left from combing flax. Stuffing for aketons and quilted pieces.")
+            .grams(50)
+            .register();
+    public static final DeferredItem<Item> LINEN_YARN = item("linen_yarn", "Льняная пряжа", "Linen yarn", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("На станок — основой и утком. Годится и на нитки.", "For the loom, as warp and weft. Makes thread too.")
+            .grams(60)
+            .register();
+    public static final DeferredItem<Item> WOOL_YARN = item("wool_yarn", "Шерстяная пряжа", "Woollen yarn", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("На станок — основой и утком.", "For the loom, as warp and weft.")
+            .grams(60)
+            .register();
+    public static final DeferredItem<Item> LINEN_CLOTH = item("linen_cloth", "Льняное полотно", "Linen cloth", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Отрез с ткацкого станка. На шитейном столе — сюрко, акетоны, гамбезон, перчатки.",
+                    "A length off the loom. At the sewing table it becomes surcoats, aketons, a gambeson, gloves.")
+            .stacksTo(16)
+            .grams(300)
+            .register();
+    public static final DeferredItem<Item> WOOLEN_CLOTH = item("woolen_cloth", "Шерстяное сукно", "Woollen cloth", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Отрез с ткацкого станка. На шитейном столе — плащи, капюшоны, шапероны, варежки.",
+                    "A length off the loom. At the sewing table it becomes cloaks, hoods, chaperons, mittens.")
+            .stacksTo(16)
+            .grams(400)
+            .register();
+    public static final DeferredItem<FiberToolItem> CARDING_COMB = item("carding_comb", "Чесалка", "Carding comb", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Держите ПКМ — расчесать горсть льна или клок шерсти из инвентаря в кудель.",
+                    "Hold right-click to comb a handful of flax or a tuft of wool from your inventory into fibre.")
+            .durability(200)
+            .grams(300)
+            .draw(DrawType.TOOL)
+            .register(properties -> new FiberToolItem(properties, FiberToolItem.Step.COMB));
+    public static final DeferredItem<FiberToolItem> SPINDLE = item("spindle", "Веретено", "Spindle", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Держите ПКМ — спрясть кудель из инвентаря в пряжу.", "Hold right-click to spin fibre from your inventory into yarn.")
+            .durability(300)
+            .grams(80)
+            .draw(DrawType.TOOL)
+            .register(properties -> new FiberToolItem(properties, FiberToolItem.Step.SPIN));
+    public static final DeferredItem<Item> SHUTTLE = item("shuttle", "Челнок", "Shuttle", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("E по станку с натянутой основой — ткать: бросайте челнок, пока зев открыт, и прибивайте уток бёрдом "
+                            + "в меру. Пряжа для утка берётся из инвентаря.",
+                    "E at a loom with its warp set to weave: throw the shuttle while the shed is open and beat the weft in "
+                            + "just right. Weft yarn is taken from your inventory.")
+            .durability(400)
+            .grams(150)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> LOOM_WEIGHT = item("loom_weight", "Грузило", "Loom weight", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Обожжённая глина с дырой. Восемь грузил оттягивают основу ткацкого станка.",
+                    "Fired clay with a hole. Eight weights pull the warp of a loom taut.")
+            .stacksTo(16)
+            .grams(500)
+            .register();
+    public static final DeferredItem<BlockItem> LOOM = item("loom", "Ткацкий станок", "Warp-weighted loom", Gender.M)
+            .category(Category.TOOLS)
+            .lore("В два блока высотой. E грузилами — подвесить, E пряжей — натянуть основу, E челноком — ткать, "
+                            + "пустой рукой — снять ткань.",
+                    "Two blocks tall. E with weights hangs them, E with yarn sets the warp, E with the shuttle weaves, "
+                            + "an empty hand takes the cloth off.")
+            .kg(30)
+            .register(properties -> new BlockItem(ModBlocks.LOOM.get(), properties));
 
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)

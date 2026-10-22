@@ -16,7 +16,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
  * Уход за кожей: вещь со стола кожевника, которую не смазывали больше {@link #DRY_AFTER_DAYS} суток,
- * пересыхает — хуже защищает ({@link LeatherQuality#DRIED_OUT_FACTOR}). Смазать — на столе кожевника
+ * пересыхает — хуже защищает ({@link LeatherQuality#DRIED_OUT_FACTOR}). Смазать — на шитейном столе
  * (вещь в руке, сало или воск в инвентаре). Проверяются инвентарь и надетая броня.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)

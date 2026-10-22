@@ -114,7 +114,8 @@ public final class KitchenRecipes {
                             new Need(stack -> stack.is(Items.GLASS_BOTTLE), 1, () -> Items.GLASS_BOTTLE)),
                     List.of(HONEY)),
             new Recipe("soak_grain", () -> new ItemStack(ModItems.WET_GRAIN.get(), 4), () -> ItemStack.EMPTY, 1, true, false,
-                    List.of(new Need(stack -> stack.is(Items.WHEAT) || stack.is(ModItems.RYE.get()), 4, () -> Items.WHEAT)),
+                    List.of(new Need(stack -> stack.is(Items.WHEAT) || stack.is(ModItems.RYE.get()) || stack.is(ModItems.BARLEY.get())
+                            || stack.is(ModItems.OATS.get()), 4, ModItems.BARLEY::get)),
                     List.of()),
             new Recipe("honey", () -> new ItemStack(ModItems.HONEY.get()), () -> new ItemStack(ModItems.BEESWAX.get()),
                     4, false, false,

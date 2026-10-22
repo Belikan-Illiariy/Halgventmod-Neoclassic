@@ -18,6 +18,7 @@ public enum Category {
     MINERALS ("minerals",  "Минералы",       "Minerals",      false),
     MATERIALS("materials", "Материалы",      "Materials",     false),
     POTTERY  ("pottery",   "Гончарное дело", "Pottery",       false),
+    TEXTILES ("textiles",  "Ткачество",      "Textiles",      false),
     MISC     ("misc",      "Прочее",         "Miscellaneous", false),
     ARMOR    ("armor",     "Доспехи",        "Armor",         false),
     GEAR     ("gear",      "Снаряжение",     "Gear",          false);

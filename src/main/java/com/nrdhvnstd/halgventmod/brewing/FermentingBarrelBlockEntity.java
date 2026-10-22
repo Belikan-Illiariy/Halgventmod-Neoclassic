@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
+import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
+import com.nrdhvnstd.halgventmod.menu.FermentingBarrelMenu;
+import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
+import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -16,7 +20,11 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -29,32 +37,108 @@ import net.minecraft.world.level.block.state.BlockState;
  * Brewing.*_DAYS суток: летом быстрее, зимой медленнее, зато чище (+1 качество). Доливали — отсчёт заново.
  * Готовое разливают склянкой. <b>Передержали</b> больше Brewing.SOUR_AFTER_DAYS суток — уксус.
  * Крепкое с добавкой — настойка (не киснет). Shift + E пустой рукой — вылить всё.
+ * <p>Бродит только <b>запечатанная</b> бочка: «Запечатать» в окне — сверху крышка; запечатанную не доливают
+ * и не разливают — сначала «Распечатать». Открытая не бродит и не киснет.
+ * <p>ПКМ — окно (FermentingBarrelMenu): сусло или крепкое — в ячейку «влить» (пустые склянки выходят в ячейку склянок),
+ * добавка — в свою ячейку; готовое само наливается в склянки (в ячейку «готовое»), в корчагу или кувшин в ячейке склянок.
  */
 public class FermentingBarrelBlockEntity extends StationBlockEntity {
     // Меняйте здесь
     public static final int MAX_PORTIONS = 8;
     public static final int MAX_FLAVOURS = 2;
-    private static final long DAY = 24000L;
+    /** «Срока нет» в {@link #D_DAYS_LEFT} (настойка не киснет). */
+    public static final int NO_DAY = -1;
 
     private ItemStack base = ItemStack.EMPTY;
     private int portions;
     private final List<String> flavours = new ArrayList<>();
-    private long elapsed;
-    private long lastDayTime = -1;
+    // Бродит по календарю, как портится еда: сутки под печатью до последней распечатки + с дня запечатывания
+    private int daysBefore;
+    private int sealedDay = -1;
+    private static final int LEGACY_SEAL = -2; // запечатана в прежней версии: день печати — при первом тике
     private double factor = 1.0;
     private boolean winter;
+    private boolean sealed;
+
+    public static final int SLOT_IN = 0, SLOT_FLAVOUR = 1, SLOT_BOTTLES = 2, SLOT_OUT = 3;
+    public static final int D_PORTIONS = 0, D_STATE = 1, D_PROGRESS = 2, D_DAYS_LEFT = 3, D_FLAVOURS = 4, D_SEALED = 5,
+            DATA = 6;
+    public static final int STATE_EMPTY = 0, STATE_NEEDS_FLAVOUR = 1, STATE_FERMENTING = 2, STATE_READY = 3, STATE_SOUR = 4;
+    private final SimpleContainer slots = new SimpleContainer(4) {
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return switch (slot) {
+                case SLOT_IN -> liquid(stack) || Pottery.drinkCapacity(stack) > 0;
+                case SLOT_FLAVOUR -> Brewing.flavour(stack) != null;
+                case SLOT_BOTTLES -> StillBlockEntity.vessel(stack);
+                default -> false;
+            };
+        }
+    };
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case D_PORTIONS -> portions;
+                case D_STATE -> portions <= 0 ? STATE_EMPTY : spirit() && flavours.isEmpty() ? STATE_NEEDS_FLAVOUR
+                        : sour() ? STATE_SOUR : ready() ? STATE_READY : STATE_FERMENTING;
+                case D_PROGRESS -> progress();
+                case D_DAYS_LEFT -> !started() || (ready() && spirit()) ? NO_DAY
+                        : Math.max(0, (ready() ? souredAt() : needed()) - elapsed());
+                case D_FLAVOURS -> flavours.size();
+                case D_SEALED -> sealed ? 1 : 0;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return DATA;
+        }
+    };
 
     public FermentingBarrelBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FERMENTING_BARREL.get(), pos, state);
     }
 
+    public SimpleContainer slots() {
+        return slots;
+    }
+
+    public ContainerData data() {
+        return data;
+    }
+
+    /** Что налито (для окна): пусто — ничего. */
+    public ItemStack base() {
+        return base;
+    }
+
+    public List<String> flavours() {
+        return flavours;
+    }
+
+    public boolean sealed() {
+        return sealed;
+    }
+
     public boolean fermenting() {
-        return portions > 0 && !ready() && started();
+        return sealed && portions > 0 && !ready() && started();
     }
 
     @Override
     public List<ItemStack> contents() {
-        return List.of(); // жидкость при поломке бочки разливается
+        List<ItemStack> all = new ArrayList<>(); // жидкость при поломке бочки разливается, вещи из ячеек — нет
+        for (int i = 0; i < slots.getContainerSize(); i++) {
+            if (!slots.getItem(i).isEmpty()) {
+                all.add(slots.getItem(i).copy());
+            }
+        }
+        return all;
     }
 
     private static void tell(Player player, String key, Object... args) {
@@ -70,16 +154,43 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         return portions > 0 && (!spirit() || !flavours.isEmpty());
     }
 
-    private long needed() {
-        return (long) (Brewing.ferment(base) * factor * DAY);
+    /** Сколько календарных суток бродить (с поправкой на время года), не меньше суток. */
+    private int needed() {
+        return Math.max(1, (int) Math.round(Brewing.ferment(base) * factor));
+    }
+
+    /** На какие сутки брожения готовое скисает. */
+    private int souredAt() {
+        return needed() + (int) Math.round(Brewing.SOUR_AFTER_DAYS);
+    }
+
+    /** Сколько календарных суток бочка простояла запечатанной с последней доливки. */
+    private int elapsed() {
+        int today = level == null ? sealedDay : Freshness.currentDay(level);
+        return daysBefore + (sealed && sealedDay >= 0 ? Math.max(0, today - sealedDay) : 0);
     }
 
     private boolean ready() {
-        return started() && elapsed >= needed();
+        return started() && elapsed() >= needed();
     }
 
     private boolean sour() {
-        return ready() && !spirit() && elapsed >= needed() + (long) (Brewing.SOUR_AFTER_DAYS * DAY);
+        return ready() && !spirit() && elapsed() >= souredAt();
+    }
+
+    /** Полоса брожения, 0–100: целые сутки и доля текущих (пока под печатью). */
+    private int progress() {
+        if (!started()) {
+            return 0;
+        }
+        if (ready()) {
+            return 100;
+        }
+        double share = 0;
+        if (sealed && level != null && level.getServer() != null) {
+            share = Math.floorMod(level.getServer().overworld().getDayTime(), Calendar.TIME_PER_DAY) / (double) Calendar.TIME_PER_DAY;
+        }
+        return (int) Math.min(99, 100 * (elapsed() + share) / needed());
     }
 
     private int fillLevel() {
@@ -88,35 +199,192 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
 
     private void updateState() {
         BlockState state = getBlockState();
-        if (state.getValue(FermentingBarrelBlock.LEVEL) != fillLevel()) {
-            level.setBlock(worldPosition, state.setValue(FermentingBarrelBlock.LEVEL, fillLevel()), 3);
+        BlockState next = state.setValue(FermentingBarrelBlock.LEVEL, fillLevel()).setValue(FermentingBarrelBlock.SEALED, sealed);
+        if (next != state) {
+            level.setBlock(worldPosition, next, 3);
         }
         changed();
     }
 
     private void restart() {
-        elapsed = 0;
-        lastDayTime = -1;
+        daysBefore = 0;
+        sealedDay = sealed ? Freshness.currentDay(level) : -1;
         factor = Brewing.seasonFactor(level);
         winter = Brewing.winter(level);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FermentingBarrelBlockEntity barrel) {
-        if (level.getGameTime() % 40 != 0 || !barrel.started()) {
+        if (level.getGameTime() % 10 == 0 && !barrel.sealed) {
+            barrel.pourIn();
+            barrel.addFlavour();
+            barrel.drawOut();
+        }
+        if (level.getGameTime() % 40 == 0 && state.getValue(FermentingBarrelBlock.SEALED) != barrel.sealed) {
+            barrel.updateState(); // бочки из прежних версий
+        }
+        if (barrel.sealedDay == LEGACY_SEAL) {
+            barrel.sealedDay = Freshness.currentDay(level);
+        }
+        if (level.getGameTime() % 100 != 0 || !barrel.started() || !barrel.sealed) {
             return;
         }
-        long now = level.getDayTime();
-        long delta = barrel.lastDayTime < 0 ? 0 : Math.clamp(now - barrel.lastDayTime, 0, 4 * DAY);
-        barrel.lastDayTime = now;
-        boolean wasReady = barrel.ready();
-        boolean wasSour = barrel.sour();
-        barrel.elapsed += delta;
-        if (barrel.ready() != wasReady || barrel.sour() != wasSour) {
-            barrel.sound(SoundEvents.BREWING_STAND_BREW, 0.6F, 0.7F);
+        // Сутки идут по календарю и без бочки рядом; тут только отмечаем, что перебродило или скисло
+        int stage = barrel.sour() ? 2 : barrel.ready() ? 1 : 0;
+        if (stage != barrel.lastStage) {
+            if (barrel.lastStage >= 0) {
+                barrel.sound(SoundEvents.BREWING_STAND_BREW, 0.6F, 0.7F);
+            }
+            barrel.lastStage = stage;
             barrel.changed();
-        } else {
-            barrel.setChanged();
         }
+    }
+
+    private int lastStage = -1;
+
+    /** Что вливают в бочку: сусло или крепкое. */
+    public static boolean liquid(ItemStack stack) {
+        return stack.is(ModItems.MUST.get()) || stack.is(ModItems.SPIRIT.get());
+    }
+
+    /** Примет ли бочка ещё склянку этого. */
+    private boolean accepts(ItemStack liquid) {
+        return liquid(liquid) && !ready() && portions < MAX_PORTIONS && (portions == 0 || sameLiquid(liquid));
+    }
+
+    /** Влить склянку (сначала accepts). */
+    private void addLiquid(ItemStack liquid) {
+        if (portions == 0) {
+            base = liquid.copyWithCount(1);
+            flavours.clear();
+        }
+        portions++;
+        restart();
+    }
+
+    /** Окно: сусло или крепкое из ячейки — в бочку, пустая склянка — в ячейку склянок; из кувшина или корчаги — по склянке. */
+    private void pourIn() {
+        ItemStack stack = slots.getItem(SLOT_IN);
+        ItemStack fromVessel = Pottery.storedDrink(stack, level);
+        if (!fromVessel.isEmpty()) {
+            if (accepts(fromVessel)) {
+                addLiquid(fromVessel);
+                Pottery.takeDrink(stack, level);
+                sound(SoundEvents.BOTTLE_EMPTY, 1.0F, 0.9F);
+                slots.setChanged();
+                updateState();
+            }
+            return;
+        }
+        if (!liquid(stack)) {
+            return;
+        }
+        ItemStack bottles = slots.getItem(SLOT_BOTTLES);
+        boolean room = bottles.isEmpty() || (bottles.is(Items.GLASS_BOTTLE) && bottles.getCount() < bottles.getMaxStackSize());
+        if (stack.isEmpty() || !room || ready() || portions >= MAX_PORTIONS || (portions > 0 && !sameLiquid(stack))) {
+            return;
+        }
+        if (portions == 0) {
+            base = stack.copyWithCount(1);
+            flavours.clear();
+        }
+        portions++;
+        restart();
+        stack.shrink(1);
+        if (bottles.isEmpty()) {
+            slots.setItem(SLOT_BOTTLES, new ItemStack(Items.GLASS_BOTTLE));
+        } else {
+            bottles.grow(1);
+        }
+        sound(SoundEvents.BOTTLE_EMPTY, 1.0F, 0.9F);
+        slots.setChanged();
+        updateState();
+    }
+
+    /** Окно: добавка из ячейки. */
+    private void addFlavour() {
+        ItemStack stack = slots.getItem(SLOT_FLAVOUR);
+        String flavour = Brewing.flavour(stack);
+        if (flavour == null || portions <= 0 || ready() || flavours.contains(flavour) || flavours.size() >= MAX_FLAVOURS) {
+            return;
+        }
+        flavours.add(flavour);
+        stack.shrink(1);
+        if (spirit() && flavours.size() == 1) {
+            restart();
+        }
+        sound(SoundEvents.GENERIC_SPLASH, 0.4F, 1.3F);
+        slots.setChanged();
+        changed();
+    }
+
+    /** Окно: готовое — в склянки (в ячейку «готовое») или в корчагу. */
+    private void drawOut() {
+        if (portions <= 0 || !ready()) {
+            return;
+        }
+        ItemStack bottles = slots.getItem(SLOT_BOTTLES);
+        ItemStack drink = pour();
+        if (Pottery.drinkCapacity(bottles) > 0) {
+            if (!Pottery.canPour(bottles, drink, level)) {
+                return;
+            }
+            Pottery.pour(bottles, drink, level);
+        } else if (bottles.is(Items.GLASS_BOTTLE)) {
+            ItemStack out = slots.getItem(SLOT_OUT);
+            if (out.isEmpty()) {
+                slots.setItem(SLOT_OUT, drink);
+            } else if (ItemStack.isSameItemSameComponents(out, drink) && out.getCount() < out.getMaxStackSize()) {
+                out.grow(1);
+            } else {
+                return;
+            }
+            bottles.shrink(1);
+        } else {
+            return;
+        }
+        sound(SoundEvents.BOTTLE_FILL, 1.0F, 1.0F);
+        if (--portions == 0) {
+            clear();
+        }
+        slots.setChanged();
+        updateState();
+    }
+
+    /** «Запечатать» / «Распечатать» (окно). */
+    public void toggleSeal(Player player) {
+        if (player.distanceToSqr(worldPosition.getCenter()) > 64) {
+            return;
+        }
+        if (!sealed && portions <= 0) {
+            tell(player, "barrel_empty");
+            return;
+        }
+        int today = Freshness.currentDay(level);
+        if (sealed) {
+            daysBefore = elapsed(); // распечатали — прошедшие сутки сохраняются, дальше не бродит
+            sealedDay = -1;
+        } else {
+            sealedDay = today;
+        }
+        sealed = !sealed;
+        sound(sealed ? SoundEvents.BARREL_CLOSE : SoundEvents.BARREL_OPEN, 0.9F, sealed ? 0.8F : 1.0F);
+        tell(player, sealed ? "barrel_sealed_now" : "barrel_unsealed");
+        updateState();
+    }
+
+    /** «Вылить» (окно). */
+    public void pourOut(Player player) {
+        if (portions <= 0 || player.distanceToSqr(worldPosition.getCenter()) > 64) {
+            return;
+        }
+        if (sealed) {
+            tell(player, "barrel_sealed");
+            return;
+        }
+        clear();
+        sound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.0F);
+        tell(player, "barrel_poured_out");
+        updateState();
     }
 
     /** Что нальётся сейчас: напиток, настойка или уксус. */
@@ -134,7 +402,34 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
-        boolean liquid = stack.is(ModItems.MUST.get()) || stack.is(ModItems.SPIRIT.get());
+        boolean liquid = liquid(stack);
+        boolean touches = liquid || Brewing.flavour(stack) != null || stack.is(Items.GLASS_BOTTLE)
+                || Pottery.drinkCapacity(stack) > 0 || (stack.isEmpty() && player.isShiftKeyDown());
+        if (sealed && touches && portions > 0) {
+            tell(player, "barrel_sealed");
+            return true;
+        }
+        // Из кувшина или корчаги с суслом или крепким — влить сколько влезет
+        ItemStack fromVessel = stack.getCount() == 1 ? Pottery.storedDrink(stack, level) : ItemStack.EMPTY;
+        if (liquid(fromVessel)) {
+            if (ready()) {
+                tell(player, "barrel_pour_first");
+                return true;
+            }
+            if (!accepts(fromVessel)) {
+                tell(player, portions >= MAX_PORTIONS ? "barrel_full" : "barrel_mixed");
+                return true;
+            }
+            while (accepts(fromVessel)) {
+                addLiquid(fromVessel);
+                Pottery.takeDrink(stack, level);
+                fromVessel = Pottery.storedDrink(stack, level);
+            }
+            sound(SoundEvents.BOTTLE_EMPTY, 1.0F, 0.8F);
+            status(player);
+            updateState();
+            return true;
+        }
         if (liquid) {
             if (ready()) {
                 tell(player, "barrel_pour_first");
@@ -185,6 +480,32 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
             changed();
             return true;
         }
+        // Корчагой или кувшином — разлить готовое сколько влезет
+        if (Pottery.drinkCapacity(stack) > 0 && stack.getCount() == 1) {
+            if (sealed) {
+                tell(player, "barrel_sealed");
+                return true;
+            }
+            if (portions <= 0 || !ready()) {
+                status(player);
+                return true;
+            }
+            int poured = 0;
+            while (portions > 0 && Pottery.canPour(stack, pour(), level)) {
+                Pottery.pour(stack, pour(), level);
+                poured++;
+                if (--portions == 0) {
+                    clear();
+                }
+            }
+            if (poured > 0) {
+                sound(SoundEvents.BOTTLE_FILL, 1.0F, 0.9F);
+                updateState();
+            } else {
+                tell(player, "vessel_no");
+            }
+            return true;
+        }
         if (stack.is(Items.GLASS_BOTTLE)) {
             if (portions <= 0) {
                 tell(player, "barrel_empty");
@@ -229,9 +550,10 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
     private void clear() {
         base = ItemStack.EMPTY;
         portions = 0;
+        sealed = false;
         flavours.clear();
-        elapsed = 0;
-        lastDayTime = -1;
+        daysBefore = 0;
+        sealedDay = -1;
     }
 
     @Override
@@ -239,28 +561,36 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         return true;
     }
 
-    /** ПКМ — как идёт дело (то же, что E пустой рукой). */
+    /** ПКМ — окно бочки. */
     @Override
     public void report(Player player) {
-        status(player);
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, opener) -> new FermentingBarrelMenu(id, inventory, this),
+                    getBlockState().getBlock().getName()), buf -> buf.writeBlockPos(worldPosition));
+        }
     }
 
     private void status(Player player) {
         if (portions <= 0) {
             tell(player, "barrel_empty");
+        } else if (!sealed && !ready()) {
+            tell(player, "barrel_open", portions);
         } else if (spirit() && flavours.isEmpty()) {
             tell(player, "barrel_tincture_needs", portions);
         } else if (sour()) {
             tell(player, "barrel_sour", portions);
+        } else if (ready() && spirit()) {
+            tell(player, "barrel_ready_tincture", portions);
         } else if (ready()) {
-            double left = (needed() + Brewing.SOUR_AFTER_DAYS * DAY - elapsed) / (double) DAY;
-            tell(player, spirit() ? "barrel_ready_tincture" : "barrel_ready", portions,
-                    String.format(java.util.Locale.ROOT, "%.1f", Math.max(0, left)).replace('.', ','));
+            tell(player, sealed ? "barrel_ready" : "barrel_ready_open", portions, dueDate(souredAt()));
         } else {
-            double left = (needed() - elapsed) / (double) DAY;
-            tell(player, "barrel_fermenting", portions,
-                    String.format(java.util.Locale.ROOT, "%.1f", Math.max(0, left)).replace('.', ','));
+            tell(player, "barrel_fermenting", portions, dueDate(needed()));
         }
+    }
+
+    /** Дата, когда бочка простоит под печатью day суток с доливки. */
+    private Component dueDate(int day) {
+        return Calendar.dateText(Freshness.currentDay(level) + Math.max(0, day - elapsed()));
     }
 
     @Override
@@ -273,10 +603,16 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         ListTag list = new ListTag();
         flavours.forEach(f -> list.add(StringTag.valueOf(f)));
         tag.put("Flavours", list);
-        tag.putLong("Elapsed", elapsed);
-        tag.putLong("LastDayTime", lastDayTime);
+        tag.putInt("DaysBefore", daysBefore);
+        tag.putInt("SealedDay", sealedDay);
         tag.putDouble("Factor", factor);
         tag.putBoolean("Winter", winter);
+        tag.putBoolean("Sealed", sealed);
+        for (int i = 0; i < slots.getContainerSize(); i++) {
+            if (!slots.getItem(i).isEmpty()) {
+                tag.put("Slot" + i, slots.getItem(i).save(registries));
+            }
+        }
     }
 
     @Override
@@ -289,9 +625,21 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         for (int i = 0; i < list.size(); i++) {
             flavours.add(list.getString(i));
         }
-        elapsed = tag.getLong("Elapsed");
-        lastDayTime = tag.contains("LastDayTime") ? tag.getLong("LastDayTime") : -1;
         factor = tag.contains("Factor") ? tag.getDouble("Factor") : 1.0;
         winter = tag.getBoolean("Winter");
+        // Бочки из прежних версий бродили без печати: с налитым — считаем запечатанными
+        sealed = tag.contains("Sealed") ? tag.getBoolean("Sealed") : portions > 0;
+        if (tag.contains("DaysBefore")) {
+            daysBefore = tag.getInt("DaysBefore");
+            sealedDay = tag.getInt("SealedDay");
+        } else {
+            // Прежние версии считали тиками: перебродившие сутки — в зачёт, дальше — с первого тика по календарю
+            daysBefore = (int) (tag.getLong("Elapsed") / Calendar.TIME_PER_DAY);
+            sealedDay = sealed ? LEGACY_SEAL : -1;
+        }
+        for (int i = 0; i < slots.getContainerSize(); i++) {
+            slots.setItem(i, tag.contains("Slot" + i) ? ItemStack.parseOptional(registries, tag.getCompound("Slot" + i))
+                    : ItemStack.EMPTY);
+        }
     }
 }

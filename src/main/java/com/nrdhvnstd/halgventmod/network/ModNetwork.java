@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "18"; // 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
+    private static final String VERSION = "21"; // 21: шитейный стол, раскрой; 20: окно тканья; 19: книга выкроек портного; 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -48,8 +48,10 @@ public final class ModNetwork {
         registrar.playToServer(SwingPayload.TYPE, SwingPayload.STREAM_CODEC, SwingPayload::handle);
         registrar.playToClient(SewingOpenPayload.TYPE, SewingOpenPayload.STREAM_CODEC, SewingOpenPayload::handle);
         registrar.playToServer(SewingResultPayload.TYPE, SewingResultPayload.STREAM_CODEC, SewingResultPayload::handle);
-        registrar.playToClient(PatternOpenPayload.TYPE, PatternOpenPayload.STREAM_CODEC, PatternOpenPayload::handle);
-        registrar.playToServer(PatternChoosePayload.TYPE, PatternChoosePayload.STREAM_CODEC, PatternChoosePayload::handle);
+        registrar.playToClient(CutOpenPayload.TYPE, CutOpenPayload.STREAM_CODEC, CutOpenPayload::handle);
+        registrar.playToServer(CutResultPayload.TYPE, CutResultPayload.STREAM_CODEC, CutResultPayload::handle);
+        registrar.playToClient(WeaveOpenPayload.TYPE, WeaveOpenPayload.STREAM_CODEC, WeaveOpenPayload::handle);
+        registrar.playToServer(WeavePassPayload.TYPE, WeavePassPayload.STREAM_CODEC, WeavePassPayload::handle);
         registrar.playToClient(KitchenOpenPayload.TYPE, KitchenOpenPayload.STREAM_CODEC, KitchenOpenPayload::handle);
         registrar.playToServer(KitchenChoosePayload.TYPE, KitchenChoosePayload.STREAM_CODEC, KitchenChoosePayload::handle);
         registrar.playToClient(WheelOpenPayload.TYPE, WheelOpenPayload.STREAM_CODEC, WheelOpenPayload::handle);

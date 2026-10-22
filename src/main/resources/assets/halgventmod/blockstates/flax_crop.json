@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "age=0": [{ "model": "halgventmod:block/flax_crop_stage_0_a" }, { "model": "halgventmod:block/flax_crop_stage_0_b" }, { "model": "halgventmod:block/flax_crop_stage_0_c" }],
+    "age=1": [{ "model": "halgventmod:block/flax_crop_stage_1_a" }, { "model": "halgventmod:block/flax_crop_stage_1_b" }, { "model": "halgventmod:block/flax_crop_stage_1_c" }],
+    "age=2": [{ "model": "halgventmod:block/flax_crop_stage_1_a" }, { "model": "halgventmod:block/flax_crop_stage_1_b" }, { "model": "halgventmod:block/flax_crop_stage_1_c" }],
+    "age=3": [{ "model": "halgventmod:block/flax_crop_stage_2_a" }, { "model": "halgventmod:block/flax_crop_stage_2_b" }, { "model": "halgventmod:block/flax_crop_stage_2_c" }],
+    "age=4": [{ "model": "halgventmod:block/flax_crop_stage_2_a" }, { "model": "halgventmod:block/flax_crop_stage_2_b" }, { "model": "halgventmod:block/flax_crop_stage_2_c" }],
+    "age=5": [{ "model": "halgventmod:block/flax_crop_stage_3_a" }, { "model": "halgventmod:block/flax_crop_stage_3_b" }, { "model": "halgventmod:block/flax_crop_stage_3_c" }],
+    "age=6": [{ "model": "halgventmod:block/flax_crop_stage_3_a" }, { "model": "halgventmod:block/flax_crop_stage_3_b" }, { "model": "halgventmod:block/flax_crop_stage_3_c" }],
+    "age=7": [{ "model": "halgventmod:block/flax_crop_stage_4_a" }, { "model": "halgventmod:block/flax_crop_stage_4_b" }, { "model": "halgventmod:block/flax_crop_stage_4_c" }]
+  }
+}

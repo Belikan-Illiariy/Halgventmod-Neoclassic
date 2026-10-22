@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [ { "item": "halgventmod:linen_yarn" } ],
+  "result": { "id": "halgventmod:threads", "count": 2 }
+}

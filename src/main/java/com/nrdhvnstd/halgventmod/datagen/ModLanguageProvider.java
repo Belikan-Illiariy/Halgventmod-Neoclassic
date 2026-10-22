@@ -618,6 +618,7 @@ public class ModLanguageProvider extends LanguageProvider {
         qualityTranslations();
         brewingTranslations();
         potteryTranslations();
+        weavingTranslations();
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -658,7 +659,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("tooltip.halgventmod.dries_into", russian ? "На раме высохнет в %s" : "Dries on the rack into %s");
         add("tooltip.halgventmod.oiled", russian ? "Смазана, пересохнет через %s сут." : "Oiled, dries out in %s days");
         add("tooltip.halgventmod.dried_out",
-                russian ? "Пересохла: хуже защищает. Смажьте на столе кожевника" : "Dried out: protects less. Oil it at the leatherworker's table");
+                russian ? "Пересохла: хуже защищает. Смажьте на шитейном столе" : "Dried out: protects less. Oil it at the sewing table");
 
         add("gui.halgventmod.sewing.title", russian ? "Шитьё: %s" : "Sewing: %s");
         add("gui.halgventmod.sewing.progress", russian ? "Стежки: %s / %s · промахи: %s" : "Stitches: %s / %s · misses: %s");
@@ -667,7 +668,18 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.sewing.done", russian ? "Сшито!" : "Sewn!");
 
         add("gui.halgventmod.pattern.title", russian ? "Выкройки" : "Patterns");
-        add("gui.halgventmod.pattern.choose", russian ? "Выбрать" : "Choose");
+        add("gui.halgventmod.sewing_table.on_table", russian ? "На столе" : "On the table");
+        add("gui.halgventmod.sewing_table.cut", russian ? "Раскроить" : "Cut");
+        add("gui.halgventmod.sewing_table.sew", russian ? "Шить" : "Sew");
+        add("gui.halgventmod.sewing_table.cut_already", russian ? "Раскроено — шейте" : "Cut — now sew");
+        add("gui.halgventmod.sewing_table.leather", russian ? "Кожа — кроить ножом" : "Leather — cut with a knife");
+        add("gui.halgventmod.sewing_table.cloth", russian ? "Ткань — кроить ножницами" : "Cloth — cut with shears");
+        add("gui.halgventmod.cut.title", russian ? "Раскрой: %s" : "Cutting: %s");
+        add("gui.halgventmod.cut.hint_start", russian ? "Зажмите ЛКМ на метке и ведите по мелу" : "Hold the button on the mark, follow the chalk");
+        add("gui.halgventmod.cut.hint", russian ? "Ровно и не спеша: рывок или сход с линии — срыв" : "Steady: a jerk or leaving the line is a slip");
+        add("gui.halgventmod.cut.progress", russian ? "Раскроено %s%% · срывы %s · неровность %s" : "Cut %s%% · slips %s · wobble %s");
+        add("gui.halgventmod.cut.done", russian ? "Раскроено!" : "Cut!");
+        add("gui.halgventmod.cut.slip", russian ? "Срыв!" : "Slip!");
         add("gui.halgventmod.pattern.ingredients", russian ? "Материалы" : "Materials");
         add("gui.halgventmod.pattern.tools", russian ? "Инструменты" : "Tools");
         add("gui.halgventmod.pattern.current", russian ? "Выбрана на столе" : "On the table now");
@@ -722,7 +734,7 @@ public class ModLanguageProvider extends LanguageProvider {
         leather("oiled", "Пропитана жиром: стала лучше", "Dressed with oil: it is better now");
 
         leather("table_busy", "Сначала доделайте начатое или заберите кожу", "Finish what you started or take the leather back");
-        leather("pick_pattern", "E пустой рукой — выбрать выкройку", "E with an empty hand picks a pattern");
+        leather("pick_pattern", "Выберите выкройку в окне стола", "Pick a pattern in the table window");
         leather("pattern", "Выкройка: %1$s — кожа: %2$s; затем: %3$s; нитки %4$s, стежков %5$s",
                 "Pattern: %1$s — leather: %2$s; then: %3$s; thread %4$s, stitches %5$s");
         leather("pattern_simple", "Выкройка: %1$s — кожа: %2$s; нитки %4$s, стежков %5$s",
@@ -731,19 +743,24 @@ public class ModLanguageProvider extends LanguageProvider {
         leather("enough_of", "%s хватает", "Enough %s");
         leather("wrong_leather", "Это не по выкройке", "Not for this pattern");
         leather("wrong_extra", "Это не нужно этой вещи", "This piece doesn't need that");
-        leather("need_leather", "Не хватает кожи", "Not enough leather");
-        leather("already_cut", "Уже раскроено: шейте иглой", "Already cut: sew it with the needle");
+        leather("need_leather", "Не хватает кожи или ткани в ячейках стола", "Not enough leather or cloth in the table slots");
+        leather("already_cut", "Уже раскроено: шейте", "Already cut: sew it");
+        leather("need_knife", "Нужен нож в инвентаре: кожу кроят ножом", "You need a knife in your inventory: leather is cut with a knife");
+        leather("need_shears", "Нужны ножницы в инвентаре: ткань кроят ножницами", "You need shears in your inventory: cloth is cut with shears");
+        leather("cut_clean", "Раскроено точно по мелу — вещь выйдет лучше", "Cut right on the chalk — the piece will come out better");
+        leather("cut_done", "Раскроено (срывов: %s). Теперь шейте", "Cut (slips: %s). Now sew it");
+        leather("cut_rough", "Раскроено криво (срывов: %s) — вещь выйдет хуже", "A rough cut (slips: %s) — the piece will come out worse");
         leather("cut_sew", "Раскроено. Шейте иглой", "Cut. Sew it with the needle");
         leather("cut_extras", "Раскроено. Добавьте фурнитуру и шейте иглой", "Cut. Add the fittings and sew with the needle");
-        leather("cut_first", "Сначала раскроите кожу ножом", "Cut the leather with the knife first");
-        leather("need_extras", "Не хватает фурнитуры", "Fittings are missing");
+        leather("cut_first", "Сначала раскроите", "Cut it first");
+        leather("need_extras", "Не хватает фурнитуры в ячейках стола", "Fittings are missing from the table slots");
         leather("need_thread", "Нужно ниток (или нити): %s", "You need thread: %s");
-        leather("need_needle", "Держите иглу в руке", "Hold the needle in your hand");
+        leather("need_needle", "Нужна игла в инвентаре", "You need a needle in your inventory");
         leather("sewn_clean", "Ни одного промаха — вещь вышла лучше", "Not a single miss — the piece came out better");
         leather("sewn", "Сшито, промахов: %s", "Sewn, misses: %s");
         leather("sewn_sloppy", "Шов кривой (промахов: %s) — вещь вышла хуже", "A crooked seam (misses: %s) — the piece came out worse");
         leather("made", "Готово: %s", "Done: %s");
-        leather("table_cut", "Кожа раскроена — назад не сложить. Доделайте вещь", "The leather is cut — it can't go back. Finish the piece");
+        leather("table_cut", "Раскроенное ещё не сшито — выкройку не сменить", "The cut piece isn't sewn yet — the pattern can't change");
         leather("item_oiled", "%s смазана", "%s oiled");
         leather("need_oil", "Нужно сало или воск в инвентаре", "You need salo or wax in your inventory");
     }
@@ -758,6 +775,145 @@ public class ModLanguageProvider extends LanguageProvider {
 
     /** Готовка: очаг, горшок, жарка, печь, жёрнов, заготовки (cooking/*). */
     private void cookingTranslations() {
+        // Окна очага, костра, печи и горна (HearthScreen, OvenScreen, KilnScreen)
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.FIRE_PIT.get(), russian ? "Костёр" : "Campfire");
+        gui("hearth.fire", "Огонь", "Fire");
+        gui("hearth.ignite", "Разжечь", "Light");
+        gui("hearth.extinguish", "Затушить", "Put out");
+        gui("hearth.heat_0", "Жара нет", "No heat");
+        gui("hearth.heat_1", "Жар слабый", "Low heat");
+        gui("hearth.heat_2", "Жар средний", "Medium heat");
+        gui("hearth.heat_3", "Жар сильный", "High heat");
+        gui("hearth.burns", "Гореть: %s", "Burns: %s");
+        gui("hearth.out", "Не горит (%s)", "Out (%s)");
+        gui("hearth.fuel", "Дрова:", "Firewood:");
+        gui("hearth.pot", "Горшок", "Pot");
+        gui("hearth.pot_scorched", "Горшок · пригорал %s", "Pot · scorched %s");
+        gui("hearth.water", "Вода налита", "Water in");
+        gui("hearth.no_water", "Нет воды: E ведром", "No water: E a bucket");
+        gui("hearth.stir_in", "мешать через %s", "stir in %s");
+        gui("hearth.cooking", "Варится %s%% · %s", "Cooking %s%% · %s");
+        gui("hearth.stir", "Мешать", "Stir");
+        gui("hearth.stir_now", "Пригорает — мешайте!", "Catching — stir!");
+        gui("hearth.empty", "Вылить", "Empty");
+        gui("hearth.remove_pot", "Снять", "Take off");
+        gui("hearth.scorched", "пригорало: %s", "scorched: %s");
+        gui("hearth.ladle_bowl", "миской", "a bowl");
+        gui("hearth.ladle_bottle", "склянкой", "a bottle");
+        gui("hearth.grill", "На углях", "On the coals");
+        gui("hearth.grill_hint", "E куском мяса или рыбы — положить; E по куску — перевернуть", "E with meat or fish to lay it; E on a piece to flip it");
+        gui("oven.hot", "Прогрета", "Hot");
+        gui("oven.warming", "Прогрев: %s%%", "Warming: %s%%");
+        gui("oven.inside", "В печи", "Inside");
+        gui("oven.empty_place", "пусто", "empty");
+        gui("oven.cold", "холодно", "too cold");
+        gui("oven.left", "ждать %s", "wait %s");
+        gui("oven.ready", "готово!", "done!");
+        gui("oven.over", "пересыхает!", "drying out!");
+        gui("oven.burnt", "сгорело", "burnt");
+        gui("kiln.target", "к %s°", "to %s°");
+        gui("kiln.graph", "Жар горна", "Kiln heat");
+        gui("kiln.draft", "Тяга", "Draft");
+        gui("kiln.draft_0", "0 · %s° тлеет", "0 · %s° smoulder");
+        gui("kiln.draft_1", "1 · %s° закал", "1 · %s° temper");
+        gui("kiln.draft_2", "2 · %s° греть", "2 · %s° warm");
+        gui("kiln.draft_3", "3 · %s° обжиг", "3 · %s° fire");
+        gui("kiln.draft_4", "4 · %s° обжиг", "4 · %s° fire");
+        gui("kiln.draft_5", "5 · %s° пережог", "5 · %s° overfire");
+        gui("kiln.step_0", "1 Закал", "1 Temper");
+        gui("kiln.step_1", "2 Обжиг", "2 Firing");
+        gui("kiln.step_2", "3 Остыть", "3 Cool");
+        gui("kiln.st_going", "идёт", "going");
+        gui("kiln.st_hot", "жарко!", "too hot!");
+        gui("kiln.st_low", "мало жара", "too low");
+        gui("kiln.st_zone", "в зоне", "in zone");
+        gui("kiln.st_over", "пережог!", "overfire!");
+        gui("kiln.st_cooling", "остывает", "cooling");
+        gui("kiln.st_take", "вынимать", "take out");
+        gui("kiln.fuel_left", "хватит на %s", "lasts %s");
+        gui("kiln.fuel", "Дрова", "Firewood");
+        gui("kiln.add_fuel", "дрова — в запас", "firewood into stock");
+        gui("kiln.inside", "В горне %s из %s", "Inside %s of %s");
+        // Бочка для выдержки (AgingCaskScreen)
+        brewingMessage("barrel_sealed", "Бочка запечатана: сначала распечатайте (ПКМ — окно)", "The barrel is sealed: unseal it first (right-click)");
+        brewingMessage("barrel_sealed_now", "Запечатано: бродит", "Sealed: fermenting");
+        brewingMessage("barrel_unsealed", "Распечатано: брожение стоит", "Unsealed: fermentation stops");
+        brewingMessage("barrel_open", "Открыта, налито %s: запечатайте, чтобы бродило (ПКМ — окно)", "Open, %s in: seal it to ferment (right-click)");
+        brewingMessage("vessel_no", "Сюда не налить: сосуд треснул, запечатан, полон, с водой или в нём другое", "Can't pour here: the vessel is cracked, sealed, full, holds water or something else");
+        add("message.halgventmod.cooking.vessel_no", russian ? "Сюда не налить: сосуд треснул, запечатан, полон, с водой или в нём другое" : "Can't pour here: the vessel is cracked, sealed, full, holds water or something else");
+        brewingMessage("still_poured_vessel", "Налито крепкого: %s в %s", "Spirit poured: %s into %s");
+        brewingMessage("still_nothing_to_pour", "Крепкого ещё нет", "No spirit yet");
+        brewingMessage("still_vessel_no", "Сюда не налить: сосуд треснул, запечатан, полон, с водой или в нём другое", "Can't pour here: the vessel is cracked, sealed, full, holds water or something else");
+        gui("cask.title", "Выдержка", "Ageing");
+        gui("cask.cellar", "Погреб: ступень качества за %s сут.", "Cellar: a quality step every %s days");
+        gui("cask.house", "Под крышей: ступень за %s сут. (в погребе быстрее)", "Under a roof: a step every %s days (faster in a cellar)");
+        gui("cask.exposed", "Под открытым небом: не выдерживается", "Under the open sky: nothing ages");
+        gui("cask.hint", "Вино, медовуха, сидр, крепкое, настойка; пиво не выдерживают. Даты — в подсказке к склянке.",
+                "Wine, mead, cider, spirit, tincture; beer is not aged. Hover a bottle for the dates.");
+        gui("cask.placed", "Заложена: %s", "Laid down: %s");
+        gui("cask.placed_today", "Заложена сегодня", "Laid down today");
+        gui("cask.steps", "Выдержка: +%s к качеству", "Aged: +%s quality");
+        gui("cask.next", "Следующая ступень: %s", "Next step: %s");
+        gui("cask.next_never", "Дальше не выдерживается", "Ages no further");
+        gui("cask.masterwork", "Лучше уже не станет", "It can't get any better");
+        // Бродильная бочка (FermentingBarrelScreen)
+        gui("barrel.into", "В бочку", "Into");
+        gui("barrel.title", "Брожение", "Fermenting");
+        gui("barrel.in", "влить", "pour in");
+        gui("barrel.flavour", "добавка", "extra");
+        gui("barrel.portions", "налито %s из %s", "%s of %s in");
+        gui("barrel.with", "добавки:", "with:");
+        gui("barrel.empty", "Пусто: влейте сусло или крепкое", "Empty: pour in must or spirit");
+        gui("barrel.needs_flavour", "Крепкое без добавки не настаивается: положите мёд, травы или ягоды", "Spirit needs something to steep: add honey, herbs or berries");
+        gui("barrel.fermenting", "Бродит до %s (ещё %s сут.)", "Fermenting until %s (%s days left)");
+        gui("barrel.ready", "Готово! Разлейте до %s — потом скиснет", "Ready! Bottle it before %s — then it sours");
+        gui("barrel.ready_open", "Готово! Открытая не киснет — разливайте", "Ready! Open, it won't sour — bottle it");
+        gui("barrel.ready_tincture", "Настоялось — разливайте, не перестоит", "Steeped — bottle it, it won't spoil");
+        gui("barrel.sour", "Скисло: выйдет уксус", "Turned sour: it gives vinegar");
+        gui("barrel.vessel", "склянки, сосуд", "bottles, vessel");
+        gui("barrel.out", "готовое", "ready");
+        gui("barrel.pour_out", "Вылить", "Pour out");
+        gui("barrel.seal", "Запечатать", "Seal");
+        gui("barrel.unseal", "Распечатать", "Unseal");
+        gui("barrel.open_hint", "Открыта — не бродит. Влейте и запечатайте", "Open — not fermenting. Pour in and seal it");
+        gui("barrel.sealed_hint", "Запечатана: чтобы долить или разлить — распечатайте", "Sealed: unseal to add or bottle");
+        // Перегонный куб (StillScreen)
+        gui("still.title", "Куб", "Still");
+        gui("still.in", "сырьё", "to distil");
+        gui("still.poured", "залито %s из %s", "%s of %s in");
+        gui("still.cold", "огня нет", "no fire");
+        gui("still.hot", "жар сильный — первач", "too hot — harsh spirit");
+        gui("still.working", "гонит: %s из %s до крепкого", "distilling: %s of %s to a spirit");
+        gui("still.bottles", "склянки, сосуд", "bottles, vessel");
+        gui("still.spirit", "крепкое: %s", "spirit: %s");
+        gui("still.drain", "Слить", "Drain");
+        gui("still.source_heat", "Огонь не очаговый: жар %s. Очагом под кубом можно править прямо отсюда.", "Not a hearth: heat %s. A hearth under the still can be run from here.");
+        gui("still.source_none", "Под кубом нет огня: поставьте его на очаг или костёр.", "No fire under the still: put it on a hearth or campfire.");
+        gui("kiln.smoke", "дымит: залощённое почернеет", "smoky: burnished ware turns black");
+        gui("kiln.open_damper", "Открыть заслонку", "Open the damper");
+        gui("kiln.close_damper", "Закрыть заслонку", "Close the damper");
+        gui("recipes.title", "Что сварить", "What to cook");
+        gui("recipes.hint", "Налейте воды (E ведром или кувшином), положите продукты в ячейки горшка и разожгите огонь. При среднем жаре варится около %s с. Когда полоса «мешать» краснеет — жмите «Мешать» (нужна поварёшка), иначе пригорит. Готовое черпают E миской или склянкой.",
+                "Pour in water (E a bucket or jug), put food into the pot slots and light the fire. At medium heat it cooks in about %s s. When the stir bar turns red press Stir (you need a ladle) or it scorches. Ladle the result with E and a bowl or bottle.");
+        recipe("meat_stew", "Мясная похлёбка", "Больше всего мяса (сырое, солонина, вяленое). Соль, травы, чеснок — приправы: вкуснее.", "Порций — по числу основ. Черпать миской.",
+                "Meat stew", "Mostly meat (raw, salted, dried). Salt, herbs, garlic are seasoning: tastier.", "One portion per main ingredient. Ladle into a bowl.");
+        recipe("fish_soup", "Уха", "Больше всего рыбы. С луком и травами — лучше.", "Порций — по числу рыб. Черпать миской.",
+                "Fish soup", "Mostly fish. Better with onion and herbs.", "One portion per fish. Ladle into a bowl.");
+        recipe("porridge", "Каша", "Зерно или мука: пшеница, рожь, ячмень, овёс — каша по зерну, которого больше. С молоком — сытнее, с мёдом — слаще.", "Порций — по числу основ. Черпать миской.",
+                "Porridge", "Grain or flour: wheat, rye, barley, oats — named after the grain there is most of. Milk makes it richer, honey sweeter.", "One portion per main ingredient. Ladle into a bowl.");
+        recipe("mushroom_soup", "Грибная похлёбка", "Больше всего грибов.", "Порций — по числу основ. Черпать миской.",
+                "Mushroom soup", "Mostly mushrooms.", "One portion per main ingredient. Ladle into a bowl.");
+        recipe("potato_stew", "Картофельная похлёбка", "Из овощей — только картофель (лук и чеснок не в счёт).", "Порций — по числу основ. Черпать миской.",
+                "Potato stew", "Potatoes are the only vegetable (onion and garlic do not count).", "One portion per main ingredient. Ladle into a bowl.");
+        recipe("vegetable_soup", "Овощная похлёбка", "Разные овощи: репа, капуста, морковь, свёкла, бобы. Три и больше разных основ — вкуснее.", "Порций — по числу основ. Черпать миской.",
+                "Vegetable soup", "Mixed vegetables: turnip, cabbage, carrot, beetroot, beans. Three or more different bases taste better.", "One portion per main ingredient. Ladle into a bowl.");
+        recipe("herbal_tea", "Отвар", "Только травы, без основы. С мёдом — лучше.", "По две склянки на пучок трав.",
+                "Herbal tea", "Herbs only, nothing else. Better with honey.", "Two bottles per bunch of herbs.");
+        recipe("wort", "Пивное сусло", "Солод: светлый, янтарный или тёмный — по самому тёмному. С травами — пряное, с мёдом — медовое.", "По две склянки на солод — в бродильную бочку.",
+                "Beer wort", "Malt: pale, amber or dark — named after the darkest. Herbs make it spiced, honey makes it honeyed.", "Two bottles per malt — for the fermenting barrel.");
+        recipe("honey_must", "Медовый взвар", "Только мёд с водой.", "По две склянки на мёд — в бродильную бочку, будет медовуха.",
+                "Honey must", "Just honey and water.", "Two bottles per honey — for the fermenting barrel, it becomes mead.");
+
         add("tooltip.halgventmod.dish_food", russian ? "Сытость %s, жажда %s" : "Nutrition %s, thirst %s");
         add("tooltip.halgventmod.dish_of", russian ? "Сварено из: %s" : "Made of: %s");
         add("tooltip.halgventmod.pie_filling.meat", russian ? "Начинка: мясо" : "Filling: meat");
@@ -796,13 +952,17 @@ public class ModLanguageProvider extends LanguageProvider {
         cooking("kitchen_done", "Готово: %s", "Done: %s");
         cooking("diet_bored", "%s приелось: сытость %s%%", "Tired of %s: %s%% as filling");
 
-        cooking("fuel_full", "Дров хватит: больше не положить", "Enough firewood: no room for more");
-        cooking("fuel_added", "Подложили дров: запас %s%%", "Firewood added: %s%% stocked");
-        cooking("fuel_unlit", "Дрова сложены (%s%%). Разожгите огнивом или факелом", "Firewood stacked (%s%%). Light it with a flint or torch");
+        cooking("fuel_full", "Все три места под дрова заняты", "All three firewood places are full");
+        cooking("fuel_added", "Подложили полено: %s из %s", "Log added: %s of %s");
+        cooking("fuel_unlit", "Дрова сложены (%s из %s). Разожгите огнивом или факелом", "Firewood stacked (%s of %s). Light it with a flint or torch");
         cooking("already_lit", "Уже горит", "Already burning");
         cooking("no_fuel", "Нечему гореть: сначала дрова", "Nothing to burn: add firewood first");
-        cooking("fire_status", "Жар %s, дров %s%%", "Heat %s, firewood %s%%");
-        cooking("fire_out", "Огонь не горит (дров %2$s%%)", "The fire is out (firewood %2$s%%)");
+        cooking("fire_status", "%s°, поленьев %s из %s. ПКМ — окно очага", "%s°, logs %s of %s. Right-click opens the hearth");
+        cooking("fire_out", "Огонь не горит (поленьев %2$s из %3$s)", "The fire is out (logs %2$s of %3$s)");
+        cooking("need_lighter", "Нечем разжечь: нужно огниво, огненный заряд или факел", "Nothing to light it with: you need a flint and steel, a fire charge or a torch");
+        cooking("need_ladle", "Нужна поварёшка в инвентаре", "You need a ladle in your inventory");
+        cooking("stir_not_yet", "Пока не пригорает — мешать рано", "Nothing is catching yet — too early to stir");
+        cooking("pot_emptied", "Горшок опорожнён", "The pot is emptied");
 
         cooking("pot_already", "Горшок уже стоит", "A pot is already on");
         cooking("grill_busy", "Сначала снимите всё с углей", "Take everything off the coals first");
@@ -826,8 +986,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         cooking("oven_full", "В печи нет места", "The oven is full");
         cooking("oven_cold", "Печь не прогрета (%s°): не печётся", "The oven is cold (%s°): nothing bakes");
-        cooking("oven_status", "Жар %s°, дров %s%%. Печётся: %s", "Heat %s°, firewood %s%%. Baking: %s");
-        cooking("oven_status_empty", "Жар %s°, дров %s%%", "Heat %s°, firewood %s%%");
+        cooking("oven_status", "Жар %s, поленьев %s. Печётся: %s", "Heat %s, logs %s. Baking: %s");
+        cooking("oven_status_empty", "Жар %s, поленьев %s. ПКМ — окно печи", "Heat %s, logs %s. Right-click opens the oven");
         cooking("baked_raw", "Ещё сырое", "Still raw");
         cooking("baked_under", "%s: недопечено", "%s: underbaked");
         cooking("baked_good", "%s: в самый раз", "%s: just right");
@@ -891,9 +1051,10 @@ public class ModLanguageProvider extends LanguageProvider {
         brewing("barrel_tincture_needs", "Крепкого: %s. Для настойки добавьте ягоды, травы или мёд",
                 "Spirit: %s. Add berries, herbs or honey for a tincture");
         brewing("barrel_sour", "Передержано — уксус (%s)", "Kept too long — vinegar (%s)");
-        brewing("barrel_ready", "Перебродило: %s склянок. Скиснет через %s сут.", "Fermented: %s bottles. Sours in %s days");
-        brewing("barrel_ready_tincture", "Настоялось: %s склянок. Перестоит через %s сут.", "Steeped: %s bottles. Overdone in %s days");
-        brewing("barrel_fermenting", "Бродит: %s склянок, ещё %s сут.", "Fermenting: %s bottles, %s days left");
+        brewing("barrel_ready", "Перебродило: %s склянок. Разлейте до %s — потом скиснет", "Fermented: %s bottles. Bottle before %s or it sours");
+        brewing("barrel_ready_open", "Перебродило: %s склянок. Открытая не киснет — разливайте", "Fermented: %s bottles. Open, it won't sour — bottle it");
+        brewing("barrel_ready_tincture", "Настоялось: %s склянок — разливайте", "Steeped: %s bottles — bottle it");
+        brewing("barrel_fermenting", "Бродит: %s склянок, готово к %s", "Fermenting: %s bottles, ready on %s");
         brewing("still_mixed", "Разное в куб не льют", "Different drinks don't go in the still together");
         brewing("still_take_first", "Сначала наберите готовое крепкое", "Draw the finished spirit first");
         brewing("still_full", "Куб полон", "The still is full");
@@ -918,11 +1079,27 @@ public class ModLanguageProvider extends LanguageProvider {
         drunk("sober", "Вы протрезвели", "You are sober");
         drunk("hangover", "Похмелье: тяжёлая голова и жажда", "Hangover: a heavy head and thirst");
         drunk("cured", "Полегчало", "That's better");
+        drunk("rotgut", "Сивуха! Мутит", "Rotgut! You feel sick");
+        drunk("clear_head", "Вы протрезвели — голова ясная, похмелья нет", "You are sober — a clear head, no hangover");
         add("gamerule.drunkChat", russian ? "Пьяные путают буквы в чате" : "Drunk players slur in chat");
 
         drink("must.apple", "Яблочный сок", "Apple juice");
         drink("must.berry", "Ягодный сок", "Berry juice");
         drink("must.glowberry", "Сок светящихся ягод", "Glow berry juice");
+        drink("must.pear", "Грушевый сок", "Pear juice");
+        drink("must.grape", "Виноградный сок", "Grape juice");
+        drink("must.cherry", "Вишнёвый сок", "Cherry juice");
+        drink("must.plum", "Сливовый сок", "Plum juice");
+        drink("cider.pear", "Грушевый сидр", "Perry");
+        drink("wine.grape", "Виноградное вино", "Grape wine");
+        drink("wine.cherry", "Вишнёвое вино", "Cherry wine");
+        drink("wine.plum", "Сливовое вино", "Plum wine");
+        drink("spirit.pear", "Грушевая водка", "Pear brandy");
+        drink("spirit.cherry", "Вишнёвка", "Kirsch");
+        drink("spirit.plum", "Сливовица", "Slivovitz");
+        drink("tincture.pear", "Грушевая настойка", "Pear tincture");
+        drink("tincture.cherry", "Вишнёвая настойка", "Cherry tincture");
+        drink("tincture.plum", "Сливовая настойка", "Plum tincture");
         drink("must.honey", "Медовый взвар", "Honey must");
         drink("must.wort_pale", "Светлое сусло", "Pale wort");
         drink("must.wort_amber", "Янтарное сусло", "Amber wort");
@@ -1080,8 +1257,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // Горн
         pottery("kiln_fuel_full", "Дров хватит", "Enough firewood");
-        pottery("kiln_damper_open", "Заслонка открыта: жарче, дрова горят вдвое быстрее", "Damper open: hotter, firewood burns twice as fast");
-        pottery("kiln_damper_closed", "Заслонка закрыта: жар ровнее, в горне дым", "Damper closed: steadier heat, smoke inside");
+        pottery("kiln_draft", "Тяга %s: горн тянет к %s°", "Draft %s: the kiln heads for %s°");
         pottery("kiln_already_fired", "Уже обожжено", "Already fired");
         pottery("kiln_cracked", "Треснувшее не обжигают — размочите в бочке", "Cracked pieces aren't fired — soak them in the barrel");
         pottery("kiln_wet", "Сначала высушите на полке", "Dry it on a shelf first");
@@ -1093,10 +1269,8 @@ public class ModLanguageProvider extends LanguageProvider {
         pottery("kiln_lit_already", "Уже горит", "Already burning");
         pottery("kiln_no_fuel", "Сначала дрова", "Firewood first");
         pottery("kiln_status_empty", "Жар %s°, дров %s%%. Обжигов: %s из %s", "Heat %s°, firewood %s%%. Firings: %s of %s");
-        pottery("kiln_status", "Жар %s°, дров %s%%, обжиг %s%%. Дрова тянут к %s° (держите 600–850°)",
-                "Heat %s°, firewood %s%%, firing %s%%. The fuel pulls toward %s° (hold 600–850°)");
-        pottery("kiln_status_closed", "Жар %s°, дров %s%%, обжиг %s%%, заслонка закрыта. Дрова тянут к %s°",
-                "Heat %s°, firewood %s%%, firing %s%%, damper closed. The fuel pulls toward %s°");
+        pottery("kiln_status", "Жар %s°, дров %s%%, обжиг %s%%. Тяга %s → %s° (держите 600–850°). ПКМ — окно горна",
+                "Heat %s°, firewood %s%%, firing %s%%. Draft %s → %s° (hold 600–850°). Right-click opens the kiln");
         pottery("kiln_hot", "Горячо: %s°, обжиг %s%%! Вынутое горячим трескается. E ещё раз — вынуть всё равно",
                 "Hot: %s°, firing %s%%! Ware taken out hot cracks. E again to take it anyway");
         pottery("kiln_cracked_out", "%s треснул в горне", "%s cracked in the kiln");
@@ -1111,8 +1285,7 @@ public class ModLanguageProvider extends LanguageProvider {
         pottery("shelf_dry", "сухой — в горн", "dry — into the kiln");
         pottery("shelf_cracked", "треснул", "cracked");
         pottery("shelf_soaked", "размок", "soaked");
-        pottery("damper_open", "открыта", "open");
-        pottery("damper_closed", "закрыта (дым)", "closed (smoke)");
+        pottery("draft", "тяга %s", "draft %s");
         pottery("kiln_report_loaded", "Загружено %s из %s. Дрова и огниво; первую минуту — не выше %s°",
                 "Loaded %s of %s. Firewood and a flint; keep it under %s° for the first minute");
         pottery("kiln_report_temper", "Закал: %s° (не выше %s°), ещё ~%s мин. Дров %s%% → %s°",
@@ -1184,8 +1357,70 @@ public class ModLanguageProvider extends LanguageProvider {
         add(com.nrdhvnstd.halgventmod.registry.ModBlocks.TURNIP_CROP.get(), russian ? "Репа" : "Turnips");
         add(com.nrdhvnstd.halgventmod.registry.ModBlocks.BEANS_CROP.get(), russian ? "Бобы" : "Beans");
         add(com.nrdhvnstd.halgventmod.registry.ModBlocks.CABBAGE_CROP.get(), russian ? "Капуста" : "Cabbage");
+        add(com.nrdhvnstd.halgventmod.registry.ModBlocks.FLAX_CROP.get(), russian ? "Лён" : "Flax");
         add("entity.halgventmod.goose", russian ? "Гусь" : "Goose");
         add("message.halgventmod.farming.not_ripe", russian ? "Ещё не поспело" : "Not ripe yet");
+    }
+
+    /** Ткачество: чесалка, веретено, станок (weaving/*). */
+    private void weavingTranslations() {
+        weaving("comb_nothing", "Нечего чесать: нужен лён или шерсть в инвентаре", "Nothing to comb: you need flax or wool in your inventory");
+        weaving("spin_nothing", "Нечего прясть: нужна кудель в инвентаре", "Nothing to spin: you need fibre in your inventory");
+        weaving("weights_full", "Все %s грузил уже висят", "All %s weights are hung already");
+        weaving("weight_hung", "Грузило подвешено: %s / %s", "Weight hung: %s / %s");
+        weaving("need_weights", "Сначала подвесьте грузила: %s / %s — без них основу не натянуть",
+                "Hang the weights first: %s / %s — the warp won't hold without them");
+        weaving("need_warp", "Сначала натяните основу пряжей: %s / %s", "Set the warp with yarn first: %s / %s");
+        weaving("warp_full", "Основа натянута. Пряжа для утка берётся из инвентаря — тките челноком",
+                "The warp is set. Weft yarn is taken from your inventory — weave with the shuttle");
+        weaving("warp_other", "Основа уже из другого волокна: нужна %s", "The warp is another fibre: you need %s");
+        weaving("warp_added", "Основа: %s / %s", "Warp: %s / %s");
+        weaving("warp_ready", "Основа натянута (%s / %s). Тките челноком", "The warp is set (%s / %s). Weave with the shuttle");
+        weaving("need_weft", "Нужна %s в инвентаре на уток", "You need %s in your inventory for the weft");
+        add("gui.halgventmod.weaving.title", russian ? "Ткацкий станок" : "Loom");
+        add("gui.halgventmod.weaving.title_of", russian ? "Тканьё: %s" : "Weaving: %s");
+        add("gui.halgventmod.weaving.progress", russian ? "Прокидки: %s / %s · изъяны: %s" : "Passes: %s / %s · flaws: %s");
+        add("gui.halgventmod.weaving.hint_throw", russian ? "ЛКМ или Пробел — бросок, пока зев открыт"
+                : "Click or Space to throw the shuttle while the shed is open");
+        add("gui.halgventmod.weaving.hint_beat", russian ? "Зажмите и отпустите в зелёной зоне"
+                : "Hold and release in the green zone");
+        add("gui.halgventmod.weaving.no_weft", russian ? "Нет пряжи на уток: %s" : "No weft yarn: %s");
+        add("gui.halgventmod.weaving.done", russian ? "Готово — снимите пустой рукой" : "Done — take it off by hand");
+        add("gui.halgventmod.weaving.even", russian ? "Ровно" : "Even");
+        add("gui.halgventmod.weaving.even_combo", russian ? "Ровно ×%s" : "Even ×%s");
+        add("gui.halgventmod.weaving.loose", russian ? "Рыхло — в ткани просвет" : "Loose — a gap in the cloth");
+        add("gui.halgventmod.weaving.tight", russian ? "Туго — уток перетянут, кромка сужается" : "Tight — the weft pulls the edges in");
+        add("gui.halgventmod.weaving.snag", russian ? "Зев сомкнулся — челнок зацепил основу" : "The shed closed — the shuttle snagged the warp");
+        weaving("woven", "Ткань готова — снимите её пустой рукой", "The cloth is done — take it off with an empty hand");
+        weaving("take_cloth", "Сначала снимите готовую ткань пустой рукой", "Take the finished cloth off with an empty hand first");
+        weaving("weaving", "Ткань ещё не готова: %s / %s", "The cloth isn't done yet: %s / %s");
+        weaving("cloth_taken", "Снято: %s × %s (изъянов: %s)", "Taken off: %s × %s (flaws: %s)");
+        weaving("cloth_taken_even", "Снято: %s × %s — ни одного изъяна, ткань вышла лучше",
+                "Taken off: %s × %s — not a single flaw, the cloth came out better");
+        weaving("report_weights", "Грузила: %s / %s. Подвесьте их, потом натяните основу пряжей",
+                "Weights: %s / %s. Hang them, then set the warp with yarn");
+        weaving("report_warp", "Основа: %s / %s мотков пряжи одного волокна", "Warp: %s / %s skeins of one fibre");
+        weaving("report_weaving", "Тканьё: %s / %s прокидок, изъянов — %s. Уток — %s из инвентаря; E челноком — ткать",
+                "Weaving: %s / %s passes, %s flaws. Weft — %s from your inventory; E with the shuttle to weave");
+        weaving("report_done", "Готово: %s — снимите пустой рукой", "Done: %s — take it off with an empty hand");
+    }
+
+    private void weaving(String key, String ru, String en) {
+        add("message.halgventmod.weaving." + key, russian ? ru : en);
+    }
+
+    private void gui(String key, String ru, String en) {
+        add("gui.halgventmod." + key, russian ? ru : en);
+    }
+
+    private void recipe(String id, String nameRu, String howRu, String serveRu, String nameEn, String howEn, String serveEn) {
+        gui("recipes." + id, nameRu, nameEn);
+        gui("recipes." + id + ".how", howRu, howEn);
+        gui("recipes." + id + ".serve", serveRu, serveEn);
+    }
+
+    private void brewingMessage(String key, String ru, String en) {
+        add("message.halgventmod.brewing." + key, russian ? ru : en);
     }
 
     private void pottery(String key, String ru, String en) {
@@ -1216,6 +1451,10 @@ public class ModLanguageProvider extends LanguageProvider {
     private void qualityTranslations() {
         add("tooltip.halgventmod.quality.weapon", russian ? "Урон ×%s, пробитие %s%% (%s)" : "Damage ×%s, penetration %s%% (%s)");
         add("tooltip.halgventmod.quality.food", russian ? "Сытость и насыщение ×%s" : "Nutrition and saturation ×%s");
+        add("tooltip.halgventmod.quality.drink", russian ? "Хмель ×%s" : "Intoxication ×%s");
+        add("tooltip.halgventmod.quality.rotgut", russian ? "Сивуха: мутит в %s%% случаев" : "Rotgut: makes you sick %s%% of the time");
+        add("tooltip.halgventmod.quality.hangover_skip", russian ? "Похмелье: шанс обойтись без него %s%%" : "Hangover: %s%% chance to escape it");
+        add("tooltip.halgventmod.quality.hangover_longer", russian ? "Похмелье дольше на %s%%" : "Hangover lasts %s%% longer");
         add("tooltip.halgventmod.quality.armor", russian ? "Защита ×%s, стойкость ×%s" : "Protection ×%s, resistance ×%s");
         add("damage_kind.halgventmod.chopping", russian ? "рубящий" : "chopping");
         add("damage_kind.halgventmod.piercing", russian ? "колющий" : "piercing");

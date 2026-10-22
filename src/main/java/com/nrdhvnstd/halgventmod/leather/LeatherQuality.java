@@ -54,7 +54,7 @@ public final class LeatherQuality {
         return set(to, get(from));
     }
 
-    /** Множитель защиты кожаной вещи; 1 — у вещей, сделанных не на столе кожевника. */
+    /** Множитель защиты кожаной вещи; 1 — у вещей, сделанных не на шитейном столе. */
     public static double protectionFactor(ItemStack stack) {
         if (!has(stack)) {
             return 1.0;

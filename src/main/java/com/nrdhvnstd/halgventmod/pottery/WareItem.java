@@ -63,6 +63,17 @@ public class WareItem extends Item {
         return form;
     }
 
+    /** Корчага и кувшин держат питьё (склянками); кувшин — ещё и воду, но не вместе. */
+    private boolean holdsDrinks() {
+        return form == VesselForm.AMPHORA || form == VesselForm.JUG;
+    }
+
+    /** Питьё внутри кувшина (пусто — нет). */
+    private static ItemStack drinkInside(ItemStack stack, Level level) {
+        Stored stored = stack.get(ModComponents.STORED.get());
+        return stored == null || stored.sealed() ? ItemStack.EMPTY : Pottery.unpack(stored, stack, level);
+    }
+
     // ---------------------------------------------------------------- ПКМ: вода, питьё, светильник
 
     @Override
@@ -120,6 +131,11 @@ public class WareItem extends Item {
                 }
             }
         }
+        // Кувшин с питьём (пиво, вино, морс…) — пить прямо из него
+        if (form == VesselForm.JUG && !drinkInside(stack, level).isEmpty()) {
+            player.startUsingItem(hand);
+            return InteractionResultHolder.consume(stack);
+        }
         if (form != VesselForm.AMPHORA && Pottery.water(stack) > 0 && (Thirst.needs(player) || player.isCreative())) {
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);
@@ -129,7 +145,8 @@ public class WareItem extends Item {
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
-        return Pottery.water(stack) > 0 && form != VesselForm.AMPHORA ? UseAnim.DRINK : UseAnim.NONE;
+        boolean drink = form == VesselForm.JUG && stack.has(ModComponents.STORED.get());
+        return (Pottery.water(stack) > 0 || drink) && form != VesselForm.AMPHORA ? UseAnim.DRINK : UseAnim.NONE;
     }
 
     @Override
@@ -139,6 +156,19 @@ public class WareItem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
+        ItemStack inside = form == VesselForm.JUG ? drinkInside(stack, level) : ItemStack.EMPTY;
+        if (entity instanceof Player player && !level.isClientSide && !inside.isEmpty()) {
+            // Глоток — как выпить одну склянку: её действие и те же события (жажда, хмель, свежесть); склянки нет
+            ItemStack sip = inside.copyWithCount(1);
+            ItemStack before = sip.copy();
+            ItemStack after = sip.finishUsingItem(level, player);
+            net.neoforged.neoforge.event.EventHooks.onItemUseFinish(player, before, 0, after);
+            if (!player.getAbilities().instabuild) {
+                shrinkStored(stack, inside, 1, player);
+            }
+            Pottery.wear(stack, player);
+            return stack;
+        }
         if (entity instanceof Player player && !level.isClientSide && Pottery.water(stack) > 0) {
             Thirst.add(player, Pottery.DRINK_THIRST + coolBonus(stack, level));
             if (!player.getAbilities().instabuild) {
@@ -252,7 +282,7 @@ public class WareItem extends Item {
         }
         if (Pottery.cracked(me)) {
             // Треснувшую можно только опорожнить
-            return form == VesselForm.AMPHORA && other.is(Items.GLASS_BOTTLE) && draw(me, other, player, carried);
+            return holdsDrinks() && other.is(Items.GLASS_BOTTLE) && draw(me, other, player, carried);
         }
         if (other.is(ModItems.BEESWAX.get()) && (form == VesselForm.POT || form == VesselForm.AMPHORA)) {
             return seal(me, other, player);
@@ -263,7 +293,7 @@ public class WareItem extends Item {
         if (form == VesselForm.POT && storable(other)) {
             return store(me, other, other.getCount(), player, ItemStack.EMPTY);
         }
-        if (form == VesselForm.AMPHORA) {
+        if (holdsDrinks()) {
             if (other.getItem() instanceof DrinkItem) {
                 return store(me, other, 1, player, new ItemStack(Items.GLASS_BOTTLE));
             }
@@ -343,7 +373,7 @@ public class WareItem extends Item {
             message(player, "sealed");
             return true;
         }
-        int limit = form == VesselForm.AMPHORA ? Pottery.AMPHORA_DRINKS : Pottery.POT_CAPACITY;
+        int limit = holdsDrinks() ? Pottery.drinkCapacity(me) : Pottery.POT_CAPACITY;
         int today = Freshness.currentDay(player.level());
         ItemStack inside = ItemStack.EMPTY;
         if (stored != null) {
@@ -405,7 +435,7 @@ public class WareItem extends Item {
             return true;
         }
         ItemStack inside = Pottery.unpack(stored, me, player.level());
-        if (form == VesselForm.AMPHORA) {
+        if (holdsDrinks()) {
             message(player, "need_bottle");
             return true;
         }

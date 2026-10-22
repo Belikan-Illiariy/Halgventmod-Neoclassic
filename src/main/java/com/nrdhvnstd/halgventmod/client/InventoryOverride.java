@@ -32,6 +32,13 @@ public final class InventoryOverride {
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.PLAYER_INVENTORY.get(), ArmorInventoryScreen::new);
         event.register(ModMenus.ARMOR_STAND.get(), ArmorStandScreen::new);
+        event.register(ModMenus.SEWING_TABLE.get(), com.nrdhvnstd.halgventmod.client.leather.SewingTableScreen::new);
+        event.register(ModMenus.HEARTH.get(), com.nrdhvnstd.halgventmod.client.cooking.HearthScreen::new);
+        event.register(ModMenus.OVEN.get(), com.nrdhvnstd.halgventmod.client.cooking.OvenScreen::new);
+        event.register(ModMenus.KILN.get(), com.nrdhvnstd.halgventmod.client.pottery.KilnScreen::new);
+        event.register(ModMenus.STILL.get(), com.nrdhvnstd.halgventmod.client.brewing.StillScreen::new);
+        event.register(ModMenus.AGING_CASK.get(), com.nrdhvnstd.halgventmod.client.brewing.AgingCaskScreen::new);
+        event.register(ModMenus.FERMENTING_BARREL.get(), com.nrdhvnstd.halgventmod.client.brewing.FermentingBarrelScreen::new);
     }
 
     @SubscribeEvent

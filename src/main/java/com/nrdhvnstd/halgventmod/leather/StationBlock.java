@@ -64,7 +64,7 @@ public abstract class StationBlock extends BaseEntityBlock {
     }
 
     /** Где лежит блок-сущность станции: у многоблочной — в главной части. */
-    protected BlockPos stationPos(BlockState state, BlockPos pos) {
+    protected BlockPos stationPos(BlockGetter level, BlockState state, BlockPos pos) {
         return pos;
     }
 
@@ -72,14 +72,14 @@ public abstract class StationBlock extends BaseEntityBlock {
     @Nullable
     public static StationBlockEntity station(BlockGetter level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        BlockPos main = state.getBlock() instanceof StationBlock station ? station.stationPos(state, pos) : pos;
+        BlockPos main = state.getBlock() instanceof StationBlock station ? station.stationPos(level, state, pos) : pos;
         return level.getBlockEntity(main) instanceof StationBlockEntity be ? be : null;
     }
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                               Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!(level.getBlockEntity(stationPos(state, pos)) instanceof StationBlockEntity station)) {
+        if (!(level.getBlockEntity(stationPos(level, state, pos)) instanceof StationBlockEntity station)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (level.isClientSide) {
@@ -93,7 +93,7 @@ public abstract class StationBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                BlockHitResult hit) {
-        if (!(level.getBlockEntity(stationPos(state, pos)) instanceof StationBlockEntity station)) {
+        if (!(level.getBlockEntity(stationPos(level, state, pos)) instanceof StationBlockEntity station)) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide) {

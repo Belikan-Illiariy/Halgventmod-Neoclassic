@@ -66,11 +66,25 @@ public class HearthBlock extends StationBlock {
         return new HearthBlockEntity(pos, state);
     }
 
+    // Под перегонным кубом очаг — только огонь куба: все щелчки (E, ПКМ) идут кубу, огнём правят из окна куба
+    @Override
+    protected BlockPos stationPos(BlockGetter level, BlockState state, BlockPos pos) {
+        return hasStill(level, pos) ? pos.above() : pos;
+    }
+
+    public static boolean hasStill(BlockGetter level, BlockPos pos) {
+        return level.getBlockState(pos.above()).getBlock() instanceof com.nrdhvnstd.halgventmod.brewing.StillBlock;
+    }
+
+    /** Тип блок-сущности: у костра свой. */
+    protected BlockEntityType<HearthBlockEntity> entityType() {
+        return ModBlockEntities.HEARTH.get();
+    }
+
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null
-                : createTickerHelper(type, ModBlockEntities.HEARTH.get(), HearthBlockEntity::serverTick);
+        return level.isClientSide ? null : createTickerHelper(type, entityType(), HearthBlockEntity::serverTick);
     }
 
     /** Дым и треск огня; пар и чад над котлом; над жаркой — по готовности куска (подсказки, когда переворачивать). */
