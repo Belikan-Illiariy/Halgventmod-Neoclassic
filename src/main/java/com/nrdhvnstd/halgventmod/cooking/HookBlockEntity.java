@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Крюк. E сырым мясом или рыбой — подвесить коптиться (до {@link #CAPACITY}): коптится, только пока ниже, не дальше
  * {@link #SMOKE_REACH} блоков, горит очаг или костёр; {@link #SMOKE_TIME} тиков дыма — копчёное.
- * E травами или грибами — подвесить сушиться: летом сохнут за сутки, весной и осенью за двое, зимой за трое;
+ * E травами, грибами или солёной рыбой (провялится) — подвесить сушиться: летом сохнут за сутки, весной и осенью за двое, зимой за трое;
  * под дождём не сохнут. Мясо и травы вместе не вешают. Пустой рукой — снять готовое или узнать, сколько осталось;
  * Shift + E — снять всё как есть.
  */
@@ -68,7 +68,7 @@ public class HookBlockEntity extends StationBlockEntity {
     }
 
     private static boolean dryable(ItemStack stack) {
-        return stack.is(ModItems.HERBS.get()) || stack.is(ModItems.WET_GRAIN.get())
+        return stack.is(ModItems.HERBS.get()) || stack.is(ModItems.WET_GRAIN.get()) || stack.is(ModItems.SALTED_FISH.get())
                 || (stack.is(Cookery.Kind.MUSHROOM.tag()) && !stack.is(ModItems.DRIED_MUSHROOMS.get()));
     }
 
@@ -78,6 +78,9 @@ public class HookBlockEntity extends StationBlockEntity {
         }
         if (raw.is(ModItems.WET_GRAIN.get())) {
             return new ItemStack(ModItems.GREEN_MALT.get()); // проросло
+        }
+        if (raw.is(ModItems.SALTED_FISH.get())) {
+            return new ItemStack(ModItems.DRIED_FISH.get()); // провялилась
         }
         return new ItemStack(raw.is(ModItems.HERBS.get()) ? ModItems.DRIED_HERBS.get() : ModItems.DRIED_MUSHROOMS.get());
     }
@@ -189,13 +192,32 @@ public class HookBlockEntity extends StationBlockEntity {
             changed();
             return true;
         }
+        report(player);
+        return true;
+    }
+
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ: коптится или сохнет, на сколько процентов, есть ли дым. */
+    @Override
+    public void report(Player player) {
+        if (items.isEmpty()) {
+            tell(player, "hook_empty");
+            return;
+        }
+        if (done) {
+            tell(player, "hook_ready", items.size());
+            return;
+        }
         int percent = (int) Math.min(99, 100 * progress / Math.max(1, needed()));
         if (load() == HookBlock.Load.SMOKING) {
             tell(player, smoky(level, worldPosition) ? "hook_smoking" : "hook_no_smoke_status", percent);
         } else {
             tell(player, "hook_drying", percent);
         }
-        return true;
     }
 
     @Override

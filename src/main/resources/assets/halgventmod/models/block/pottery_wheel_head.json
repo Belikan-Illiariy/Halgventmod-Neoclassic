@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/pottery_wheel_head",
+  "render_type": "minecraft:cutout"
+}

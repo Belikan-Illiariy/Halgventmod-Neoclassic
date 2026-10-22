@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "halgventmod:item/pottery/ware/lamp_terracotta" },
+  "overrides": [
+    { "predicate": { "halgventmod:look": 1 }, "model": "halgventmod:item/pottery/oil_lamp_underfired" },
+    { "predicate": { "halgventmod:look": 2 }, "model": "halgventmod:item/pottery/oil_lamp_overfired" },
+    { "predicate": { "halgventmod:look": 3 }, "model": "halgventmod:item/pottery/oil_lamp_burnished" },
+    { "predicate": { "halgventmod:look": 4 }, "model": "halgventmod:item/pottery/oil_lamp_black" },
+    { "predicate": { "halgventmod:look": 5 }, "model": "halgventmod:item/pottery/oil_lamp_terracotta_lit" },
+    { "predicate": { "halgventmod:look": 6 }, "model": "halgventmod:item/pottery/oil_lamp_underfired_lit" },
+    { "predicate": { "halgventmod:look": 7 }, "model": "halgventmod:item/pottery/oil_lamp_overfired_lit" },
+    { "predicate": { "halgventmod:look": 8 }, "model": "halgventmod:item/pottery/oil_lamp_burnished_lit" },
+    { "predicate": { "halgventmod:look": 9 }, "model": "halgventmod:item/pottery/oil_lamp_black_lit" },
+    { "predicate": { "halgventmod:look": 10 }, "model": "halgventmod:item/pottery/oil_lamp_terracotta_cracked" },
+    { "predicate": { "halgventmod:look": 11 }, "model": "halgventmod:item/pottery/oil_lamp_underfired_cracked" },
+    { "predicate": { "halgventmod:look": 12 }, "model": "halgventmod:item/pottery/oil_lamp_overfired_cracked" },
+    { "predicate": { "halgventmod:look": 13 }, "model": "halgventmod:item/pottery/oil_lamp_burnished_cracked" },
+    { "predicate": { "halgventmod:look": 14 }, "model": "halgventmod:item/pottery/oil_lamp_black_cracked" }
+  ]
+}

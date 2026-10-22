@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "age=0": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=1": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=2": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=3": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=4": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=5": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=6": { "model": "halgventmod:block/grape_vine_bare" },
+    "age=7": { "model": "halgventmod:block/grape_vine_fruit" }
+  }
+}

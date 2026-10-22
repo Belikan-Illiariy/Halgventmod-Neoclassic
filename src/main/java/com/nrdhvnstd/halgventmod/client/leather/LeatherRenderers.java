@@ -1,6 +1,8 @@
 package com.nrdhvnstd.halgventmod.client.leather;
 
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,6 +18,7 @@ import com.nrdhvnstd.halgventmod.leather.TanningVatBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -130,10 +133,28 @@ public final class LeatherRenderers {
 
     static final class VatRenderer implements BlockEntityRenderer<TanningVatBlockEntity> {
         private static final float SURFACE = 9.0F / 16.0F;
+        /** Дно лохани Conquest изнутри — 1.5 пикселя. */
+        private static final float BOTTOM = 1.5F / 16.0F;
+        /** Шкуры в растворе — чуть под поверхностью, раствор поверх них. */
+        private static final float SOAKED = SURFACE - 0.06F;
+        /** С какой скоростью шкуры оседают на дно, когда раствор ушёл (блоков в секунду). */
+        private static final float SINK_SPEED = 0.6F;
         /** Лохань Conquest круглая: внешний радиус 0.625 блока, внутренний — с запасом на стенку. */
         private static final float RADIUS = 0.53F;
         private static final int SEGMENTS = 32;
         private final ItemRenderer items;
+        /** Где сейчас видны шкуры в каждом чане. */
+        private final Map<TanningVatBlockEntity, Depth> depths = new WeakHashMap<>();
+
+        private static final class Depth {
+            float height;
+            long time;
+
+            Depth(float height, long time) {
+                this.height = height;
+                this.time = time;
+            }
+        }
 
         VatRenderer(BlockEntityRendererProvider.Context context) {
             this.items = context.getItemRenderer();
@@ -144,11 +165,12 @@ public final class LeatherRenderers {
                            int packedLight, int packedOverlay) {
             List<ItemStack> inside = vat.items();
             int light = lightAbove(vat);
+            float height = height(vat);
             float[][] spots = {{-0.17F, -0.17F}, {0.17F, 0.17F}, {0.17F, -0.17F}, {-0.17F, 0.17F}};
             for (int i = 0; i < inside.size() && i < spots.length; i++) {
                 pose.pushPose();
-                // Шкуры — чуть под поверхностью, раствор поверх них
-                pose.translate(0.5F + spots[i][0], SURFACE - 0.06F, 0.5F + spots[i][1]);
+                // Чуть разная высота — чтобы края соседних шкур на дне не мерцали
+                pose.translate(0.5F + spots[i][0], height + i * 0.004F, 0.5F + spots[i][1]);
                 pose.mulPose(Axis.YP.rotationDegrees(i * 70));
                 lying(items, inside.get(i), pose, buffers, light, vat.getLevel(), 0.42F, i);
                 pose.popPose();
@@ -156,6 +178,23 @@ public final class LeatherRenderers {
             if (vat.solution() != Solution.NONE) {
                 liquid(vat.solution(), pose, buffers, light);
             }
+        }
+
+        /** Без раствора шкуры лежат на дне; ушёл раствор — плавно оседают, а не висят в воздухе. */
+        private float height(TanningVatBlockEntity vat) {
+            float target = vat.solution() == Solution.NONE ? BOTTOM : SOAKED;
+            long now = Util.getMillis();
+            Depth depth = depths.get(vat);
+            if (depth == null) {
+                // Чан только что попал в поле зрения — сразу на своём месте
+                depths.put(vat, new Depth(target, now));
+                return target;
+            }
+            float step = SINK_SPEED * Math.min(now - depth.time, 250L) / 1000.0F;
+            depth.height = depth.height > target ? Math.max(target, depth.height - step)
+                    : Math.min(target, depth.height + step);
+            depth.time = now;
+            return depth.height;
         }
 
         /** Круглая поверхность раствора: анимированная текстура воды, окрашенная в цвет раствора. */

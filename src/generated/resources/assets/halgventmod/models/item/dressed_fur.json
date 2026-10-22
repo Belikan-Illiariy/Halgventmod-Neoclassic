@@ -1,5 +1,49 @@
 {
   "parent": "minecraft:item/generated",
+  "overrides": [
+    {
+      "model": "halgventmod:item/hide/dressed_fur_rabbit",
+      "predicate": {
+        "halgventmod:animal": 1.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_fox",
+      "predicate": {
+        "halgventmod:animal": 2.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_wolf",
+      "predicate": {
+        "halgventmod:animal": 3.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_sheep",
+      "predicate": {
+        "halgventmod:animal": 5.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_llama",
+      "predicate": {
+        "halgventmod:animal": 10.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_bear",
+      "predicate": {
+        "halgventmod:animal": 11.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/dressed_fur_ocelot",
+      "predicate": {
+        "halgventmod:animal": 13.0
+      }
+    }
+  ],
   "textures": {
     "layer0": "halgventmod:item/materials/dressed_fur"
   }

@@ -2,6 +2,8 @@ package com.nrdhvnstd.halgventmod.leather;
 
 import java.util.List;
 
+import com.nrdhvnstd.halgventmod.world.DayLength;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -45,6 +47,23 @@ public abstract class StationBlockEntity extends BlockEntity {
 
     /** Что выпадет, если станцию сломать. */
     public abstract List<ItemStack> contents();
+
+    /**
+     * Станция с ожиданием (сушится, бродит, обжигается…): ПКМ по ней показывает, как идёт дело ({@link #report}),
+     * а при наведении — подсказка «Состояние: ПКМ» (UseHint).
+     */
+    public boolean hasReport() {
+        return false;
+    }
+
+    /** ПКМ по станции: строка состояния — жар, проценты, сколько ждать, чего не хватает. Только на сервере. */
+    public void report(Player player) {
+    }
+
+    /** Сколько реальных минут займут столько единиц времени суток (сутки идут DayLength.DAY_LENGTH_TICKS тиков). */
+    protected static long realMinutes(long dayTimeUnits) {
+        return Math.max(1, Math.round(dayTimeUnits * (double) DayLength.DAY_LENGTH_TICKS / 24000.0 / 1200.0));
+    }
 
     // ---------------------------------------------------------------- помощники
 

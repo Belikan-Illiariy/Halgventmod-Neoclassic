@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/grape_vine_leaves_fruit",
+  "render_type": "minecraft:cutout_mipped"
+}

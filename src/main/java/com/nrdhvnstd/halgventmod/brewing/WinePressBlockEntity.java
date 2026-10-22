@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.nrdhvnstd.halgventmod.cooking.KitchenRecipes;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -62,8 +63,8 @@ public class WinePressBlockEntity extends StationBlockEntity {
         if (stack.is(Items.APPLE)) {
             return "apple";
         }
-        if (stack.is(Items.SWEET_BERRIES)) {
-            return "berry";
+        if (stack.is(KitchenRecipes.BERRY_TAG) || stack.is(ModItems.GRAPE.get())) {
+            return "berry"; // ягоды и виноград — ягодный сок
         }
         return stack.is(Items.GLOW_BERRIES) ? "glowberry" : null;
     }

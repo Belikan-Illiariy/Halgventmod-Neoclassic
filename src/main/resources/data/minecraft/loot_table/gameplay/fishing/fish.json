@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:fishing",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "halgventmod:perch", "weight": 50 },
+        { "type": "minecraft:item", "name": "halgventmod:bream", "weight": 35 },
+        {
+          "type": "minecraft:item", "name": "minecraft:salmon", "weight": 25,
+          "conditions": [ { "condition": "minecraft:location_check", "predicate": { "biomes": "#minecraft:is_ocean" } } ]
+        },
+        {
+          "type": "minecraft:item", "name": "halgventmod:herring", "weight": 50,
+          "conditions": [ { "condition": "minecraft:location_check", "predicate": { "biomes": "#minecraft:is_ocean" } } ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "minecraft:gameplay/fishing/fish"
+}

@@ -1,0 +1,4 @@
+{
+  "parent": "conquest:block/cherry_tree_leaves",
+  "render_type": "minecraft:cutout_mipped"
+}

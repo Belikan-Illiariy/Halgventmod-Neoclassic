@@ -10,7 +10,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Порция блюда из котелка: сытость и насыщение (шкала 0–100), жажда и из чего сварено (id предметов —
+ * Порция блюда из горшка: сытость и насыщение (шкала 0–100), жажда и из чего сварено (id предметов —
  * для подсказки). Лежит компонентом halgventmod:dish; Hunger и Freshness берут значения отсюда,
  * а не из описания предмета.
  */

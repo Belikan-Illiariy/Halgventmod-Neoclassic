@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "conquest:block/barrel_of_clay" },
+    "facing=east": { "model": "conquest:block/barrel_of_clay" },
+    "facing=south": { "model": "conquest:block/barrel_of_clay" },
+    "facing=west": { "model": "conquest:block/barrel_of_clay" }
+  }
+}

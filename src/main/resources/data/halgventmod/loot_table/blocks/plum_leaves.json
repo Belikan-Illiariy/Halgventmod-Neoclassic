@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:plum_leaves" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "random_sequence": "halgventmod:blocks/plum_leaves"
+}

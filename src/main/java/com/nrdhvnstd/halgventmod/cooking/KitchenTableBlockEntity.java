@@ -6,6 +6,7 @@ import java.util.List;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.network.KitchenOpenPayload;
+import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -141,15 +142,13 @@ public class KitchenTableBlockEntity extends StationBlockEntity {
             return Cookery.kind(stack) != null || stack.is(ModItems.WHEAT_FLOUR.get()) || stack.is(ModItems.DOUGH.get());
         }
         KitchenRecipes.Recipe current = KitchenRecipes.get(recipe);
-        if (stack.is(Items.WATER_BUCKET) && current.water()) {
+        if (Pottery.isWater(stack, 1) && current.water()) {
             if (water) {
                 tell(player, "kitchen_has_water");
                 return true;
             }
             water = true;
-            if (!player.getAbilities().instabuild) {
-                player.setItemInHand(hand, new ItemStack(Items.BUCKET));
-            }
+            Pottery.takeWater(player, hand, stack, 1); // ведро или мера из кувшина
             sound(SoundEvents.BUCKET_EMPTY, 0.6F, 1.2F);
             status(player, current);
             changed();

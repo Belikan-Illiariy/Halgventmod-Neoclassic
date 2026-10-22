@@ -11,6 +11,7 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -65,6 +66,14 @@ public abstract class StationBlock extends BaseEntityBlock {
     /** Где лежит блок-сущность станции: у многоблочной — в главной части. */
     protected BlockPos stationPos(BlockState state, BlockPos pos) {
         return pos;
+    }
+
+    /** Блок-сущность станции, в какую бы её часть ни смотрели; null — не станция. */
+    @Nullable
+    public static StationBlockEntity station(BlockGetter level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        BlockPos main = state.getBlock() instanceof StationBlock station ? station.stationPos(state, pos) : pos;
+        return level.getBlockEntity(main) instanceof StationBlockEntity be ? be : null;
     }
 
     @Override

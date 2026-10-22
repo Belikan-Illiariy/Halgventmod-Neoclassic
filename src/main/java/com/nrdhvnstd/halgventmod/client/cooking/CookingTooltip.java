@@ -18,7 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
-/** Подсказки готовки: сытость и состав порции из котелка, начинка сырого пирога. */
+/** Подсказки готовки: сытость и состав порции из горшка, начинка сырого пирога. */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class CookingTooltip {
     private CookingTooltip() {}

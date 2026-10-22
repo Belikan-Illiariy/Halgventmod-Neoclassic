@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": { "item": "halgventmod:goose" },
+  "result": { "id": "halgventmod:cooked_goose" },
+  "experience": 0.35,
+  "cookingtime": 600
+}

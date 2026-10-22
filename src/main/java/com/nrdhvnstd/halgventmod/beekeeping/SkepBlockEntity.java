@@ -186,13 +186,24 @@ public class SkepBlockEntity extends StationBlockEntity {
         if (!stack.isEmpty()) {
             return false;
         }
+        report(player);
+        return true;
+    }
+
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ (и E пустой рукой): есть ли рой, сколько мёда и цветов рядом. */
+    @Override
+    public void report(Player player) {
         flowers = countFlowers();
         if (!bees) {
             tell(player, flowers >= MIN_FLOWERS ? "waiting" : "few_flowers", flowers, MIN_FLOWERS);
         } else {
             tell(player, "status", honey, MAX_HONEY, flowers);
         }
-        return true;
     }
 
     @Override

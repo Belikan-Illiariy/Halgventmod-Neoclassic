@@ -14,6 +14,7 @@ import com.nrdhvnstd.halgventmod.registry.ModBlocks;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModCreativeTabs;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
+import com.nrdhvnstd.halgventmod.registry.ModEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.registry.ModMenus;
 import com.nrdhvnstd.halgventmod.registry.ModSounds;
@@ -34,6 +35,7 @@ public class HalgventMod {
         ModComponents.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModMenus.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

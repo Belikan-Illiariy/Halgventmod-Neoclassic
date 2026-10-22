@@ -1,5 +1,12 @@
 {
   "values": [
-    "halgventmod:rye"
+    "halgventmod:rye",
+    "halgventmod:barley_crop",
+    "halgventmod:oats_crop",
+    "halgventmod:onion_crop",
+    "halgventmod:garlic_crop",
+    "halgventmod:turnip_crop",
+    "halgventmod:beans_crop",
+    "halgventmod:cabbage_crop"
   ]
 }

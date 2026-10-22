@@ -9,6 +9,8 @@ import com.nrdhvnstd.halgventmod.brewing.Brew;
 import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
 import com.nrdhvnstd.halgventmod.leather.Hide;
+import com.nrdhvnstd.halgventmod.pottery.Stored;
+import com.nrdhvnstd.halgventmod.pottery.Vessel;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -138,7 +140,7 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
                     .build());
 
-    // Порция из котелка: сытость, жажда и состав (Dish)
+    // Порция из горшка: сытость, жажда и состав (Dish)
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Dish>> DISH =
             COMPONENTS.register("dish", () -> DataComponentType.<Dish>builder()
                     .persistent(Dish.CODEC)
@@ -171,6 +173,75 @@ public final class ModComponents {
             COMPONENTS.register("brew", () -> DataComponentType.<Brew>builder()
                     .persistent(Brew.CODEC)
                     .networkSynchronized(Brew.STREAM_CODEC)
+                    .build());
+
+    // Гончарное дело (pottery/*): качество глины, сырца и посуды 0–5 (Ужасное…Шедевр)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> POTTERY_QUALITY =
+            COMPONENTS.register("pottery_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Склонность глины трескаться при сушке и обжиге, в процентах: жирная — больше, с шамотом — меньше
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CLAY_CRACK =
+            COMPONENTS.register("clay_crack", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Форма сырца или посудины по вокселям: так её и видно
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Vessel>> VESSEL =
+            COMPONENTS.register("vessel", () -> DataComponentType.<Vessel>builder()
+                    .persistent(Vessel.CODEC)
+                    .networkSynchronized(Vessel.STREAM_CODEC)
+                    .cacheEncoding()
+                    .build());
+
+    // Признаки посуды битами (Pottery.DRIED, CRACKED, BURNISHED, BLACK, UNDERFIRED, OVERFIRED)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> WARE_FLAGS =
+            COMPONENTS.register("ware_flags", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Сколько мер воды в кружке, кувшине или корчаге
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> WATER =
+            COMPONENTS.register("water", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Что лежит в горшке или корчаге
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Stored>> STORED =
+            COMPONENTS.register("stored", () -> DataComponentType.<Stored>builder()
+                    .persistent(Stored.CODEC)
+                    .networkSynchronized(Stored.STREAM_CODEC)
+                    .build());
+
+    // Сколько раз в горшке варили на очаге — износ
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> POT_USES =
+            COMPONENTS.register("pot_uses", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Светильник: запас масла в тиках и горит ли
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LAMP_FUEL =
+            COMPONENTS.register("lamp_fuel", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> LAMP_LIT =
+            COMPONENTS.register("lamp_lit", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // В какую миску налита порция из горшка: её и вернуть, когда съедят
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStack>> SERVED_IN =
+            COMPONENTS.register("served_in", () -> DataComponentType.<ItemStack>builder()
+                    .persistent(ItemStack.CODEC)
+                    .networkSynchronized(ItemStack.STREAM_CODEC)
                     .build());
 
     private ModComponents() {}

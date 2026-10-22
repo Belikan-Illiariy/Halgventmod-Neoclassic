@@ -24,7 +24,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
-/** Что видно на очаге: куски на углях — сырые, прожаренные или сгоревшие (по верхней стороне). */
+/** Что видно на очаге: куски на углях — сырые, прожаренные или сгоревшие (по верхней стороне). Горшок на огне — котёл из модели жаровни. */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class CookingRenderers {
     private CookingRenderers() {}
@@ -51,10 +51,13 @@ public final class CookingRenderers {
         public void render(HearthBlockEntity hearth, float partialTick, PoseStack pose, MultiBufferSource buffers,
                            int packedLight, int packedOverlay) {
             Level level = hearth.getLevel();
-            if (level == null || hearth.hasPot()) {
+            if (level == null) {
                 return;
             }
             int light = LevelRenderer.getLightColor(level, hearth.getBlockPos().above());
+            if (hearth.hasPot()) {
+                return; // горшок на огне — котёл из модели жаровни
+            }
             for (int cell = 0; cell < HearthBlockEntity.CELLS; cell++) {
                 ItemStack raw = hearth.piece(cell);
                 if (raw.isEmpty()) {

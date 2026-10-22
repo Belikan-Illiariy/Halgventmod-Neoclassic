@@ -7,6 +7,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
+import com.nrdhvnstd.halgventmod.leather.StationBlock;
+import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -38,7 +40,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 /**
  * Прицела нет: ванильный крест убран совсем. Взгляд на блок, который используется на E (PickupInput.useBlock), —
  * посередине экрана его название и действие: «Дверь» / «Открыть: E». Сундуки и прочие окна — «Открыть»,
- * открытые дверь, люк, калитка — «Закрыть», остальное (рычаг, кнопка, кровать) — «Использовать».
+ * открытые дверь, люк, калитка — «Закрыть», остальное (рычаг, кнопка, кровать) — «Использовать». Под станцией
+ * с ожиданием (сушка, обжиг, брожение…) — ещё «Состояние: ПКМ».
  * Используемый блок — тот, чей класс переопределяет useWithoutItem (ПКМ пустой рукой что-то делает).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -47,6 +50,7 @@ public final class UseHint {
     private static final ResourceLocation CROSSHAIR = ResourceLocation.withDefaultNamespace("hud/crosshair");
     private static final int COLOR_NAME = 0xFFFFFF;
     private static final int COLOR_ACTION = 0xFFE8A0;
+    private static final int COLOR_STATUS = 0xB8C8D8;
 
     // Переопределяет ли класс блока useWithoutItem — раз на класс
     private static final ClassValue<Boolean> USABLE = new ClassValue<>() {
@@ -149,5 +153,11 @@ public final class UseHint {
         graphics.drawCenteredString(font, state.getBlock().getName(), x, y - font.lineHeight, COLOR_NAME);
         graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use." + action(minecraft.level, pos, state),
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);
+        // Станция с ожиданием: по ПКМ — как идёт дело (Pickup.onRightClickBlock)
+        StationBlockEntity station = StationBlock.station(minecraft.level, pos);
+        if (station != null && station.hasReport()) {
+            graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use.status",
+                    minecraft.options.keyUse.getTranslatedKeyMessage()), x, y + 2 + font.lineHeight, COLOR_STATUS);
+        }
     }
 }

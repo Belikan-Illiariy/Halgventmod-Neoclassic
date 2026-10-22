@@ -4,6 +4,8 @@
     "halgventmod:baking_oven",
     "halgventmod:quern",
     "halgventmod:smoking_hook",
-    "halgventmod:still"
+    "halgventmod:still",
+    "halgventmod:small_kiln",
+    "halgventmod:tall_kiln"
   ]
 }

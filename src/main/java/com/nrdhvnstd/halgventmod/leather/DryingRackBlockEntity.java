@@ -209,6 +209,26 @@ public class DryingRackBlockEntity extends StationBlockEntity {
         return stack.is(ModItems.SALO.get()) || stack.is(Items.HONEYCOMB) || stack.is(ModItems.BEESWAX.get());
     }
 
+    @Override
+    public boolean hasReport() {
+        return true;
+    }
+
+    /** ПКМ: сколько высохло и ждать, мешает ли дождь; высохшая — что можно сделать. */
+    @Override
+    public void report(Player player) {
+        if (item.isEmpty()) {
+            say(player, "rack_empty");
+        } else if (dry) {
+            say(player, softened && oiled ? "rack_report_finished" : "rack_report_dry");
+        } else if (level.isRainingAt(worldPosition.above()) || level.isRainingAt(worldPosition)) {
+            say(player, "rack_report_rain", percent());
+        } else {
+            long required = (long) (daysToDry(level) * DAY);
+            say(player, "rack_report_drying", percent(), realMinutes(Math.max(0, required - progress)));
+        }
+    }
+
     private int percent() {
         long required = (long) (daysToDry(level) * DAY);
         return (int) Math.min(99, progress * 100 / Math.max(1, required));

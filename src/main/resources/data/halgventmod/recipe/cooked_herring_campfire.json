@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": { "item": "halgventmod:herring" },
+  "result": { "id": "halgventmod:cooked_herring" },
+  "experience": 0.35,
+  "cookingtime": 600
+}

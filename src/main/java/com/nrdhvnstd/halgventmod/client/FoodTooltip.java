@@ -1,6 +1,8 @@
 package com.nrdhvnstd.halgventmod.client;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.CookingEvents;
+import com.nrdhvnstd.halgventmod.food.FoodEffects;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
 
@@ -15,7 +17,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
-/** Срок годности в подсказке: над строкой веса. */
+/** Срок годности в подсказке (над строкой веса), эффект еды и риск отравиться сырым. */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class FoodTooltip {
     private FoodTooltip() {}
@@ -24,6 +26,15 @@ public final class FoodTooltip {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
+        // Эффект от еды (FoodEffects) и риск отравиться сырым
+        int fed = FoodEffects.of(stack);
+        if (fed != 0) {
+            event.getToolTip().add(Component.translatable(fed > 0 ? "tooltip.halgventmod.food_effect.satiety"
+                    : "tooltip.halgventmod.food_effect.well_fed", Math.abs(fed)).withStyle(ChatFormatting.GOLD));
+        }
+        if (stack.is(CookingEvents.RAW_FOOD)) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.food_effect.raw").withStyle(ChatFormatting.DARK_RED));
+        }
         int shelfLife = ModFoods.shelfLife(stack);
         if (shelfLife <= 0) {
             return;
