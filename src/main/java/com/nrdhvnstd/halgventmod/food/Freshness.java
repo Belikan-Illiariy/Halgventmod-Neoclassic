@@ -3,12 +3,11 @@ package com.nrdhvnstd.halgventmod.food;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,12 +26,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Freshness {
-    // ===== Испорченная еда — как тухлятина. Меняйте здесь =====
-    public static final float SPOILED_HUNGER_CHANCE = 0.8F; // шанс «Голода»
-    public static final int SPOILED_HUNGER_SECONDS = 30;
-    public static final float SPOILED_NAUSEA_CHANCE = 0.3F; // шанс «Тошноты»
-    public static final int SPOILED_NAUSEA_SECONDS = 10;
-
+    // Испорченная еда даёт «Отравление» (FoodEffects)
     private static final int SCAN_INTERVAL = 20; // проверка инвентаря раз в секунду
 
     private Freshness() {}
@@ -45,12 +39,12 @@ public final class Freshness {
     /** Сколько суток осталось; 0 и меньше — испорчено; null — не портится или ещё не помечено. */
     @Nullable
     public static Integer daysLeft(ItemStack stack, Level level) {
-        ModFoods.FoodInfo info = ModFoods.get(stack);
+        int shelfLife = ModFoods.shelfLife(stack);
         Integer created = stack.get(ModComponents.CREATED_DAY.get());
-        if (info == null || info.shelfLifeDays() <= 0 || created == null) {
+        if (shelfLife <= 0 || created == null) {
             return null;
         }
-        return created + info.shelfLifeDays() - currentDay(level);
+        return created + shelfLife - currentDay(level);
     }
 
     public static boolean isSpoiled(ItemStack stack, Level level) {
@@ -93,29 +87,24 @@ public final class Freshness {
         }
     }
 
-    // Съел или выпил: жажда и последствия испорченного
+    // Съел или выпил: жажда (отравление испорченным — FoodEffects)
     @SubscribeEvent
     public static void onFinishUsing(LivingEntityUseItemEvent.Finish event) {
         if (!(event.getEntity() instanceof Player player) || player.level().isClientSide) {
             return;
         }
         ItemStack used = event.getItem(); // копия предмета до того, как его съели
-        if (!used.has(DataComponents.FOOD)) {
-            return;
+        if (!used.has(DataComponents.FOOD) && !ModFoods.perishable(used)) {
+            return; // не еда (молоко — еда без компонента FOOD, у него срок есть)
         }
 
+        // У блюда из горшка жажда своя (Dish), у остального — из описания еды
         ModFoods.FoodInfo info = ModFoods.get(used);
-        if (info != null && info.thirst() != 0) {
-            Thirst.add(player, info.thirst());
+        Dish dish = used.get(ModComponents.DISH.get());
+        int thirst = dish != null ? dish.thirst() : info != null ? info.thirst() : 0;
+        if (thirst != 0) {
+            Thirst.add(player, thirst);
         }
 
-        if (isSpoiled(used, player.level())) {
-            if (player.getRandom().nextFloat() < SPOILED_HUNGER_CHANCE) {
-                player.addEffect(new MobEffectInstance(MobEffects.HUNGER, SPOILED_HUNGER_SECONDS * 20, 0));
-            }
-            if (player.getRandom().nextFloat() < SPOILED_NAUSEA_CHANCE) {
-                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, SPOILED_NAUSEA_SECONDS * 20, 0));
-            }
-        }
     }
 }

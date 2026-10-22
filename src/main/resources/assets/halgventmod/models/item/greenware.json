@@ -1,0 +1,29 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "halgventmod:item/pottery/greenware/cup_wet" },
+  "overrides": [
+    { "predicate": { "halgventmod:look": 1 }, "model": "halgventmod:item/pottery/greenware_cup_dry" },
+    { "predicate": { "halgventmod:look": 2 }, "model": "halgventmod:item/pottery/greenware_cup_cracked" },
+    { "predicate": { "halgventmod:look": 3 }, "model": "halgventmod:item/pottery/greenware_cup_burnished" },
+    { "predicate": { "halgventmod:look": 4 }, "model": "halgventmod:item/pottery/greenware_bowl_wet" },
+    { "predicate": { "halgventmod:look": 5 }, "model": "halgventmod:item/pottery/greenware_bowl_dry" },
+    { "predicate": { "halgventmod:look": 6 }, "model": "halgventmod:item/pottery/greenware_bowl_cracked" },
+    { "predicate": { "halgventmod:look": 7 }, "model": "halgventmod:item/pottery/greenware_bowl_burnished" },
+    { "predicate": { "halgventmod:look": 8 }, "model": "halgventmod:item/pottery/greenware_jug_wet" },
+    { "predicate": { "halgventmod:look": 9 }, "model": "halgventmod:item/pottery/greenware_jug_dry" },
+    { "predicate": { "halgventmod:look": 10 }, "model": "halgventmod:item/pottery/greenware_jug_cracked" },
+    { "predicate": { "halgventmod:look": 11 }, "model": "halgventmod:item/pottery/greenware_jug_burnished" },
+    { "predicate": { "halgventmod:look": 12 }, "model": "halgventmod:item/pottery/greenware_pot_wet" },
+    { "predicate": { "halgventmod:look": 13 }, "model": "halgventmod:item/pottery/greenware_pot_dry" },
+    { "predicate": { "halgventmod:look": 14 }, "model": "halgventmod:item/pottery/greenware_pot_cracked" },
+    { "predicate": { "halgventmod:look": 15 }, "model": "halgventmod:item/pottery/greenware_pot_burnished" },
+    { "predicate": { "halgventmod:look": 16 }, "model": "halgventmod:item/pottery/greenware_amphora_wet" },
+    { "predicate": { "halgventmod:look": 17 }, "model": "halgventmod:item/pottery/greenware_amphora_dry" },
+    { "predicate": { "halgventmod:look": 18 }, "model": "halgventmod:item/pottery/greenware_amphora_cracked" },
+    { "predicate": { "halgventmod:look": 19 }, "model": "halgventmod:item/pottery/greenware_amphora_burnished" },
+    { "predicate": { "halgventmod:look": 20 }, "model": "halgventmod:item/pottery/greenware_lamp_wet" },
+    { "predicate": { "halgventmod:look": 21 }, "model": "halgventmod:item/pottery/greenware_lamp_dry" },
+    { "predicate": { "halgventmod:look": 22 }, "model": "halgventmod:item/pottery/greenware_lamp_cracked" },
+    { "predicate": { "halgventmod:look": 23 }, "model": "halgventmod:item/pottery/greenware_lamp_burnished" }
+  ]
+}

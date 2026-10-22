@@ -2,7 +2,13 @@ package com.nrdhvnstd.halgventmod.client;
 
 import javax.annotation.Nullable;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
+import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
+import com.nrdhvnstd.halgventmod.leather.StationBlock;
+import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -34,14 +40,17 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 /**
  * Прицела нет: ванильный крест убран совсем. Взгляд на блок, который используется на E (PickupInput.useBlock), —
  * посередине экрана его название и действие: «Дверь» / «Открыть: E». Сундуки и прочие окна — «Открыть»,
- * открытые дверь, люк, калитка — «Закрыть», остальное (рычаг, кнопка, кровать) — «Использовать».
+ * открытые дверь, люк, калитка — «Закрыть», остальное (рычаг, кнопка, кровать) — «Использовать». Под станцией
+ * с ожиданием (сушка, обжиг, брожение…) — ещё «Состояние: ПКМ».
  * Используемый блок — тот, чей класс переопределяет useWithoutItem (ПКМ пустой рукой что-то делает).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class UseHint {
     private static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "use_hint");
+    private static final ResourceLocation CROSSHAIR = ResourceLocation.withDefaultNamespace("hud/crosshair");
     private static final int COLOR_NAME = 0xFFFFFF;
     private static final int COLOR_ACTION = 0xFFE8A0;
+    private static final int COLOR_STATUS = 0xB8C8D8;
 
     // Переопределяет ли класс блока useWithoutItem — раз на класс
     private static final ClassValue<Boolean> USABLE = new ClassValue<>() {
@@ -97,6 +106,24 @@ public final class UseHint {
         return null;
     }
 
+    /**
+     * Нужен ли прицел вместо надписи: на колоде со шкурой с инструментом кожевника в руке (бить по клочкам мездры)
+     * и на очаге с кусками на углях (переворачивать нужный).
+     */
+    private static boolean aiming(Minecraft minecraft, BlockPos pos) {
+        if (minecraft.level.getBlockEntity(pos) instanceof FleshingBeamBlockEntity beam) {
+            return !beam.hide().isEmpty() && FleshingBeamBlockEntity.isLeatherTool(minecraft.player.getMainHandItem());
+        }
+        if (minecraft.level.getBlockEntity(pos) instanceof HearthBlockEntity hearth && !hearth.hasPot()) {
+            for (int cell = 0; cell < HearthBlockEntity.CELLS; cell++) {
+                if (!hearth.piece(cell).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui) {
@@ -111,8 +138,26 @@ public final class UseHint {
         Font font = minecraft.font;
         int x = graphics.guiWidth() / 2;
         int y = graphics.guiHeight() / 2;
+        // Колода со шкурой и инструмент кожевника в руке: вместо надписи — прицел, чтобы попадать по клочкам мездры
+        if (aiming(minecraft, pos)) {
+            // Как ванильный прицел: инверсия цвета под ним, без чёрного фона спрайта
+            RenderSystem.enableBlend();
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ZERO);
+            graphics.blitSprite(CROSSHAIR, (graphics.guiWidth() - 15) / 2, (graphics.guiHeight() - 15) / 2, 15, 15);
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableBlend();
+            return;
+        }
         graphics.drawCenteredString(font, state.getBlock().getName(), x, y - font.lineHeight, COLOR_NAME);
         graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use." + action(minecraft.level, pos, state),
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);
+        // Станция с ожиданием: по ПКМ — как идёт дело (Pickup.onRightClickBlock)
+        StationBlockEntity station = StationBlock.station(minecraft.level, pos);
+        if (station != null && station.hasReport()) {
+            graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use.status",
+                    minecraft.options.keyUse.getTranslatedKeyMessage()), x, y + 2 + font.lineHeight, COLOR_STATUS);
+        }
     }
 }

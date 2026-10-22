@@ -1,0 +1,7 @@
+{
+  "values": [
+    "minecraft:carrot", "minecraft:potato", "minecraft:baked_potato", "minecraft:beetroot",
+    "halgventmod:onion", "halgventmod:turnip", "halgventmod:beans", "halgventmod:cabbage",
+    { "id": "#c:foods/vegetable", "required": false }
+  ]
+}

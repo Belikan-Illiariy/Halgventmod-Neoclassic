@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": ["minecraft:swamp", "minecraft:mangrove_swamp"],
+  "features": "halgventmod:patch_cranberry",
+  "step": "vegetal_decoration"
+}

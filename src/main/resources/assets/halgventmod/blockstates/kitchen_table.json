@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/kitchen_table" },
+    "facing=east": { "model": "halgventmod:block/kitchen_table", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/kitchen_table", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/kitchen_table", "y": 270 }
+  }
+}

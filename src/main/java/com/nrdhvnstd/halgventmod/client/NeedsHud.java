@@ -129,9 +129,9 @@ public final class NeedsHud {
         boolean blink = Stamina.exhausted(player) && player.tickCount / 4 % 2 == 0;
         RenderSystem.enableBlend();
         graphics.blitSprite(blink ? HEALTH_BG : STAMINA_BG, x, y, WIDTH, HEIGHT);
-        segment(graphics, STAMINA, x, y, 0, Stamina.get(player) / Stamina.MAX);
+        segment(graphics, STAMINA, x, y, 0, Stamina.get(player) / Stamina.max(player));
         RenderSystem.disableBlend();
-        value(graphics, minecraft, x, y, Stamina.get(player), Stamina.MAX);
+        value(graphics, minecraft, x, y, Stamina.get(player), Stamina.max(player));
     }
 
     private static void renderHunger(GuiGraphics graphics, DeltaTracker delta) {

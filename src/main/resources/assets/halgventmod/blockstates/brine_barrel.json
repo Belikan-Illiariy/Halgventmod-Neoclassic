@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "minecraft:block/barrel" },
+    "facing=east": { "model": "minecraft:block/barrel" },
+    "facing=south": { "model": "minecraft:block/barrel" },
+    "facing=west": { "model": "minecraft:block/barrel" }
+  }
+}

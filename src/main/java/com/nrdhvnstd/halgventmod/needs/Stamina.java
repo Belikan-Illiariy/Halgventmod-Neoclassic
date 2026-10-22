@@ -1,6 +1,8 @@
 package com.nrdhvnstd.halgventmod.needs;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.food.FoodEffects;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.sound.PlayerVoice;
 import com.nrdhvnstd.halgventmod.sound.Voices;
@@ -60,6 +62,11 @@ public final class Stamina {
 
     public static float get(Player player) {
         return player.getData(ModAttachments.STAMINA).level();
+    }
+
+    /** Сколько выносливости помещается: после горячего сложного блюда — больше (FoodEffects). */
+    public static float max(Player player) {
+        return MAX + (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_MAX : 0);
     }
 
     public static boolean exhausted(Player player) {
@@ -124,8 +131,13 @@ public final class Stamina {
 
         if (data.regenDelay > 0) {
             data.regenDelay--;
-        } else if (data.level < MAX) {
-            data.level = Math.min(data.level + REGEN_PER_TICK, MAX);
+        } else if (data.level < max(player)) {
+            // Навеселе — быстрее; после горячего сложного блюда («Улучшенное насыщение») — тоже
+            float regen = REGEN_PER_TICK * Intoxication.staminaFactor(player)
+                    * (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_REGEN : 1.0F);
+            data.level = Math.min(data.level + regen, max(player));
+        } else if (data.level > max(player)) {
+            data.level = max(player); // эффект прошёл — запас обратно до обычного
         }
     }
 

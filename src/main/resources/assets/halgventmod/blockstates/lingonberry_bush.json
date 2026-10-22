@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "age=0": [ { "model": "halgventmod:block/lingonberry_bush_shrub_a" }, { "model": "halgventmod:block/lingonberry_bush_shrub_b" }, { "model": "halgventmod:block/lingonberry_bush_shrub_c" } ],
+    "age=1": [ { "model": "halgventmod:block/lingonberry_bush_shrub_a" }, { "model": "halgventmod:block/lingonberry_bush_shrub_b" }, { "model": "halgventmod:block/lingonberry_bush_shrub_c" } ],
+    "age=2": [ { "model": "halgventmod:block/lingonberry_bush_shrub_a" }, { "model": "halgventmod:block/lingonberry_bush_shrub_b" }, { "model": "halgventmod:block/lingonberry_bush_shrub_c" } ],
+    "age=3": [ { "model": "halgventmod:block/lingonberry_bush_berries_a" }, { "model": "halgventmod:block/lingonberry_bush_berries_b" }, { "model": "halgventmod:block/lingonberry_bush_berries_c" } ]
+  }
+}

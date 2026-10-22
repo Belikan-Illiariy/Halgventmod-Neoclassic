@@ -1,7 +1,12 @@
 package com.nrdhvnstd.halgventmod.food;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.cooking.Diet;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
+import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
+import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.world.DayLength;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -66,14 +71,42 @@ public final class Hunger {
         data.saturation = Mth.clamp(data.saturation + saturation, 0.0F, data.level);
     }
 
-    /** Съеден предмет. Свои значения из ModItems/ModFoods важнее ванильных. */
+    /**
+     * Съеден предмет. Свои значения из ModItems/ModFoods важнее ванильных, у блюда из горшка — свои (Dish).
+     * Сверху — качество еды (FoodQuality) и разнообразие стола (Diet; питьё не считается).
+     */
     public static void eat(Player player, ItemStack stack, FoodProperties food) {
+        int nutrition;
+        float saturation;
+        Dish dish = stack.get(ModComponents.DISH.get());
         ModFoods.FoodInfo info = ModFoods.get(stack);
-        if (info != null && info.nutrition() >= 0) {
-            add(player, info.nutrition(), info.saturation());
+        if (dish != null) {
+            nutrition = dish.nutrition();
+            saturation = dish.saturation();
+        } else if (info != null && info.nutrition() >= 0) {
+            nutrition = info.nutrition();
+            saturation = info.saturation();
         } else {
-            add(player, food.nutrition() * VANILLA_SCALE, food.saturation() * VANILLA_SCALE);
+            nutrition = food.nutrition() * VANILLA_SCALE;
+            saturation = food.saturation() * VANILLA_SCALE;
         }
+        // Добавки в пирог или булочку с кухонного стола — прибавка к насыщению
+        FoodExtras extras = stack.get(ModComponents.FOOD_EXTRAS.get());
+        if (extras != null) {
+            saturation += extras.saturation();
+        }
+        float quality = FoodQuality.factor(stack);
+        if (FoodEffects.poisoned(player)) {
+            quality *= FoodEffects.POISON_NUTRITION; // мутит: еда идёт впрок вдвое хуже
+        }
+        nutrition = Math.round(nutrition * quality);
+        saturation *= quality;
+        if (!(stack.getItem() instanceof DrinkItem) && !player.level().isClientSide) {
+            Diet.Effect diet = Diet.eat(player, stack);
+            nutrition = Math.round(nutrition * diet.nutrition());
+            saturation *= diet.saturation();
+        }
+        add(player, nutrition, saturation);
     }
 
     /** Вызывается из PlayerMixin на каждую трату голода (бег, прыжки, удары, урон). */
@@ -97,8 +130,11 @@ public final class Hunger {
             addExhaustion(player, perSecond(PASSIVE_PER_DAY) * overweight);
         }
 
-        // Усталость съедает сначала насыщение, потом сытость
-        if (data.exhaustion >= EXHAUSTION_PER_POINT) {
+        // Усталость съедает сначала насыщение, потом сытость. Сытно поел («Сытость») — голод не убывает
+        boolean fed = FoodEffects.fed(player);
+        if (fed) {
+            data.exhaustion = 0;
+        } else if (data.exhaustion >= EXHAUSTION_PER_POINT) {
             data.exhaustion -= EXHAUSTION_PER_POINT;
             if (data.saturation > 0) {
                 data.saturation = Math.max(data.saturation - 1.0F, 0.0F);
@@ -121,7 +157,7 @@ public final class Hunger {
                 data.timer = 0;
             }
         } else if (naturalRegen && data.level >= REGEN_AT && player.isHurt()) {
-            if (++data.timer >= REGEN_INTERVAL) {
+            if (++data.timer >= (fed ? Math.round(REGEN_INTERVAL / FoodEffects.FED_REGEN) : REGEN_INTERVAL)) {
                 player.heal(1.0F);
                 addExhaustion(player, REGEN_EXHAUSTION);
                 data.timer = 0;

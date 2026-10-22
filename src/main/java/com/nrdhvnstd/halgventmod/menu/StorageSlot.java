@@ -23,12 +23,14 @@ public class StorageSlot extends Slot {
     private final Player player;
     private final StorageArea area;
     private final int local; // место внутри области, по строкам
+    private final int grid;  // номер в сетке 9×3 (у творческого и администратора — ванильная ячейка 9 + grid)
 
     public StorageSlot(Player player, int index, int x, int y) {
         super(NO_CONTAINER, index, x, y);
         this.player = player;
         this.area = StorageArea.of(index);
         this.local = area.localIndex(index);
+        this.grid = index;
     }
 
     public StorageArea area() {
@@ -40,9 +42,13 @@ public class StorageSlot extends Slot {
         return local;
     }
 
-    /** Открыта ли ячейка: надета сумка и её вместимость дотягивается до этого места. */
+    /** Открыта ли ячейка: надета сумка и её вместимость дотягивается до этого места. У творческого и администратора — всегда. */
     public boolean isOpen() {
-        return local < Storage.open(player, area);
+        return unrestricted() || local < Storage.open(player, area);
+    }
+
+    private boolean unrestricted() {
+        return Storage.unrestricted(player);
     }
 
     /** Подсказка над пустой ячейкой: открытая — какая это область, закрытая — чем она открывается. */
@@ -59,6 +65,9 @@ public class StorageSlot extends Slot {
 
     @Override
     public ItemStack getItem() {
+        if (unrestricted()) {
+            return player.getInventory().items.get(Storage.vanillaSlot(grid));
+        }
         return isOpen() ? Storage.items(player, area).get(local) : ItemStack.EMPTY;
     }
 
@@ -69,7 +78,10 @@ public class StorageSlot extends Slot {
 
     @Override
     public void set(ItemStack stack) {
-        if (isOpen()) {
+        if (unrestricted()) {
+            player.getInventory().items.set(Storage.vanillaSlot(grid), stack);
+            setChanged();
+        } else if (isOpen()) {
             Storage.items(player, area).set(local, stack);
             setChanged();
         } else if (!stack.isEmpty() && !player.level().isClientSide) {
@@ -86,13 +98,20 @@ public class StorageSlot extends Slot {
     // Окна меняют вещь на месте (grow/shrink) и зовут setChanged — тогда и записываем в сумку
     @Override
     public void setChanged() {
-        if (isOpen()) {
+        if (unrestricted()) {
+            player.getInventory().setChanged();
+        } else if (isOpen()) {
             Storage.changed(player, area);
         }
     }
 
     @Override
     public ItemStack remove(int amount) {
+        if (unrestricted()) {
+            ItemStack taken = player.getInventory().items.get(Storage.vanillaSlot(grid)).split(amount);
+            setChanged();
+            return taken;
+        }
         if (!isOpen()) {
             return ItemStack.EMPTY;
         }
@@ -104,6 +123,9 @@ public class StorageSlot extends Slot {
     @Override
     public boolean mayPlace(ItemStack stack) {
         // Надетую сумку — не в саму себя (при Shift+клике она ещё надета, пока её перекладывают)
+        if (unrestricted()) {
+            return Storage.canStore(stack);
+        }
         return isOpen() && Storage.canStore(stack) && stack != Storage.holder(player, area);
     }
 }

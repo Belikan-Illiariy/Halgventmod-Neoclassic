@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "halgventmod:item/pottery/ware/jug_terracotta" },
+  "overrides": [
+    { "predicate": { "halgventmod:look": 1 }, "model": "halgventmod:item/pottery/clay_jug_underfired" },
+    { "predicate": { "halgventmod:look": 2 }, "model": "halgventmod:item/pottery/clay_jug_overfired" },
+    { "predicate": { "halgventmod:look": 3 }, "model": "halgventmod:item/pottery/clay_jug_burnished" },
+    { "predicate": { "halgventmod:look": 4 }, "model": "halgventmod:item/pottery/clay_jug_black" },
+    { "predicate": { "halgventmod:look": 10 }, "model": "halgventmod:item/pottery/clay_jug_terracotta_cracked" },
+    { "predicate": { "halgventmod:look": 11 }, "model": "halgventmod:item/pottery/clay_jug_underfired_cracked" },
+    { "predicate": { "halgventmod:look": 12 }, "model": "halgventmod:item/pottery/clay_jug_overfired_cracked" },
+    { "predicate": { "halgventmod:look": 13 }, "model": "halgventmod:item/pottery/clay_jug_burnished_cracked" },
+    { "predicate": { "halgventmod:look": 14 }, "model": "halgventmod:item/pottery/clay_jug_black_cracked" }
+  ]
+}

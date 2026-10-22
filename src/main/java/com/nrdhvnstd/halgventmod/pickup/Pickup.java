@@ -9,6 +9,8 @@ import com.nrdhvnstd.halgventmod.gear.GearInventory;
 import com.nrdhvnstd.halgventmod.gear.GearRules;
 import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.gear.ModGear;
+import com.nrdhvnstd.halgventmod.leather.StationBlock;
+import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.mixin.AbstractArrowAccessor;
 import com.nrdhvnstd.halgventmod.mixin.ItemEntityAccessor;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -20,10 +22,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -84,7 +88,8 @@ public final class Pickup {
 
     /**
      * Блок используется на E, предмет — на ПКМ. E — только блок, без предмета из руки (isUseKey).
-     * ПКМ — только предмет: ставит блок, применяет предмет, но двери, сундуки и рычаги не трогает.
+     * ПКМ — только предмет: ставит блок, применяет предмет, но двери, сундуки и рычаги не трогает;
+     * по станции с ожиданием (StationBlockEntity.hasReport) ПКМ показывает, как идёт дело.
      * Замки (LockEvents, приоритет выше) отменяют событие раньше.
      */
     @SubscribeEvent
@@ -93,9 +98,19 @@ public final class Pickup {
         if (event.getHand() == InteractionHand.MAIN_HAND && isUseKey(player)) {
             event.setUseItem(TriState.FALSE);
             clearUseKey(player);
-        } else {
-            event.setUseBlock(TriState.FALSE);
+            return;
         }
+        // ПКМ по станции с ожиданием — как идёт дело. Блоком в руке по ней по-прежнему строят
+        StationBlockEntity station = StationBlock.station(event.getLevel(), event.getPos());
+        if (station != null && station.hasReport() && !(player.getMainHandItem().getItem() instanceof BlockItem)) {
+            if (event.getHand() == InteractionHand.MAIN_HAND && !event.getLevel().isClientSide) {
+                station.report(player);
+            }
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+        event.setUseBlock(TriState.FALSE);
     }
 
     /** Можно ли вообще подобрать эту сущность (без дальности). Клиент зовёт для подсветки. */

@@ -1,0 +1,86 @@
+{
+  "parent": "minecraft:item/generated",
+  "overrides": [
+    {
+      "model": "halgventmod:item/hide/raw_hide_rabbit",
+      "predicate": {
+        "halgventmod:animal": 1.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_fox",
+      "predicate": {
+        "halgventmod:animal": 2.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_wolf",
+      "predicate": {
+        "halgventmod:animal": 3.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_goat",
+      "predicate": {
+        "halgventmod:animal": 4.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_sheep",
+      "predicate": {
+        "halgventmod:animal": 5.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_pig",
+      "predicate": {
+        "halgventmod:animal": 6.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_hoglin",
+      "predicate": {
+        "halgventmod:animal": 7.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_cow",
+      "predicate": {
+        "halgventmod:animal": 8.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_horse",
+      "predicate": {
+        "halgventmod:animal": 9.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_llama",
+      "predicate": {
+        "halgventmod:animal": 10.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_bear",
+      "predicate": {
+        "halgventmod:animal": 11.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_camel",
+      "predicate": {
+        "halgventmod:animal": 12.0
+      }
+    },
+    {
+      "model": "halgventmod:item/hide/raw_hide_ocelot",
+      "predicate": {
+        "halgventmod:animal": 13.0
+      }
+    }
+  ],
+  "textures": {
+    "layer0": "halgventmod:item/materials/raw_hide"
+  }
+}

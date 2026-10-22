@@ -5,6 +5,12 @@ import java.util.List;
 import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.brewing.Brew;
+import com.nrdhvnstd.halgventmod.cooking.Dish;
+import com.nrdhvnstd.halgventmod.cooking.FoodExtras;
+import com.nrdhvnstd.halgventmod.leather.Hide;
+import com.nrdhvnstd.halgventmod.pottery.Stored;
+import com.nrdhvnstd.halgventmod.pottery.Vessel;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -90,6 +96,152 @@ public final class ModComponents {
             COMPONENTS.register("armorial_book", () -> DataComponentType.<String>builder()
                     .persistent(Codec.STRING)
                     .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Кожевенное дело (leather/*): чья шкура, сколько кусков, с мехом ли, снята ли мездра
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Hide>> HIDE =
+            COMPONENTS.register("hide", () -> DataComponentType.<Hide>builder()
+                    .persistent(Hide.CODEC)
+                    .networkSynchronized(Hide.STREAM_CODEC)
+                    .build());
+
+    // Во что высохнет мокрая кожа на раме (Tannage)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TANNAGE =
+            COMPONENTS.register("tannage", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Качество кожи и вещей из неё 0–4 (LeatherQuality), видно признаком редкости
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LEATHER_QUALITY =
+            COMPONENTS.register("leather_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 4))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Сутки, когда кожаную вещь последний раз смазали (LeatherCare)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> OILED_DAY =
+            COMPONENTS.register("oiled_day", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Кожаная вещь пересохла — хуже защищает
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> DRIED_OUT =
+            COMPONENTS.register("dried_out", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // Готовка (cooking/*): качество еды 0–4 (FoodQuality), видно признаком редкости
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FOOD_QUALITY =
+            COMPONENTS.register("food_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Порция из горшка: сытость, жажда и состав (Dish)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Dish>> DISH =
+            COMPONENTS.register("dish", () -> DataComponentType.<Dish>builder()
+                    .persistent(Dish.CODEC)
+                    .networkSynchronized(Dish.STREAM_CODEC)
+                    .build());
+
+    // Начинка сырого пирога: meat, mushroom, berry
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PIE_FILLING =
+            COMPONENTS.register("pie_filling", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Качество снаряжения 0–5: Ужасный…Шедевр (quality/GearQuality), видно признаком
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> GEAR_QUALITY =
+            COMPONENTS.register("gear_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Необязательные добавки в пирог или булочку: что и сколько насыщения (FoodExtras)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FoodExtras>> FOOD_EXTRAS =
+            COMPONENTS.register("food_extras", () -> DataComponentType.<FoodExtras>builder()
+                    .persistent(FoodExtras.CODEC)
+                    .networkSynchronized(FoodExtras.STREAM_CODEC)
+                    .build());
+
+    // Состав напитка или сусла: основа и приметы (brewing/Brew)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Brew>> BREW =
+            COMPONENTS.register("brew", () -> DataComponentType.<Brew>builder()
+                    .persistent(Brew.CODEC)
+                    .networkSynchronized(Brew.STREAM_CODEC)
+                    .build());
+
+    // Гончарное дело (pottery/*): качество глины, сырца и посуды 0–5 (Ужасное…Шедевр)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> POTTERY_QUALITY =
+            COMPONENTS.register("pottery_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Склонность глины трескаться при сушке и обжиге, в процентах: жирная — больше, с шамотом — меньше
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CLAY_CRACK =
+            COMPONENTS.register("clay_crack", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Форма сырца или посудины по вокселям: так её и видно
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Vessel>> VESSEL =
+            COMPONENTS.register("vessel", () -> DataComponentType.<Vessel>builder()
+                    .persistent(Vessel.CODEC)
+                    .networkSynchronized(Vessel.STREAM_CODEC)
+                    .cacheEncoding()
+                    .build());
+
+    // Признаки посуды битами (Pottery.DRIED, CRACKED, BURNISHED, BLACK, UNDERFIRED, OVERFIRED)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> WARE_FLAGS =
+            COMPONENTS.register("ware_flags", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Сколько мер воды в кружке, кувшине или корчаге
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> WATER =
+            COMPONENTS.register("water", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Что лежит в горшке или корчаге
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Stored>> STORED =
+            COMPONENTS.register("stored", () -> DataComponentType.<Stored>builder()
+                    .persistent(Stored.CODEC)
+                    .networkSynchronized(Stored.STREAM_CODEC)
+                    .build());
+
+    // Сколько раз в горшке варили на очаге — износ
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> POT_USES =
+            COMPONENTS.register("pot_uses", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Светильник: запас масла в тиках и горит ли
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LAMP_FUEL =
+            COMPONENTS.register("lamp_fuel", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> LAMP_LIT =
+            COMPONENTS.register("lamp_lit", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // В какую миску налита порция из горшка: её и вернуть, когда съедят
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStack>> SERVED_IN =
+            COMPONENTS.register("served_in", () -> DataComponentType.<ItemStack>builder()
+                    .persistent(ItemStack.CODEC)
+                    .networkSynchronized(ItemStack.STREAM_CODEC)
                     .build());
 
     private ModComponents() {}

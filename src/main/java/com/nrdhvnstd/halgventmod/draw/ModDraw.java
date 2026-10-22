@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -93,6 +94,8 @@ public final class ModDraw {
                 return tagDraw.type();
             }
         }
-        return stack.getItem() instanceof BlockItem ? DEFAULT_BLOCK : DEFAULT_ITEM;
+        // Семена и корнеплоды (морковь, рожь, лук) — тоже «блоки», но в руку берутся как мелочь
+        boolean block = stack.getItem() instanceof BlockItem && !(stack.getItem() instanceof ItemNameBlockItem);
+        return block ? DEFAULT_BLOCK : DEFAULT_ITEM;
     }
 }

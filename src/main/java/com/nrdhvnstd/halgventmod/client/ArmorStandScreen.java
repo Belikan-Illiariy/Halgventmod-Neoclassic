@@ -61,16 +61,13 @@ public class ArmorStandScreen extends AbstractContainerScreen<ArmorStandMenu> {
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        ArmorInventoryScreen.bevel(graphics, x, y, x + imageWidth, y + imageHeight, ArmorInventoryScreen.WINDOW_FILL,
-                ArmorInventoryScreen.WINDOW_LIGHT, ArmorInventoryScreen.WINDOW_DARK);
-        graphics.fill(x + PlayerArmorMenu.FIGURE_LEFT, y + PlayerArmorMenu.FIGURE_TOP,
-                x + PlayerArmorMenu.FIGURE_RIGHT, y + PlayerArmorMenu.FIGURE_BOTTOM, 0xFF000000);
+        // Стиль Conquest Reforged, как в окне инвентаря
+        ConquestUi.window(graphics, x, y, x + imageWidth, y + imageHeight);
+        ConquestUi.inset(graphics, x + PlayerArmorMenu.FIGURE_LEFT, y + PlayerArmorMenu.FIGURE_TOP,
+                x + PlayerArmorMenu.FIGURE_RIGHT, y + PlayerArmorMenu.FIGURE_BOTTOM);
         for (Slot slot : menu.slots) {
             if (slot.isActive()) {
-                boolean locked = slot instanceof StorageSlot storage && !storage.isOpen();
-                ArmorInventoryScreen.bevel(graphics, x + slot.x - 1, y + slot.y - 1, x + slot.x + 17, y + slot.y + 17,
-                        locked ? ArmorInventoryScreen.SLOT_LOCKED : ArmorInventoryScreen.SLOT_FILL,
-                        ArmorInventoryScreen.SLOT_SHADOW, ArmorInventoryScreen.WINDOW_LIGHT);
+                ConquestUi.slot(graphics, x + slot.x, y + slot.y, slot instanceof StorageSlot storage && !storage.isOpen());
             }
         }
         StorageSlotOverlay.drawDividers(graphics, this, x, y); // черта между спиной и подсумками

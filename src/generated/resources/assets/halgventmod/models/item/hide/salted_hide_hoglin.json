@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "halgventmod:item/materials/hide/salted_hide_hoglin"
+  }
+}

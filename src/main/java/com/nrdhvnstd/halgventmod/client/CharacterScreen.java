@@ -191,7 +191,7 @@ public class CharacterScreen extends Screen implements MenuTabScreen {
                 new Stat("health", need(player.getHealth(), player.getMaxHealth())),
                 new Stat("hunger", need(Hunger.get(player), Hunger.MAX)),
                 new Stat("saturation", need(Hunger.saturation(player), Hunger.MAX)),
-                new Stat("stamina", need(Stamina.get(player), Stamina.MAX)),
+                new Stat("stamina", need(Stamina.get(player), Stamina.max(player))),
                 new Stat("thirst", need(Thirst.get(player), Thirst.MAX)),
                 new Stat("intoxication", need(0, NEED_MAX)), // пока нет в моде
                 new Stat("pain", need(0, NEED_MAX)));        // пока нет в моде

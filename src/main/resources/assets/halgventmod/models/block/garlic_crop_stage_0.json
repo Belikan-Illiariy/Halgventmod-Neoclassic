@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/crop",
+  "render_type": "minecraft:cutout",
+  "textures": { "crop": "halgventmod:block/garlic_crop_stage0" }
+}
+{
+  "parent": "minecraft:block/crop",
+  "render_type": "minecraft:cutout",
+  "textures": { "crop": "halgventmod:block/0_stage" }
+}

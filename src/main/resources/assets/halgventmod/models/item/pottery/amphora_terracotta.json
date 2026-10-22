@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "halgventmod:item/pottery/ware/amphora_terracotta" }
+}

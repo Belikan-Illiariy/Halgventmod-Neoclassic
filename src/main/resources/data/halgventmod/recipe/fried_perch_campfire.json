@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": { "item": "halgventmod:perch" },
+  "result": { "id": "halgventmod:fried_fish" },
+  "experience": 0.35,
+  "cookingtime": 600
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "conquest:block/skep_beehive_1" },
+    "facing=east": { "model": "conquest:block/skep_beehive_1", "y": 90 },
+    "facing=south": { "model": "conquest:block/skep_beehive_1", "y": 180 },
+    "facing=west": { "model": "conquest:block/skep_beehive_1", "y": 270 }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,loaded=true": { "model": "conquest:block/tanning_rack" },
+    "facing=east,loaded=true": { "model": "conquest:block/tanning_rack", "y": 90 },
+    "facing=south,loaded=true": { "model": "conquest:block/tanning_rack", "y": 180 },
+    "facing=west,loaded=true": { "model": "conquest:block/tanning_rack", "y": 270 },
+    "facing=north,loaded=false": { "model": "halgventmod:block/drying_rack_empty" },
+    "facing=east,loaded=false": { "model": "halgventmod:block/drying_rack_empty", "y": 90 },
+    "facing=south,loaded=false": { "model": "halgventmod:block/drying_rack_empty", "y": 180 },
+    "facing=west,loaded=false": { "model": "halgventmod:block/drying_rack_empty", "y": 270 }
+  }
+}
