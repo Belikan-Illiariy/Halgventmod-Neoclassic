@@ -38,6 +38,7 @@
 ### Файлы
 
 - `weaving/` (новое), `client/weaving/`, `network/Weave*Payload.java`; `leather/LeatherTableBlockEntity.java`, `CutShape.java`, `client/leather/CutScreen.java`, `SewingTableScreen.java`, `menu/SewingTableMenu.java` (стол портного и `PatternScreen` удалены); `cooking/Fire.java`, `FirePitBlock.java`; `menu/*Menu.java`, `client/StationScreen.java`, `TextFit.java`, окна в `client/cooking`, `client/pottery`, `client/brewing`; `brewing/FermentingBarrelBlockEntity.java`, `AgingCaskBlockEntity.java` — календарь; `brewing/Intoxication.java`, `client/QualityTooltip.java` — качество хмельного; `pottery/Pottery.java`, `WareItem.java` — кувшин; ресурсы льна, стана, костра, крышки бочки, иконки ткачества (`tools/icon_painter/SculptIcons.cs`).
+- `docs/Halgventmod_документация.docx` — версия 0.0.11: новая глава «16. Ткачество», огонь и окна станций, шитейный стол и раскрой, бочки по календарю, кувшин, горн с тягой, сивуха и похмелье по качеству; главы 16–19 стали 17–20.
 
 ## 0.0.10 — 22 октября 2026
 
