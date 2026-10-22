@@ -3,6 +3,10 @@ Halgventmod: Neoclassic
 
 Sound credits: [CREDITS_SOUNDS.md](src/main/resources/CREDITS_SOUNDS.md) (CC-BY and CC-BY-SA authors; the file is also packed into the mod jar).
 
+**Таблица баланса (TABLITsA1), Атлас и текстуры** — в отдельной ветке
+[halgvent-files](https://github.com/bynelog/Halgventmod-Neoclassic/tree/halgvent-files),
+всегда последняя версия, без истории.
+
 
 Installation information
 =======
