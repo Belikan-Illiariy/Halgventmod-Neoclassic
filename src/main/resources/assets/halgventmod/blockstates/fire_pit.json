@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,lit=false,pot=false": { "model": "halgventmod:block/fire_pit", "y": 180 },
+    "facing=north,lit=false,pot=true": { "model": "halgventmod:block/fire_pit", "y": 180 },
+    "facing=north,lit=true,pot=false": { "model": "halgventmod:block/fire_pit_lit", "y": 180 },
+    "facing=north,lit=true,pot=true": { "model": "halgventmod:block/fire_pit_lit", "y": 180 },
+    "facing=south,lit=false,pot=false": { "model": "halgventmod:block/fire_pit" },
+    "facing=south,lit=false,pot=true": { "model": "halgventmod:block/fire_pit" },
+    "facing=south,lit=true,pot=false": { "model": "halgventmod:block/fire_pit_lit" },
+    "facing=south,lit=true,pot=true": { "model": "halgventmod:block/fire_pit_lit" },
+    "facing=east,lit=false,pot=false": { "model": "halgventmod:block/fire_pit", "y": 270 },
+    "facing=east,lit=false,pot=true": { "model": "halgventmod:block/fire_pit", "y": 270 },
+    "facing=east,lit=true,pot=false": { "model": "halgventmod:block/fire_pit_lit", "y": 270 },
+    "facing=east,lit=true,pot=true": { "model": "halgventmod:block/fire_pit_lit", "y": 270 },
+    "facing=west,lit=false,pot=false": { "model": "halgventmod:block/fire_pit", "y": 90 },
+    "facing=west,lit=false,pot=true": { "model": "halgventmod:block/fire_pit", "y": 90 },
+    "facing=west,lit=true,pot=false": { "model": "halgventmod:block/fire_pit_lit", "y": 90 },
+    "facing=west,lit=true,pot=true": { "model": "halgventmod:block/fire_pit_lit", "y": 90 }
+  }
+}

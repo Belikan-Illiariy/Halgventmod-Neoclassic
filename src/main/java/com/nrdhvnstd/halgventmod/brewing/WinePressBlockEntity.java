@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.nrdhvnstd.halgventmod.cooking.KitchenRecipes;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
+import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
@@ -27,7 +28,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * Давильня. E яблоками или ягодами — засыпать (до {@link #CAPACITY}, одно за раз); E пустой рукой — давить:
  * {@link #PRESSES} нажатий на плод, ровно, дожидаясь замаха — в спешке плод с шансом {@link #SPILL_CHANCE}
  * давится мимо. Каждый плод — мера сока; {@link #JUICE_PER_BOTTLE} меры — склянка сусла (E склянкой).
- * Яблоки — яблочное сусло (сидр), ягоды — ягодное (вино), светящиеся ягоды — сусло для «болотного» вина.
+ * Яблоки и груши — сусло для сидра, виноград — для вина, вишня и слива — для вишнёвого и сливового вина, прочие
+ * ягоды — ягодное (вино), светящиеся ягоды — сусло для «болотного» вина. Сусло — склянкой, корчагой или кувшином.
  * Shift + E пустой рукой — забрать плоды назад.
  */
 public class WinePressBlockEntity extends StationBlockEntity {
@@ -63,8 +65,20 @@ public class WinePressBlockEntity extends StationBlockEntity {
         if (stack.is(Items.APPLE)) {
             return "apple";
         }
-        if (stack.is(KitchenRecipes.BERRY_TAG) || stack.is(ModItems.GRAPE.get())) {
-            return "berry"; // ягоды и виноград — ягодный сок
+        if (stack.is(ModItems.PEAR.get())) {
+            return "pear";
+        }
+        if (stack.is(ModItems.GRAPE.get())) {
+            return "grape";
+        }
+        if (stack.is(ModItems.CHERRY.get())) {
+            return "cherry";
+        }
+        if (stack.is(ModItems.PLUM.get())) {
+            return "plum";
+        }
+        if (stack.is(KitchenRecipes.BERRY_TAG)) {
+            return "berry"; // черника, брусника, клюква, лесная ягода
         }
         return stack.is(Items.GLOW_BERRIES) ? "glowberry" : null;
     }
@@ -94,6 +108,23 @@ public class WinePressBlockEntity extends StationBlockEntity {
             sound(SoundEvents.SWEET_BERRY_BUSH_PLACE, 0.8F, 1.0F);
             tell(player, "press_fruit", count, juice);
             changed();
+            return true;
+        }
+        // Корчагой или кувшином — налить сусла сколько влезет
+        if (Pottery.drinkCapacity(stack) > 0 && stack.getCount() == 1) {
+            ItemStack must = Brewing.make(ModItems.MUST.get(), Brew.of(juiceKind));
+            int poured = 0;
+            while (juice >= JUICE_PER_BOTTLE && Pottery.canPour(stack, must, level)) {
+                Pottery.pour(stack, must, level);
+                juice -= JUICE_PER_BOTTLE;
+                poured++;
+            }
+            if (poured > 0) {
+                sound(SoundEvents.BOTTLE_FILL, 1.0F, 0.9F);
+                changed();
+            } else {
+                tell(player, juice < JUICE_PER_BOTTLE ? "press_no_juice" : "vessel_no", juice, JUICE_PER_BOTTLE);
+            }
             return true;
         }
         if (stack.is(Items.GLASS_BOTTLE)) {

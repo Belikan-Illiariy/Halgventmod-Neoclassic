@@ -70,7 +70,7 @@ public class PotteryWheelBlock extends StationBlock {
     }
 
     @Override
-    protected BlockPos stationPos(BlockState state, BlockPos pos) {
+    protected BlockPos stationPos(BlockGetter level, BlockState state, BlockPos pos) {
         return state.getValue(PART) == Part.FOOT ? pos : pos.relative(toOther(state));
     }
 

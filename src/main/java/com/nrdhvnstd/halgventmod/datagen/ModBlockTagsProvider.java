@@ -28,7 +28,7 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MAINTAINS_FARMLAND).add(ModBlocks.RYE.get());
         // Остальные грядки — так же
         for (var crop : java.util.List.of(ModBlocks.BARLEY_CROP, ModBlocks.OATS_CROP, ModBlocks.ONION_CROP,
-                ModBlocks.GARLIC_CROP, ModBlocks.TURNIP_CROP, ModBlocks.BEANS_CROP, ModBlocks.CABBAGE_CROP)) {
+                ModBlocks.GARLIC_CROP, ModBlocks.TURNIP_CROP, ModBlocks.BEANS_CROP, ModBlocks.CABBAGE_CROP, ModBlocks.FLAX_CROP)) {
             tag(BlockTags.CROPS).add(crop.get());
             tag(BlockTags.MAINTAINS_FARMLAND).add(crop.get());
         }
@@ -52,12 +52,14 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.FLESHING_BEAM.get(), ModBlocks.TANNING_VAT.get(),
                         ModBlocks.DRYING_RACK.get(), ModBlocks.LEATHER_TABLE.get());
+        // Ткацкий станок — тоже
+        tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.LOOM.get());
 
         // Готовка: каменное — киркой, бочка — топором
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModBlocks.HEARTH.get(), ModBlocks.BAKING_OVEN.get(), ModBlocks.QUERN.get(), ModBlocks.SMOKING_HOOK.get());
         tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get(),
+                .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get(), ModBlocks.FIRE_PIT.get(),
                         ModBlocks.WINE_PRESS.get(), ModBlocks.FERMENTING_BARREL.get(), ModBlocks.AGING_CASK.get());
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STILL.get());
 

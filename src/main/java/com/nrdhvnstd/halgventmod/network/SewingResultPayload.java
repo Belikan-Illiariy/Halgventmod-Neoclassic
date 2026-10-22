@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/** Клиент → сервер: шитьё на столе кожевника закончено с таким числом промахов. Сервер проверяет всё остальное. */
+/** Клиент → сервер: шитьё на шитейном столе закончено с таким числом промахов. Сервер проверяет всё остальное. */
 public record SewingResultPayload(BlockPos pos, int misses) implements CustomPacketPayload {
     public static final Type<SewingResultPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "sewing_result"));

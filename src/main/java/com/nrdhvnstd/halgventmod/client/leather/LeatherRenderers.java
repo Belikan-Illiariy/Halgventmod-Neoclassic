@@ -265,7 +265,7 @@ public final class LeatherRenderers {
 
             // Раскроенная заготовка — на левой половине (до раскроя там пусто: выкройка видна в окне)
             if (table.pattern() >= 0 && table.isCut() && level != null) {
-                ItemStack result = LeatherPatterns.get(table.pattern()).result().copyWithCount(1);
+                ItemStack result = table.current().result().copyWithCount(1);
                 pose.pushPose();
                 pose.translate(0.5F, TOP, 0.5F);
                 pose.mulPose(Axis.YP.rotationDegrees(yaw));

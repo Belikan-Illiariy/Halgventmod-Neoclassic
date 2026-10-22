@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "conquest:models/obj/looms/warp_weighted_loom_threaded.obj",
+  "emissive_ambient": true,
+  "flip_v": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "weights": "conquest:block/7_tools/3_utility/loom/loom_weights_clay",
+    "wood": "conquest:block/7_tools/3_utility/loom/weighted_loom_wood",
+    "particle": "conquest:block/7_tools/3_utility/loom/weighted_loom_wood"
+  }
+}

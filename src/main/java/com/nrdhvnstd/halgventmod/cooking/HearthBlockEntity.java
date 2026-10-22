@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
+import com.nrdhvnstd.halgventmod.menu.HearthMenu;
 import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModBlocks;
@@ -17,28 +18,35 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.ItemAbilities;
 
 /**
- * Очаг. Всё на E:
+ * Очаг и костёр (FirePitBlock — тот же очаг на земле). ПКМ — окно (HearthMenu): огонь, а с горшком — и горшок.
+ * На E:
  * <ul>
- *   <li><b>огонь</b>: дрова (бревно, доски, палки, уголь) — запас топлива; огниво, огненный заряд или факел — разжечь.
- *       Жар 1–3 зависит от запаса; без подкладки огонь гаснет, под дождём горит втрое быстрее. Прогоревшее даёт
- *       золу — забрать лопатой;</li>
- *   <li><b>горшок</b> (глиняный горшок на очаг, на огне выглядит котелком — модель жаровни Conquest с котлом): ведро или кувшин воды, до {@link Cookery#CAPACITY}
- *       продуктов, варится {@link #COOK_TIME} единиц жара. Каждые {@link #STIR_EVERY} тиков варево надо помешать
- *       половником — иначе через {@link #STIR_GRACE} тиков пригорает (качество −1). Готовое черпают миской, деревянной
- *       или глиняной (отвар — склянкой). Горшок изнашивается: выварен — трескается (Pottery.potUses).
- *       Shift + E пустой рукой — вынуть последнее положенное (пока не начало вариться) или снять пустой горшок;</li>
+ *   <li><b>огонь</b> ({@link Fire}): дрова (бревно, доски, палки, уголь) — в {@link Fire#SLOTS} ячейки, по полену;
+ *       огниво, огненный заряд или факел — разжечь. Температура тянется к {@link #TARGETS} по числу поленьев,
+ *       жар 1–3 — по температуре; под дождём горит втрое быстрее. «Затушить» в окне — огонь гаснет, недогоревшее
+ *       остаётся, температура — 0. Прогоревшее даёт золу — забрать лопатой;</li>
+ *   <li><b>горшок</b> (глиняный горшок на огонь, выглядит котелком): ведро или кувшин воды, до {@link Cookery#CAPACITY}
+ *       продуктов (в окне — ячейки горшка), варится {@link #COOK_TIME} единиц жара. Каждые {@link #STIR_EVERY} тиков
+ *       варево надо помешать половником — иначе через {@link #STIR_GRACE} тиков пригорает (качество −1). Готовое
+ *       черпают миской, деревянной или глиняной (отвар — склянкой). Горшок изнашивается: выварен — трескается
+ *       (Pottery.potUses). Shift + E пустой рукой — вынуть последнее положенное (пока не начало вариться) или снять
+ *       пустой горшок; в окне — «Опорожнить»;</li>
  *   <li><b>жарка</b> (без горшка): мясо, рыбу, картофель кладут на угли — до {@link #CELLS} кусков, каждый в свою
  *       четверть. Жарится нижняя сторона; E пустой рукой по куску — перевернуть, по прожаренному с двух сторон — снять
  *       (Shift + E — снять сразу). Сторона готова с {@link #READY}, пережарена с {@link #OVER}, сгорела с
@@ -47,9 +55,12 @@ import net.neoforged.neoforge.common.ItemAbilities;
  */
 public class HearthBlockEntity extends StationBlockEntity {
     // Меняйте здесь
-    public static final int MAX_FUEL = 9600;
-    public static final int HOT_FUEL = 4800;      // жар 3 выше этого запаса
-    public static final int WARM_FUEL = 1600;     // жар 2 выше этого
+    public static final float[] TARGETS = {0, 350, 500, 650}; // температура по числу поленьев в огне и запасе
+    public static final float HEAT_3 = 550;       // жар 3 от этой температуры
+    public static final float HEAT_2 = 400;
+    public static final float HEAT_1 = 150;
+    public static final float WARM_UP = 1.5F;     // градусов за тик
+    public static final float COOL_DOWN = 3.0F;
     public static final int ASH_EVERY = 3200;     // столько топлива на одну золу
     public static final int MAX_ASH = 8;
     public static final int COOK_TIME = 2400;     // единиц жара: при жаре 2 — минута
@@ -63,14 +74,31 @@ public class HearthBlockEntity extends StationBlockEntity {
     public static final int CELLS = 4;
     public static final float CELL = 0.13F;       // половина шага четвертей на углях
 
+    // Окно (HearthMenu): что показывать — номера в data()
+    public static final int D_TEMPERATURE = 0, D_BURN_LEFT = 1, D_BURN_TOTAL = 2, D_REMAINING = 3, D_LIT = 4,
+            D_POT = 5, D_WATER = 6, D_PROGRESS = 7, D_STIR = 8, D_DUE = 9, D_SCORCHED = 10, D_PORTIONS = 11,
+            D_RESULT = 12, D_HEAT = 13, D_LADLED = 14, DATA = 15;
+
     // огонь
-    private int fuel;
+    private final Fire fire = new Fire();
     private int burned;
     private int ash;
     // горшок на огне — с формой и износом (пустой стак у старых очагов с горшком: снимется новым горшком)
     private ItemStack clayPot = ItemStack.EMPTY;
     private boolean water;
-    private final List<ItemStack> contents = new ArrayList<>();
+    private boolean loading;
+    private int potCount;
+    private final SimpleContainer contents = new SimpleContainer(Cookery.CAPACITY) {
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
+        @Override
+        public boolean canPlaceItem(int slot, ItemStack stack) {
+            return Cookery.kind(stack) != null && !stack.is(Items.MILK_BUCKET);
+        }
+    };
     private int progress;
     private int scorched;
     private int stirTimer;
@@ -83,8 +111,100 @@ public class HearthBlockEntity extends StationBlockEntity {
     private final float[][] sides = new float[CELLS][2];
     private final boolean[] flipped = new boolean[CELLS];
 
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case D_TEMPERATURE -> Math.round(fire.temperature());
+                case D_BURN_LEFT -> fire.burnLeft();
+                case D_BURN_TOTAL -> fire.burnTotal();
+                case D_REMAINING -> Math.min(Short.MAX_VALUE, fire.remaining() / 10); // ×10 тиков
+                case D_LIT -> lit() ? 1 : 0;
+                case D_POT -> hasPot() ? 1 : 0;
+                case D_WATER -> water ? 1 : 0;
+                case D_PROGRESS -> progress;
+                case D_STIR -> stirTimer;
+                case D_DUE -> dueTimer;
+                case D_SCORCHED -> scorched;
+                case D_PORTIONS -> portions;
+                case D_RESULT -> {
+                    Cookery.Result result = portions > 0 ? resultOfPortion() : null;
+                    yield result == null ? -1 : result.ordinal();
+                }
+                case D_HEAT -> heat();
+                case D_LADLED -> ladled ? 1 : 0;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return DATA;
+        }
+    };
+
     public HearthBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HEARTH.get(), pos, state);
+        this(ModBlockEntities.HEARTH.get(), pos, state);
+    }
+
+    public HearthBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+        fire.fuel().addListener(container -> changed());
+        contents.addListener(container -> potChanged());
+    }
+
+    /** Костёр: тот же очаг. */
+    public static HearthBlockEntity firePit(BlockPos pos, BlockState state) {
+        return new HearthBlockEntity(ModBlockEntities.FIRE_PIT.get(), pos, state);
+    }
+
+    public Fire fire() {
+        return fire;
+    }
+
+    public SimpleContainer potContents() {
+        return contents;
+    }
+
+    public ContainerData data() {
+        return data;
+    }
+
+    /** Положенное в горшок поменялось (окно или E): доложили в готовое — доваривается заново, но быстрее. */
+    private void potChanged() {
+        if (loading) {
+            return;
+        }
+        int count = potCount();
+        if (count > potCount && portions > 0) {
+            portions = 0;
+            portion = ItemStack.EMPTY;
+            progress = COOK_TIME / 2;
+        }
+        potCount = count;
+        changed();
+    }
+
+    private int potCount() {
+        int n = 0;
+        for (int i = 0; i < contents.getContainerSize(); i++) {
+            n += contents.getItem(i).isEmpty() ? 0 : 1;
+        }
+        return n;
+    }
+
+    private List<ItemStack> potList() {
+        List<ItemStack> list = new ArrayList<>();
+        for (int i = 0; i < contents.getContainerSize(); i++) {
+            if (!contents.getItem(i).isEmpty()) {
+                list.add(contents.getItem(i));
+            }
+        }
+        return list;
     }
 
     // ---------------------------------------------------------------- для отрисовки и частиц
@@ -111,7 +231,8 @@ public class HearthBlockEntity extends StationBlockEntity {
     }
 
     public int heat() {
-        return !lit() ? 0 : fuel > HOT_FUEL ? 3 : fuel > WARM_FUEL ? 2 : 1;
+        float t = fire.temperature();
+        return !lit() ? 0 : t >= HEAT_3 ? 3 : t >= HEAT_2 ? 2 : t >= HEAT_1 ? 1 : 0;
     }
 
     public boolean stirDue() {
@@ -120,6 +241,11 @@ public class HearthBlockEntity extends StationBlockEntity {
 
     public boolean cooking() {
         return water && !contents.isEmpty() && portions == 0;
+    }
+
+    /** Порция, которую черпают сейчас (пусто — нечего черпать). */
+    public ItemStack portion() {
+        return portions > 0 ? portion : ItemStack.EMPTY;
     }
 
     public ItemStack piece(int cell) {
@@ -143,7 +269,12 @@ public class HearthBlockEntity extends StationBlockEntity {
             all.add(clayPot.isEmpty() ? new ItemStack(ModItems.CLAY_POT.get()) : clayPot.copy());
         }
         if (portions == 0) {
-            contents.forEach(stack -> all.add(stack.copy()));
+            potList().forEach(stack -> all.add(stack.copy()));
+        }
+        for (int i = 0; i < Fire.SLOTS; i++) {
+            if (!fire.fuel().getItem(i).isEmpty()) {
+                all.add(fire.fuel().getItem(i).copy());
+            }
         }
         for (ItemStack piece : pieces) {
             if (!piece.isEmpty()) {
@@ -164,25 +295,27 @@ public class HearthBlockEntity extends StationBlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HearthBlockEntity hearth) {
         if (!hearth.lit()) {
+            if (hearth.fire.temperature() > 0) {
+                hearth.fire.toward(0, 0, COOL_DOWN);
+            }
             return;
         }
         boolean exposed = level.isRainingAt(pos.above());
         // Дрова прогорают через тик
         int burn = level.getGameTime() % 2 != 0 ? 0 : exposed ? 3 : 1;
-        hearth.fuel -= burn;
-        hearth.burned += burn;
-        if (hearth.burned >= ASH_EVERY) {
-            hearth.burned -= ASH_EVERY;
-            hearth.ash = Math.min(MAX_ASH, hearth.ash + 1);
-        }
-        if (hearth.fuel <= 0) {
-            hearth.fuel = 0;
+        if (burn > 0 && !hearth.fire.burn(burn)) {
             hearth.dueTimer = -1;
             level.setBlock(pos, state.setValue(HearthBlock.LIT, false), 3);
             hearth.sound(SoundEvents.FIRE_EXTINGUISH, 0.5F, 1.0F);
             hearth.changed();
             return;
         }
+        hearth.burned += burn;
+        if (hearth.burned >= ASH_EVERY) {
+            hearth.burned -= ASH_EVERY;
+            hearth.ash = Math.min(MAX_ASH, hearth.ash + 1);
+        }
+        hearth.fire.toward(TARGETS[Math.min(3, hearth.fire.loaded())], WARM_UP, WARM_UP / 3);
         int heat = hearth.heat();
         boolean sync = state.getValue(HearthBlock.POT) ? hearth.tickPot(heat) : hearth.tickGrill(heat);
         if (sync) {
@@ -225,7 +358,7 @@ public class HearthBlockEntity extends StationBlockEntity {
     }
 
     private void finishCooking() {
-        Cookery.Outcome outcome = Cookery.cook(contents, scorched, level);
+        Cookery.Outcome outcome = Cookery.cook(potList(), scorched, level);
         if (outcome == null) {
             progress = COOK_TIME; // одна соль или молоко: варить нечего, ждём, пока положат основу
             return;
@@ -267,20 +400,31 @@ public class HearthBlockEntity extends StationBlockEntity {
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack, Vec3 hit) {
+        if (useFire(player, hand, stack)) {
+            return true;
+        }
+        if (stack.is(ModItems.STILL.get()) && getBlockState().is(ModBlocks.HEARTH.get())) {
+            return placeStill(player, stack);
+        }
+        if (stack.is(ModItems.CLAY_POT.get())) {
+            return placePot(player, stack);
+        }
+        return hasPot() ? usePot(player, stack) : useGrill(player, stack, hit);
+    }
+
+    /** Огонь: разжечь, подложить дров, выгрести золу. Им пользуется и перегонный куб над очагом. false — не про огонь. */
+    public boolean useFire(Player player, InteractionHand hand, ItemStack stack) {
         if (stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.FIRE_CHARGE) || stack.is(Items.TORCH)) {
             return ignite(player, hand, stack);
         }
-        int fuelValue = fuelValue(stack);
-        if (fuelValue > 0) {
-            if (fuel + fuelValue > MAX_FUEL) {
+        if (Fire.fuelValue(stack) > 0) {
+            if (!fire.add(stack)) {
                 tell(player, "fuel_full");
                 return true;
             }
-            fuel += fuelValue;
             consumeOne(player, stack);
             sound(SoundEvents.WOOD_PLACE, 0.6F, 1.0F);
-            tell(player, lit() ? "fuel_added" : "fuel_unlit", Math.round(100.0F * fuel / MAX_FUEL));
-            changed();
+            tell(player, lit() ? "fuel_added" : "fuel_unlit", fire.loaded(), Fire.SLOTS);
             return true;
         }
         if (stack.canPerformAction(ItemAbilities.SHOVEL_DIG) && ash > 0) {
@@ -291,17 +435,7 @@ public class HearthBlockEntity extends StationBlockEntity {
             changed();
             return true;
         }
-        if (stack.is(ModItems.STILL.get())) {
-            return placeStill(player, stack);
-        }
-        // Над очагом перегонный куб: его низ стоит в огне, поэтому щелчок по нему приходит сюда — отдаём кубу
-        if (level.getBlockEntity(worldPosition.above()) instanceof com.nrdhvnstd.halgventmod.brewing.StillBlockEntity still) {
-            return still.use(player, hand, stack, hit);
-        }
-        if (stack.is(ModItems.CLAY_POT.get())) {
-            return placePot(player, stack);
-        }
-        return hasPot() ? usePot(player, stack) : useGrill(player, stack, hit);
+        return false;
     }
 
     private boolean ignite(Player player, InteractionHand hand, ItemStack stack) {
@@ -309,7 +443,7 @@ public class HearthBlockEntity extends StationBlockEntity {
             tell(player, "already_lit");
             return true;
         }
-        if (fuel <= 0) {
+        if (!fire.hasFuel()) {
             tell(player, "no_fuel");
             return true;
         }
@@ -327,27 +461,9 @@ public class HearthBlockEntity extends StationBlockEntity {
         return true;
     }
 
-    /** Сколько тиков горения даёт предмет; 0 — не топливо. Общее для очага и печи. */
+    /** Сколько тиков горения даёт предмет; 0 — не топливо (Fire.fuelValue). */
     public static int fuelValue(ItemStack stack) {
-        if (stack.is(ModItems.FIREWOOD.get())) {
-            return 2000; // дрова — основное топливо
-        }
-        if (stack.is(ItemTags.LOGS_THAT_BURN)) {
-            return 1600;
-        }
-        if (stack.is(ItemTags.PLANKS)) {
-            return 600;
-        }
-        if (stack.is(Items.STICK)) {
-            return 150;
-        }
-        if (stack.is(Items.CHARCOAL) || stack.is(Items.COAL)) {
-            return 3200;
-        }
-        if (stack.is(ModItems.BURNT_FOOD.get())) {
-            return 400;
-        }
-        return 0;
+        return Fire.fuelValue(stack);
     }
 
     // ---------------------------------------------------------------- горшок
@@ -448,6 +564,34 @@ public class HearthBlockEntity extends StationBlockEntity {
             }
             return true;
         }
+        if (portions > 0 && Pottery.drinkCapacity(stack) > 0 && stack.getCount() == 1) {
+            // Питьё (отвар, сусло, взвар) — корчагой или кувшином, сколько влезет; похлёбки — только миской
+            Cookery.Result result = resultOfPortion();
+            if (result == null || result.container() != Items.GLASS_BOTTLE) {
+                tell(player, "need_bowl");
+                return true;
+            }
+            int poured = 0;
+            while (portions > 0 && Pottery.canPour(stack, portion, level)) {
+                Pottery.pour(stack, portion, level);
+                ladled = true;
+                poured++;
+                portions--;
+            }
+            if (poured == 0) {
+                tell(player, "vessel_no");
+                return true;
+            }
+            sound(SoundEvents.BOTTLE_FILL, 0.8F, 0.9F);
+            if (portions == 0) {
+                clearPot();
+                wearOut(player);
+            } else {
+                tell(player, "portions_left", portions);
+            }
+            changed();
+            return true;
+        }
         if (portions > 0) {
             Cookery.Result result = resultOfPortion();
             // В глиняную миску тоже черпают: она запоминается в порции и вернётся после еды
@@ -491,11 +635,15 @@ public class HearthBlockEntity extends StationBlockEntity {
             tell(player, "pot_serving");
             return true;
         }
-        if (contents.size() >= Cookery.CAPACITY) {
+        int free = -1;
+        for (int i = 0; i < contents.getContainerSize() && free < 0; i++) {
+            free = contents.getItem(i).isEmpty() ? i : -1;
+        }
+        if (free < 0) {
             tell(player, "pot_full");
             return true;
         }
-        contents.add(stack.copyWithCount(1));
+        contents.setItem(free, stack.copyWithCount(1)); // доложили в готовое — доваривается (potChanged)
         if (stack.is(Items.MILK_BUCKET)) {
             if (!player.getAbilities().instabuild) {
                 player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
@@ -503,15 +651,18 @@ public class HearthBlockEntity extends StationBlockEntity {
         } else {
             consumeOne(player, stack);
         }
-        if (portions > 0) {
-            // Доложили в готовое: доваривается заново, но быстрее
-            portions = 0;
-            portion = ItemStack.EMPTY;
-            progress = COOK_TIME / 2;
-        }
         sound(SoundEvents.GENERIC_SPLASH, 0.5F, 1.2F);
-        changed();
         return true;
+    }
+
+    /** Можно ли сейчас класть в горшок из окна: вода есть, готовое не начали черпать. */
+    public boolean potAccepts() {
+        return hasPot() && water && !ladled;
+    }
+
+    /** Можно ли вынуть положенное из окна: ещё не начало вариться. */
+    public boolean potOpen() {
+        return progress == 0 && portions == 0;
     }
 
     private Cookery.Result resultOfPortion() {
@@ -525,8 +676,13 @@ public class HearthBlockEntity extends StationBlockEntity {
 
     private boolean takeFromPot(Player player) {
         if (!contents.isEmpty() && progress == 0 && portions == 0) {
-            give(player, contents.remove(contents.size() - 1));
-            changed();
+            for (int i = contents.getContainerSize() - 1; i >= 0; i--) {
+                if (!contents.getItem(i).isEmpty()) {
+                    give(player, contents.removeItemNoUpdate(i));
+                    break;
+                }
+            }
+            potChanged();
             return true;
         }
         if (!water && contents.isEmpty()) {
@@ -546,13 +702,97 @@ public class HearthBlockEntity extends StationBlockEntity {
         return true;
     }
 
-    /** ПКМ: с горшком — как варится; без него — жар и запас дров. */
+    /** ПКМ — окно очага (с горшком — и горшка). */
     @Override
     public void report(Player player) {
-        if (hasPot()) {
-            potStatus(player);
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, opener) -> new HearthMenu(id, inventory, this),
+                    getBlockState().getBlock().getName()), buf -> buf.writeBlockPos(worldPosition));
+        }
+    }
+
+    private boolean near(Player player) {
+        return player.distanceToSqr(worldPosition.getCenter()) <= 64;
+    }
+
+    // ---------------------------------------------------------------- кнопки окна
+
+    /** «Разжечь»: огниво, огненный заряд или факел из инвентаря. */
+    public void igniteFromInventory(ServerPlayer player) {
+        int slot = Fire.lighterSlot(player);
+        if (!near(player)) {
+            return;
+        }
+        if (slot < 0) {
+            tell(player, "need_lighter");
+            return;
+        }
+        ItemStack lighter = player.getInventory().getItem(slot);
+        if (lit() || !fire.hasFuel()) {
+            ignite(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY); // скажет, почему нельзя
+            return;
+        }
+        if (lighter.is(Items.FLINT_AND_STEEL) && !player.getAbilities().instabuild) {
+            lighter.hurtAndBreak(1, player.serverLevel(), player, item -> {});
+        } else if (lighter.is(Items.FIRE_CHARGE)) {
+            consumeOne(player, lighter);
+        }
+        sound(SoundEvents.FLINTANDSTEEL_USE, 1.0F, 1.0F);
+        level.setBlock(worldPosition, getBlockState().setValue(HearthBlock.LIT, true), 3);
+        changed();
+    }
+
+    /** «Затушить»: огонь гаснет, недогоревшее остаётся, температура — 0. */
+    public void extinguish(ServerPlayer player) {
+        if (!near(player) || !lit()) {
+            return;
+        }
+        fire.extinguish();
+        dueTimer = -1;
+        stirTimer = 0;
+        level.setBlock(worldPosition, getBlockState().setValue(HearthBlock.LIT, false), 3);
+        sound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
+        changed();
+    }
+
+    /** «Помешать»: половник из инвентаря. */
+    public void stir(ServerPlayer player) {
+        if (!near(player) || !hasPot()) {
+            return;
+        }
+        if (player.getInventory().countItem(ModItems.LADLE.get()) <= 0 && !player.getAbilities().instabuild) {
+            tell(player, "need_ladle");
+            return;
+        }
+        if (dueTimer >= 0) {
+            dueTimer = -1;
+            stirTimer = 0;
+            sound(SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, 0.6F, 1.2F);
+            tell(player, "stirred");
+            changed();
         } else {
-            tell(player, lit() ? "fire_status" : "fire_out", heat(), Math.round(100.0F * fuel / MAX_FUEL));
+            tell(player, "stir_not_yet");
+        }
+    }
+
+    /** «Опорожнить горшок»: вылить всё — воду, положенное, готовое. */
+    public void emptyPot(ServerPlayer player) {
+        if (!near(player) || !hasPot() || (!water && contents.isEmpty())) {
+            return;
+        }
+        loading = true;
+        clearPot();
+        loading = false;
+        potCount = 0;
+        sound(SoundEvents.BUCKET_EMPTY, 1.0F, 0.8F);
+        tell(player, "pot_emptied");
+        changed();
+    }
+
+    /** «Снять горшок»: только пустой. */
+    public void removePot(ServerPlayer player) {
+        if (near(player) && hasPot()) {
+            takeFromPot(player);
         }
     }
 
@@ -564,16 +804,16 @@ public class HearthBlockEntity extends StationBlockEntity {
         } else if (portions > 0) {
             tell(player, "pot_ready", portion.getHoverName(), portions);
         } else if (heat() == 0) {
-            tell(player, "pot_cold", contents.size(), Cookery.CAPACITY);
+            tell(player, "pot_cold", potCount(), Cookery.CAPACITY);
         } else {
             tell(player, dueTimer >= 0 ? "pot_stir" : "pot_cooking",
-                    Math.min(99, 100 * progress / COOK_TIME), contents.size(), Cookery.CAPACITY);
+                    Math.min(99, 100 * progress / COOK_TIME), potCount(), Cookery.CAPACITY);
         }
     }
 
     private void clearPot() {
         water = false;
-        contents.clear();
+        contents.clearContent();
         progress = 0;
         scorched = 0;
         stirTimer = 0;
@@ -595,7 +835,7 @@ public class HearthBlockEntity extends StationBlockEntity {
         int cell = cellAt(hit);
         if (stack.isEmpty()) {
             if (pieces[cell].isEmpty()) {
-                tell(player, lit() ? "fire_status" : "fire_out", heat(), Math.round(100.0F * fuel / MAX_FUEL));
+                tell(player, lit() ? "fire_status" : "fire_out", Math.round(fire.temperature()), fire.loaded(), Fire.SLOTS);
                 return true;
             }
             boolean bothDone = sides[cell][0] >= READY && sides[cell][1] >= READY;
@@ -628,7 +868,7 @@ public class HearthBlockEntity extends StationBlockEntity {
         consumeOne(player, stack);
         sound(SoundEvents.FIRE_EXTINGUISH, 0.3F, 1.5F);
         if (!lit()) {
-            tell(player, "fire_out", 0, Math.round(100.0F * fuel / MAX_FUEL));
+            tell(player, "fire_out", 0, fire.loaded(), Fire.SLOTS);
         }
         changed();
         return true;
@@ -667,7 +907,7 @@ public class HearthBlockEntity extends StationBlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putInt("Fuel", fuel);
+        fire.save(tag, registries);
         tag.putInt("Burned", burned);
         tag.putInt("Ash", ash);
         tag.putBoolean("Water", water);
@@ -675,7 +915,7 @@ public class HearthBlockEntity extends StationBlockEntity {
             tag.put("ClayPot", clayPot.save(registries));
         }
         ListTag list = new ListTag();
-        contents.forEach(stack -> list.add(stack.save(registries)));
+        potList().forEach(stack -> list.add(stack.save(registries)));
         tag.put("Contents", list);
         tag.putInt("Progress", progress);
         tag.putInt("Scorched", scorched);
@@ -703,17 +943,18 @@ public class HearthBlockEntity extends StationBlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        fuel = tag.getInt("Fuel");
+        loading = true;
+        fire.load(tag, registries);
         burned = tag.getInt("Burned");
         ash = tag.getInt("Ash");
         water = tag.getBoolean("Water");
         clayPot = tag.contains("ClayPot") ? ItemStack.parseOptional(registries, tag.getCompound("ClayPot")) : ItemStack.EMPTY;
-        contents.clear();
+        contents.clearContent();
         ListTag list = tag.getList("Contents", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0, slot = 0; i < list.size() && slot < Cookery.CAPACITY; i++) {
             ItemStack stack = ItemStack.parseOptional(registries, list.getCompound(i));
             if (!stack.isEmpty()) {
-                contents.add(stack);
+                contents.setItem(slot++, stack);
             }
         }
         progress = tag.getInt("Progress");
@@ -723,6 +964,8 @@ public class HearthBlockEntity extends StationBlockEntity {
         portions = tag.getInt("Portions");
         ladled = tag.getBoolean("Ladled");
         portion = tag.contains("Portion") ? ItemStack.parseOptional(registries, tag.getCompound("Portion")) : ItemStack.EMPTY;
+        potCount = potCount();
+        loading = false;
         ListTag grill = tag.getList("Grill", Tag.TAG_COMPOUND);
         for (int i = 0; i < CELLS; i++) {
             CompoundTag cell = i < grill.size() ? grill.getCompound(i) : new CompoundTag();

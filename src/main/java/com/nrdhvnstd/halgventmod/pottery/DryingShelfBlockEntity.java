@@ -75,7 +75,7 @@ public class DryingShelfBlockEntity extends StationBlockEntity {
     }
 
     private static boolean dryable(ItemStack stack) {
-        return Pottery.isGreenware(stack) || stack.is(ModItems.RAW_BRICK.get());
+        return Pottery.isGreenware(stack) || Pottery.isRawClay(stack);
     }
 
     private static boolean wet(ItemStack stack) {

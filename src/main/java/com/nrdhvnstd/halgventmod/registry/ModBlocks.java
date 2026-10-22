@@ -13,6 +13,7 @@ import com.nrdhvnstd.halgventmod.farming.FieldCropBlock;
 import com.nrdhvnstd.halgventmod.farming.FruitLeavesBlock;
 import com.nrdhvnstd.halgventmod.farming.RyeCropBlock;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlock;
+import com.nrdhvnstd.halgventmod.cooking.FirePitBlock;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlock;
 import com.nrdhvnstd.halgventmod.cooking.HookBlock;
 import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlock;
@@ -27,6 +28,7 @@ import com.nrdhvnstd.halgventmod.pottery.DryingShelfBlock;
 import com.nrdhvnstd.halgventmod.pottery.KilnBlock;
 import com.nrdhvnstd.halgventmod.pottery.PotteryWheelBlock;
 import com.nrdhvnstd.halgventmod.sound.SoundEmitterBlock;
+import com.nrdhvnstd.halgventmod.weaving.LoomBlock;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -89,6 +91,9 @@ public final class ModBlocks {
     // Готовка (cooking/*). Модели — из Conquest Reforged, у бочки — ванильная
     public static final DeferredBlock<HearthBlock> HEARTH = BLOCKS.register("hearth",
             () -> new HearthBlock(stone().lightLevel(state -> state.getValue(HearthBlock.LIT) ? 13 : 0)));
+    // Костёр: очаг на земле (ставится ванильным костром, CookingEvents)
+    public static final DeferredBlock<FirePitBlock> FIRE_PIT = BLOCKS.register("fire_pit",
+            () -> new FirePitBlock(wood().lightLevel(state -> state.getValue(HearthBlock.LIT) ? 14 : 0)));
     public static final DeferredBlock<OvenBlock> BAKING_OVEN = BLOCKS.register("baking_oven",
             () -> new OvenBlock(stone().lightLevel(state -> state.getValue(OvenBlock.LIT) ? 12 : 0)));
     public static final DeferredBlock<QuernBlock> QUERN = BLOCKS.register("quern",
@@ -113,6 +118,7 @@ public final class ModBlocks {
     public static final DeferredBlock<FieldCropBlock> TURNIP_CROP = crop("turnip_crop", () -> ModItems.TURNIP.get());
     public static final DeferredBlock<FieldCropBlock> BEANS_CROP = crop("beans_crop", () -> ModItems.BEANS.get());
     public static final DeferredBlock<FieldCropBlock> CABBAGE_CROP = crop("cabbage_crop", () -> ModItems.CABBAGE.get());
+    public static final DeferredBlock<FieldCropBlock> FLAX_CROP = crop("flax_crop", () -> ModItems.FLAX_SEEDS.get());
     // Ягодные кусты (farming/BerryBushBlock) — растут в лесах и на болотах, ягоды собирают на E
     public static final DeferredBlock<BerryBushBlock> BLUEBERRY_BUSH = bush("blueberry_bush", () -> ModItems.BLUEBERRY.get());
     public static final DeferredBlock<BerryBushBlock> LINGONBERRY_BUSH = bush("lingonberry_bush", () -> ModItems.LINGONBERRY.get());
@@ -154,6 +160,9 @@ public final class ModBlocks {
             () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 11 : 0), 4, 1.32F));
     public static final DeferredBlock<KilnBlock> TALL_KILN = BLOCKS.register("tall_kiln",
             () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 12 : 0), 10, 1.7F));
+
+    // Ткачество (weaving/*). Модели — из Conquest Reforged
+    public static final DeferredBlock<LoomBlock> LOOM = BLOCKS.register("loom", () -> new LoomBlock(wood()));
 
     private static BlockBehaviour.Properties stone() {
         return BlockBehaviour.Properties.of()

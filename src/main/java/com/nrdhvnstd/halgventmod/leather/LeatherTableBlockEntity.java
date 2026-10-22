@@ -2,12 +2,14 @@ package com.nrdhvnstd.halgventmod.leather;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.food.Freshness;
-import com.nrdhvnstd.halgventmod.network.PatternOpenPayload;
-import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.menu.SewingTableMenu;
+import com.nrdhvnstd.halgventmod.network.CutOpenPayload;
 import com.nrdhvnstd.halgventmod.network.SewingOpenPayload;
+import com.nrdhvnstd.halgventmod.quality.GearQuality;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -19,14 +21,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,34 +39,63 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Стол кожевника, всё в мире, кроме самого шитья:
+ * Шитейный стол — кожа и ткань (id блока остался от стола кожевника: так стоящие в мире столы не пропадут).
  * <ol>
- *   <li>E пустой рукой по свободному столу — окно выкроек (PatternScreen): что нужно и что есть в инвентаре;</li>
- *   <li>E кожей — выложить нужные куски на стол;</li>
- *   <li>E ножом (тег halgventmod:knives) — раскроить (кожа уходит, качество вещи — худший кусок; падают обрезки);</li>
- *   <li>E фурнитурой — железо, клей, ремешки;</li>
- *   <li>E иглой — окно шитья: мини-игра на точность (SewingScreen). Без промахов — качество +1,
- *       от {@link #SLOPPY_MISSES} промахов −1, от {@link #RUINED_MISSES} — −2. Нитки — из инвентаря.</li>
+ *   <li>E — окно стола ({@link SewingTableMenu}): выбрать выкройку, переложить нужное из инвентаря в ячейки стола
+ *       (что лежит — видно на столе);</li>
+ *   <li>«Раскроить» — мини-игра раскроя (CutScreen): ножом по коже, ножницами по ткани вести по меловому контуру.
+ *       Кожа или ткань уходит, качество вещи — худший кусок с поправкой за раскрой ({@link #cutDelta});</li>
+ *   <li>«Шить» — мини-игра шитья (SewingScreen): игла и нитки из инвентаря, фурнитура — из ячеек стола.
+ *       Без промахов — качество +1, от {@link #SLOPPY_MISSES} промахов −1, от {@link #RUINED_MISSES} — −2.</li>
  * </ol>
- * Пустая рука до раскроя — забрать последнее выложенное. Кожаной вещью в руке (стол свободен) — смазать её
- * салом или воском из инвентаря: пересохшая снова защищает в полную силу.
+ * После каждой мини-игры окно стола открывается снова. Кожаной вещью в руке (стол пуст) — смазать её салом или
+ * воском из инвентаря: пересохшая снова защищает в полную силу.
  */
 public class LeatherTableBlockEntity extends StationBlockEntity {
     // Меняйте здесь
+    public static final int SLOTS = 9;
+    public static final int DATA = 2;              // выкройка, раскроено ли — для окна
     public static final int SLOPPY_MISSES = 3;
     public static final int RUINED_MISSES = 6;
+    public static final int CLEAN_WOBBLE = 25;     // неровность раскроя (×10 пикселей) — не больше: +1
+    public static final int ROUGH_WOBBLE = 45;     // больше: −1
+    public static final int ROUGH_SLIPS = 3;       // столько срывов ножа: −1
+    public static final int RUINED_SLIPS = 6;      // а столько: −2
     public static final double REACH = 6.0;
-    /** Чем кроят: нож мода и охотничьи ножи Conquest. */
+    /** Чем кроят кожу: нож мода и охотничьи ножи Conquest. Ткань — ножницами. */
     public static final TagKey<Item> KNIVES = ItemTags.create(ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "knives"));
 
     private int pattern = -1;
-    private final List<ItemStack> leather = new ArrayList<>();
-    private final List<ItemStack> extras = new ArrayList<>();
+    private final SimpleContainer materials = new SimpleContainer(SLOTS);
     private boolean cut;
     private int quality;
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return index == 0 ? pattern : cut ? 1 : 0;
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return DATA;
+        }
+    };
 
     public LeatherTableBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.LEATHER_TABLE.get(), pos, state);
+        materials.addListener(container -> changed());
+    }
+
+    public SimpleContainer materials() {
+        return materials;
+    }
+
+    public ContainerData data() {
+        return data;
     }
 
     // Для отрисовки
@@ -69,13 +103,21 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         return pattern;
     }
 
+    public LeatherPatterns.Pattern current() {
+        return LeatherPatterns.get(pattern);
+    }
+
     public boolean isCut() {
         return cut;
     }
 
     public List<ItemStack> laid() {
-        List<ItemStack> all = new ArrayList<>(leather);
-        all.addAll(extras);
+        List<ItemStack> all = new ArrayList<>();
+        for (int i = 0; i < SLOTS; i++) {
+            if (!materials.getItem(i).isEmpty()) {
+                all.add(materials.getItem(i));
+            }
+        }
         return all;
     }
 
@@ -87,188 +129,220 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
     }
 
     private boolean idle() {
-        return leather.isEmpty() && extras.isEmpty() && !cut;
+        return materials.isEmpty() && !cut;
     }
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
-        // Пустой рукой по свободному столу (или Shift + E всегда) — окно выбора выкройки
-        if (stack.isEmpty() && (idle() || player.isShiftKeyDown())) {
-            if (!idle()) {
-                say(player, "table_busy");
-                return true;
-            }
-            if (player instanceof ServerPlayer serverPlayer) {
-                PacketDistributor.sendToPlayer(serverPlayer, new PatternOpenPayload(worldPosition, pattern));
-            }
-            return true;
-        }
         if (LeatherPatterns.isProduct(stack) && idle()) {
             return oil(player, stack);
         }
-        if (pattern < 0) {
-            if (stack.isEmpty() || isLeatherThing(stack)) {
-                say(player, "pick_pattern");
-                return true;
-            }
-            return false;
+        if (player instanceof ServerPlayer serverPlayer) {
+            openMenu(serverPlayer);
         }
-        LeatherPatterns.Pattern current = LeatherPatterns.get(pattern);
-        if (stack.isEmpty()) {
-            return takeBack(player, current);
-        }
-        if (stack.is(KNIVES)) {
-            return cut(player, hand, stack, current);
-        }
-        if (stack.is(ModItems.NEEDLE.get())) {
-            return openSewing(player, current);
-        }
-        // Кожа до раскроя, фурнитура после
-        List<LeatherPatterns.Need> needs = cut ? current.extras() : current.leather();
-        List<ItemStack> laid = cut ? extras : leather;
-        for (LeatherPatterns.Need need : needs) {
-            if (!need.matches(stack)) {
-                continue;
-            }
-            int missing = need.count() - count(laid, need);
-            if (missing <= 0) {
-                say(player, "enough_of", stack.getHoverName());
-                return true;
-            }
-            if (!cut && Freshness.isSpoiled(stack, level)) {
-                say(player, "rotten");
-                return true;
-            }
-            int moved = Math.min(missing, stack.getCount());
-            laid.add(stack.copyWithCount(moved));
-            if (!player.getAbilities().instabuild) {
-                stack.shrink(moved);
-            }
-            sound(cut ? SoundEvents.CHAIN_PLACE : SoundEvents.ARMOR_EQUIP_LEATHER.value(), 0.8F, 1.0F);
-            changed();
-            return true;
-        }
-        if (isLeatherThing(stack) || stack.is(Items.IRON_NUGGET) || stack.is(Items.IRON_INGOT)) {
-            say(player, cut ? "wrong_extra" : "wrong_leather");
-            player.displayClientMessage(describe(current), false);
-            return true;
-        }
-        return false;
+        return true;
     }
 
-    /** Выкройка выбрана в окне (PatternChoosePayload). Менять можно, пока на столе ничего не лежит. */
+    public void openMenu(ServerPlayer player) {
+        player.openMenu(new SimpleMenuProvider((id, inventory, opener) -> new SewingTableMenu(id, inventory, this),
+                getBlockState().getBlock().getName()), buf -> buf.writeBlockPos(worldPosition));
+    }
+
+    private boolean near(Player player) {
+        return player.distanceToSqr(worldPosition.getCenter()) <= REACH * REACH;
+    }
+
+    /** Выкройка выбрана в окне. Менять можно, пока раскроенное не дошито. */
     public void choosePattern(ServerPlayer player, int index) {
-        if (index < 0 || index >= LeatherPatterns.all().size()
-                || player.distanceToSqr(worldPosition.getCenter()) > REACH * REACH) {
+        if (index < 0 || index >= LeatherPatterns.all().size() || !near(player) || index == pattern) {
             return;
         }
-        if (!idle()) {
-            say(player, "table_busy");
+        if (cut) {
+            say(player, "table_cut");
             return;
         }
         pattern = index;
         sound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
-        player.displayClientMessage(describe(LeatherPatterns.get(pattern)), true);
         changed();
     }
 
-    private boolean cut(Player player, InteractionHand hand, ItemStack knife, LeatherPatterns.Pattern current) {
-        if (cut) {
-            say(player, "already_cut");
-            return true;
+    // ---------------------------------------------------------------- раскрой
+
+    private static Predicate<ItemStack> cutter(LeatherPatterns.Pattern pattern) {
+        return pattern.material() == LeatherPatterns.Material.CLOTH ? stack -> stack.is(Items.SHEARS)
+                : stack -> stack.is(KNIVES);
+    }
+
+    /** Почему кроить нельзя (ключ сообщения) или null — можно. */
+    private String cutBlocker(Player player) {
+        if (pattern < 0) {
+            return "pick_pattern";
         }
+        if (cut) {
+            return "already_cut";
+        }
+        LeatherPatterns.Pattern current = current();
         for (LeatherPatterns.Need need : current.leather()) {
-            if (count(leather, need) < need.count()) {
-                say(player, "need_leather");
-                player.displayClientMessage(describe(current), false);
-                return true;
+            if (count(need) < need.count()) {
+                return "need_leather";
             }
         }
-        strike(player, hand, knife);
-        quality = LeatherQuality.MAX;
-        for (ItemStack piece : leather) {
-            quality = Math.min(quality, LeatherQuality.get(piece));
+        for (ItemStack stack : laid()) {
+            if (isCutPiece(current, stack) && Freshness.isSpoiled(stack, level)) {
+                return "rotten";
+            }
         }
-        leather.clear();
+        if (toolSlot(player, cutter(current)) < 0) {
+            return current.material() == LeatherPatterns.Material.CLOTH ? "need_shears" : "need_knife";
+        }
+        return null;
+    }
+
+    /** Кнопка «Раскроить»: проверить и открыть мини-игру раскроя (окно стола закрывается, потом откроется снова). */
+    public void requestCut(ServerPlayer player) {
+        String blocker = cutBlocker(player);
+        if (blocker != null) {
+            say(player, blocker);
+            if ("need_leather".equals(blocker)) {
+                player.displayClientMessage(describe(current()), false);
+            }
+            return;
+        }
+        player.closeContainer();
+        PacketDistributor.sendToPlayer(player, new CutOpenPayload(worldPosition, pattern));
+    }
+
+    /** Поправка качества за раскрой: срывы ножа и неровность линии (средний отход от контура, ×10 пикселей). */
+    public static int cutDelta(int slips, int wobble) {
+        if (slips >= RUINED_SLIPS) {
+            return -2;
+        }
+        if (slips >= ROUGH_SLIPS || wobble > ROUGH_WOBBLE) {
+            return -1;
+        }
+        return slips == 0 && wobble <= CLEAN_WOBBLE ? 1 : 0;
+    }
+
+    /** Итог мини-игры раскроя (CutResultPayload). Сервер заново проверяет стол и инструмент; клиенту доверяем итог. */
+    public void cutDone(ServerPlayer player, int slips, int wobble) {
+        if (!near(player) || cutBlocker(player) != null) {
+            return;
+        }
+        LeatherPatterns.Pattern current = current();
+        wear(player, player.getInventory().getItem(toolSlot(player, cutter(current))), 1 + Math.max(0, slips));
+        quality = LeatherQuality.MAX;
+        for (LeatherPatterns.Need need : current.leather()) {
+            int left = need.count();
+            for (int i = 0; i < SLOTS && left > 0; i++) {
+                ItemStack stack = materials.getItem(i);
+                if (need.matches(stack)) {
+                    quality = Math.min(quality, LeatherQuality.get(stack));
+                    int taken = Math.min(left, stack.getCount());
+                    stack.shrink(taken);
+                    left -= taken;
+                }
+            }
+        }
+        int delta = cutDelta(slips, Math.max(0, wobble));
+        quality += delta;
         cut = true;
+        materials.setChanged();
         sound(SoundEvents.SHEEP_SHEAR, 1.0F, 1.0F);
         if (current.stitches() == 0) {
             finish(player, current, 0);
         } else {
-            give(player, new ItemStack(ModItems.LEATHER_SCRAPS.get()));
-            say(player, current.extras().isEmpty() ? "cut_sew" : "cut_extras");
+            if (current.material() == LeatherPatterns.Material.LEATHER) {
+                give(player, new ItemStack(ModItems.LEATHER_SCRAPS.get()));
+            }
+            say(player, delta > 0 ? "cut_clean" : delta < 0 ? "cut_rough" : "cut_done", slips);
         }
         changed();
-        return true;
+        openMenu(player);
     }
 
+    // ---------------------------------------------------------------- шитьё
+
     /** Почему шить нельзя (ключ сообщения) или null — можно. */
-    private String sewingBlocker(Player player, LeatherPatterns.Pattern current) {
+    private String sewingBlocker(Player player) {
+        if (pattern < 0) {
+            return "pick_pattern";
+        }
         if (!cut) {
             return "cut_first";
         }
+        LeatherPatterns.Pattern current = current();
         for (LeatherPatterns.Need need : current.extras()) {
-            if (count(extras, need) < need.count()) {
+            if (count(need) < need.count()) {
                 return "need_extras";
             }
         }
         if (threadIn(player.getInventory()) < current.thread()) {
             return "need_thread";
         }
+        if (toolSlot(player, stack -> stack.is(ModItems.NEEDLE.get())) < 0) {
+            return "need_needle";
+        }
         return null;
     }
 
-    private boolean openSewing(Player player, LeatherPatterns.Pattern current) {
-        String blocker = sewingBlocker(player, current);
+    /** Кнопка «Шить»: проверить и открыть мини-игру шитья. */
+    public void requestSew(ServerPlayer player) {
+        String blocker = sewingBlocker(player);
         if (blocker != null) {
-            say(player, blocker, current.thread());
+            say(player, blocker, pattern < 0 ? 0 : current().thread());
             if ("need_extras".equals(blocker)) {
-                player.displayClientMessage(describe(current), false);
+                player.displayClientMessage(describe(current()), false);
             }
-            return true;
+            return;
         }
-        if (player instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer,
-                    new SewingOpenPayload(worldPosition, current.result(), current.stitches()));
-        }
-        return true;
+        player.closeContainer();
+        LeatherPatterns.Pattern current = current();
+        PacketDistributor.sendToPlayer(player, new SewingOpenPayload(worldPosition, current.result(), current.stitches()));
     }
 
     /**
-     * Итог мини-игры шитья (SewingResultPayload). Сервер заново проверяет стол, иглу и нитки;
+     * Итог мини-игры шитья (SewingResultPayload). Сервер заново проверяет стол, иглу, нитки и фурнитуру;
      * клиенту доверяем только число промахов.
      */
     public void sewn(ServerPlayer player, int misses) {
-        if (pattern < 0 || player.distanceToSqr(worldPosition.getCenter()) > REACH * REACH) {
+        if (!near(player) || sewingBlocker(player) != null) {
             return;
         }
-        LeatherPatterns.Pattern current = LeatherPatterns.get(pattern);
-        if (current.stitches() == 0 || sewingBlocker(player, current) != null) {
+        LeatherPatterns.Pattern current = current();
+        if (current.stitches() == 0) {
             return;
         }
-        InteractionHand hand = player.getMainHandItem().is(ModItems.NEEDLE.get()) ? InteractionHand.MAIN_HAND
-                : player.getOffhandItem().is(ModItems.NEEDLE.get()) ? InteractionHand.OFF_HAND : null;
-        if (hand == null) {
-            say(player, "need_needle");
-            return;
-        }
-        damage(player, hand, player.getItemInHand(hand), current.stitches() + Math.max(0, misses));
+        int needle = toolSlot(player, stack -> stack.is(ModItems.NEEDLE.get()));
+        wear(player, player.getInventory().getItem(needle), current.stitches() + Math.max(0, misses));
         takeThread(player, current.thread());
+        for (LeatherPatterns.Need need : current.extras()) {
+            int left = need.count();
+            for (int i = 0; i < SLOTS && left > 0; i++) {
+                ItemStack stack = materials.getItem(i);
+                if (need.matches(stack)) {
+                    int taken = Math.min(left, stack.getCount());
+                    stack.shrink(taken);
+                    left -= taken;
+                }
+            }
+        }
+        materials.setChanged();
         int delta = misses <= 0 ? 1 : misses >= RUINED_MISSES ? -2 : misses >= SLOPPY_MISSES ? -1 : 0;
         say(player, misses <= 0 ? "sewn_clean" : delta < 0 ? "sewn_sloppy" : "sewn", misses);
         finish(player, current, delta);
         changed();
+        openMenu(player);
     }
 
     private void finish(Player player, LeatherPatterns.Pattern current, int qualityDelta) {
-        // Броня со стола получает качество снаряжения (из качества кожи и шитья), прочее — качество кожи
+        // Броня со стола получает качество снаряжения (из качества материала, раскроя и шитья), прочее — качество материала
         ItemStack result = current.result();
         if (GearQuality.applies(result)) {
             GearQuality.set(result, GearQuality.fromLeather(quality + qualityDelta));
         } else {
             LeatherQuality.set(result, quality + qualityDelta);
         }
-        if (current.stitches() > 0) {
+        if (current.stitches() > 0 && current.material() == LeatherPatterns.Material.LEATHER) {
             result.set(ModComponents.OILED_DAY.get(), Freshness.currentDay(level));
         }
         // Имя — до give: инвентарь забирает стак целиком, и после него он пуст («воздух»)
@@ -276,25 +350,7 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         give(player, result);
         player.displayClientMessage(Component.translatable("message.halgventmod.leather.made", name), false);
         sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.2F);
-        extras.clear();
-        leather.clear();
         cut = false;
-    }
-
-    private boolean takeBack(Player player, LeatherPatterns.Pattern current) {
-        if (cut) {
-            say(player, "table_cut");
-            player.displayClientMessage(describe(current), false);
-            return true;
-        }
-        if (leather.isEmpty()) {
-            player.displayClientMessage(describe(current), true);
-            return true;
-        }
-        give(player, leather.remove(leather.size() - 1));
-        sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 0.8F, 0.9F);
-        changed();
-        return true;
     }
 
     /** Смазать кожаную вещь салом или воском из инвентаря. */
@@ -317,9 +373,11 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         return true;
     }
 
-    private static int count(List<ItemStack> laid, LeatherPatterns.Need need) {
+    // ---------------------------------------------------------------- помощники
+
+    private int count(LeatherPatterns.Need need) {
         int n = 0;
-        for (ItemStack stack : laid) {
+        for (ItemStack stack : laid()) {
             if (need.matches(stack)) {
                 n += stack.getCount();
             }
@@ -327,7 +385,39 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         return n;
     }
 
-    private static int threadIn(Inventory inventory) {
+    private static boolean isCutPiece(LeatherPatterns.Pattern pattern, ItemStack stack) {
+        for (LeatherPatterns.Need need : pattern.leather()) {
+            if (need.matches(stack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Ячейка инвентаря с инструментом: сначала руки, потом остальное; −1 — нет. */
+    private static int toolSlot(Player player, Predicate<ItemStack> tool) {
+        Inventory inventory = player.getInventory();
+        if (tool.test(inventory.getSelected())) {
+            return inventory.selected;
+        }
+        if (tool.test(inventory.getItem(Inventory.SLOT_OFFHAND))) {
+            return Inventory.SLOT_OFFHAND;
+        }
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            if (tool.test(inventory.getItem(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static void wear(ServerPlayer player, ItemStack tool, int amount) {
+        if (!player.getAbilities().instabuild && tool.isDamageableItem()) {
+            tool.hurtAndBreak(amount, player.serverLevel(), player, item -> {});
+        }
+    }
+
+    public static int threadIn(Inventory inventory) {
         return inventory.countItem(ModItems.THREADS.get()) + inventory.countItem(Items.STRING);
     }
 
@@ -344,14 +434,6 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
                 amount -= taken;
             }
         }
-    }
-
-    private static boolean isLeatherThing(ItemStack stack) {
-        return stack.is(ModItems.TANNED_LEATHER.get()) || stack.is(ModItems.SOFT_LEATHER.get())
-                || stack.is(ModItems.RAWHIDE.get()) || stack.is(ModItems.BOILED_LEATHER.get())
-                || stack.is(ModItems.DRESSED_FUR.get()) || stack.is(ModItems.LEATHER_SCRAPS.get())
-                || stack.is(ModItems.LEATHER_STRAP.get()) || stack.is(ModItems.HIDE_GLUE.get())
-                || stack.is(KNIVES) || stack.is(ModItems.NEEDLE.get());
     }
 
     /** «Выкройка: Кожаный пояс — 2 × Дублёная кожа; затем 1 × Железный самородок; нитки 1, стежков 6». */
@@ -391,8 +473,16 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putInt("Pattern", pattern);
-        tag.put("Leather", saveList(leather, registries));
-        tag.put("Extras", saveList(extras, registries));
+        ListTag list = new ListTag();
+        for (int i = 0; i < SLOTS; i++) {
+            ItemStack stack = materials.getItem(i);
+            if (!stack.isEmpty()) {
+                CompoundTag entry = (CompoundTag) stack.save(registries);
+                entry.putByte("Slot", (byte) i);
+                list.add(entry);
+            }
+        }
+        tag.put("Materials", list);
         tag.putBoolean("Cut", cut);
         tag.putInt("Quality", quality);
     }
@@ -404,27 +494,32 @@ public class LeatherTableBlockEntity extends StationBlockEntity {
         if (pattern >= LeatherPatterns.all().size()) {
             pattern = -1;
         }
-        loadList(tag.getList("Leather", Tag.TAG_COMPOUND), leather, registries);
-        loadList(tag.getList("Extras", Tag.TAG_COMPOUND), extras, registries);
-        cut = tag.getBoolean("Cut");
-        quality = tag.getInt("Quality");
-    }
-
-    private static ListTag saveList(List<ItemStack> stacks, HolderLookup.Provider registries) {
-        ListTag list = new ListTag();
-        for (ItemStack stack : stacks) {
-            list.add(stack.save(registries));
+        for (int i = 0; i < SLOTS; i++) {
+            materials.setItem(i, ItemStack.EMPTY);
         }
-        return list;
-    }
-
-    private static void loadList(ListTag list, List<ItemStack> into, HolderLookup.Provider registries) {
-        into.clear();
+        ListTag list = tag.getList("Materials", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
-            ItemStack stack = ItemStack.parseOptional(registries, list.getCompound(i));
-            if (!stack.isEmpty()) {
-                into.add(stack);
+            CompoundTag entry = list.getCompound(i);
+            int slot = entry.getByte("Slot");
+            if (slot >= 0 && slot < SLOTS) {
+                materials.setItem(slot, ItemStack.parseOptional(registries, entry));
             }
         }
+        // Столы из старых версий: выложенная кожа и фурнитура — в ячейки
+        int next = 0;
+        for (String old : new String[] {"Leather", "Extras"}) {
+            ListTag legacy = tag.getList(old, Tag.TAG_COMPOUND);
+            for (int i = 0; i < legacy.size(); i++) {
+                ItemStack stack = ItemStack.parseOptional(registries, legacy.getCompound(i));
+                while (next < SLOTS && !materials.getItem(next).isEmpty()) {
+                    next++;
+                }
+                if (!stack.isEmpty() && next < SLOTS) {
+                    materials.setItem(next, stack);
+                }
+            }
+        }
+        cut = tag.getBoolean("Cut") && pattern >= 0;
+        quality = tag.getInt("Quality");
     }
 }

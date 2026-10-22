@@ -36,7 +36,7 @@ public final class PotteryTooltip {
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
         int flags = Pottery.flags(stack);
-        if (Pottery.isGreenware(stack) || stack.is(ModItems.RAW_BRICK.get())) {
+        if (Pottery.isGreenware(stack) || Pottery.isRawClay(stack)) {
             line(lines, flags, Pottery.CRACKED, "cracked", ChatFormatting.RED);
             line(lines, flags, Pottery.DRIED, "dried", ChatFormatting.GREEN);
             if ((flags & (Pottery.CRACKED | Pottery.DRIED)) == 0) {

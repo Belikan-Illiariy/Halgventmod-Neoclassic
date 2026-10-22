@@ -25,9 +25,10 @@ import net.minecraft.world.level.block.state.BlockState;
  *   глина (ком или блок = 4 кома), до {@link #MAX_CLAY}     — засыпать
  *   ведро или кувшин воды ({@link Pottery#BUCKET_MEASURES} меры) — залить
  *   песок или шамот                                 — отощить (лучше всего 1 к 3 глины)
- *   сырец, кирпич-сырец (хоть треснувший)           — размочить: глина вернётся
+ *   сырец, кирпич- и грузило-сырец (хоть треснувшие) — размочить: глина вернётся
  *   пустая рука                                     — проминать ({@link #KNEADS} ровных нажатий; в спешке — пузыри)
  *   форма для кирпича                               — отформовать кирпич-сырец из кома промятой глины
+ *   палочка                                         — скатать ком и проткнуть: грузило-сырец для ткацкого станка
  *   Shift + E пустой рукой                          — забрать: промятую — гончарной глиной, иначе — что положили
  * </pre>
  * Промятая глина, пролежавшая в бочке {@link #AGE_DAYS} суток, становится лучше («вылёживание»).
@@ -92,6 +93,9 @@ public class ClayBarrelBlockEntity extends StationBlockEntity {
         if (stack.is(ModItems.BRICK_MOULD.get())) {
             return mould(player, hand, stack);
         }
+        if (stack.is(Items.STICK)) {
+            return pierce(player, hand);
+        }
         if (Pottery.isWater(stack, Pottery.BUCKET_MEASURES)) {
             if (lumps > 0) {
                 Pottery.say(player, "barrel_take_first");
@@ -110,7 +114,7 @@ public class ClayBarrelBlockEntity extends StationBlockEntity {
         }
         int clayIn = stack.is(Items.CLAY_BALL) ? 1 : stack.is(Items.CLAY) ? 4 : 0;
         // Сырец (треснувший или неудачный) и кирпич-сырец размачивают обратно: глина не пропадает
-        boolean recycle = Pottery.isGreenware(stack) || stack.is(ModItems.RAW_BRICK.get());
+        boolean recycle = Pottery.isGreenware(stack) || Pottery.isRawClay(stack);
         boolean temper = stack.is(Items.SAND) || stack.is(Items.RED_SAND) || stack.is(ModItems.GROG.get());
         if (clayIn == 0 && !recycle && !temper) {
             return false;
@@ -235,6 +239,27 @@ public class ClayBarrelBlockEntity extends StationBlockEntity {
         damage(player, hand, mould, 1);
         player.swing(hand, true);
         sound(SoundEvents.MUD_BRICKS_PLACE, 1.0F, 1.0F);
+        if (--lumps <= 0) {
+            reset();
+        }
+        changed();
+        return true;
+    }
+
+    /** Ком промятой глины, проткнутый палочкой, — грузило-сырец для ткацкого станка. Палочка не тратится. */
+    private boolean pierce(Player player, InteractionHand hand) {
+        if (lumps <= 0) {
+            Pottery.say(player, "barrel_not_ready");
+            return true;
+        }
+        ItemStack weight = new ItemStack(ModItems.RAW_LOOM_WEIGHT.get());
+        int crack = crack();
+        if (crack != 0) {
+            weight.set(ModComponents.CLAY_CRACK.get(), crack);
+        }
+        give(player, weight);
+        player.swing(hand, true);
+        sound(SoundEvents.MUD_PLACE, 1.0F, 1.2F);
         if (--lumps <= 0) {
             reset();
         }

@@ -42,6 +42,7 @@ public final class Pottery {
     public static final int COOL_WATER_BONUS = 5;     // кувшин летом холодит воду
     public static final int POT_CAPACITY = 16;        // еды в горшке
     public static final int AMPHORA_DRINKS = 8;       // склянок питья в корчаге
+    public static final int JUG_DRINKS = 4;           // и в кувшине
     public static final double POT_RATE = 0.5;        // в горшке еда портится вдвое медленнее
     public static final double SEALED_RATE = 0.25;    // запечатанном воском
     public static final int POT_USES_BASE = 10;       // варок у Ужасного горшка
@@ -139,6 +140,11 @@ public final class Pottery {
 
     public static boolean isGreenware(ItemStack stack) {
         return stack.is(ModItems.GREENWARE.get());
+    }
+
+    /** Сырая глина, отформованная руками: кирпич-сырец и грузило-сырец. Сохнут и обжигаются, как сырец. */
+    public static boolean isRawClay(ItemStack stack) {
+        return stack.is(ModItems.RAW_BRICK.get()) || stack.is(ModItems.RAW_LOOM_WEIGHT.get());
     }
 
     public static boolean isWare(ItemStack stack) {
@@ -270,6 +276,59 @@ public final class Pottery {
     }
 
     /** Вынуть содержимое: срок годности сдвигается на сбережённые сутки. */
+    /**
+     * Можно ли налить ещё склянку этого питья в посудину: корчага или кувшин, целая, без воды и печати, пустая или
+     * с тем же питьём, не полная. Наливают перегонный куб, бродильная бочка, давильня и горшок на огне.
+     */
+    public static boolean canPour(ItemStack vessel, ItemStack drink, Level level) {
+        if (drinkCapacity(vessel) <= 0 || !isWare(vessel) || cracked(vessel) || water(vessel) > 0) {
+            return false;
+        }
+        Stored stored = vessel.get(ModComponents.STORED.get());
+        if (stored == null) {
+            return true;
+        }
+        ItemStack inside = unpack(stored, vessel.copy(), level);
+        return !stored.sealed() && inside.getCount() < drinkCapacity(vessel) && ItemStack.isSameItemSameComponents(inside, drink);
+    }
+
+    /** Питьё в корчаге или кувшине (одна склянка, сколько всего — getCount); пусто — нет или запечатано. */
+    public static ItemStack storedDrink(ItemStack vessel, Level level) {
+        if (drinkCapacity(vessel) <= 0) {
+            return ItemStack.EMPTY;
+        }
+        Stored stored = vessel.get(ModComponents.STORED.get());
+        return stored == null || stored.sealed() ? ItemStack.EMPTY : unpack(stored, vessel, level);
+    }
+
+    /** Отлить одну склянку питья из корчаги или кувшина (вылить в бочку, куб). */
+    public static void takeDrink(ItemStack vessel, Level level) {
+        ItemStack inside = storedDrink(vessel, level);
+        if (inside.isEmpty()) {
+            return;
+        }
+        if (inside.getCount() <= 1) {
+            vessel.remove(ModComponents.STORED.get());
+        } else {
+            vessel.set(ModComponents.STORED.get(), new Stored(inside.copyWithCount(inside.getCount() - 1),
+                    Freshness.currentDay(level), false));
+        }
+    }
+
+    /** Сколько склянок питья держит посудина: корчага, кувшин; 0 — питьё не держит. */
+    public static int drinkCapacity(ItemStack vessel) {
+        VesselForm form = form(vessel);
+        return form == VesselForm.AMPHORA ? AMPHORA_DRINKS : form == VesselForm.JUG ? JUG_DRINKS : 0;
+    }
+
+    /** Налить склянку питья в корчагу или кувшин (сначала canPour). */
+    public static void pour(ItemStack vessel, ItemStack drink, Level level) {
+        Stored stored = vessel.get(ModComponents.STORED.get());
+        ItemStack inside = stored == null ? ItemStack.EMPTY : unpack(stored, vessel, level);
+        ItemStack next = inside.isEmpty() ? drink.copyWithCount(1) : inside.copyWithCount(inside.getCount() + 1);
+        vessel.set(ModComponents.STORED.get(), new Stored(next, Freshness.currentDay(level), false));
+    }
+
     public static ItemStack unpack(Stored stored, ItemStack vessel, Level level) {
         ItemStack stack = stored.stack().copy();
         Integer created = stack.get(ModComponents.CREATED_DAY.get());

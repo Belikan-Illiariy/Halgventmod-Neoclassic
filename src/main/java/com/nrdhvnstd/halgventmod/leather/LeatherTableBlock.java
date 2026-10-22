@@ -10,6 +10,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -66,7 +67,7 @@ public class LeatherTableBlock extends StationBlock {
     }
 
     @Override
-    protected BlockPos stationPos(BlockState state, BlockPos pos) {
+    protected BlockPos stationPos(BlockGetter level, BlockState state, BlockPos pos) {
         return state.getValue(PART) == Part.LEFT ? pos : pos.relative(toOther(state));
     }
 

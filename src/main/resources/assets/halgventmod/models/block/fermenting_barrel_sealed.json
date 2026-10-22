@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "particle": "conquest:block/3_decoration/3_wood/barrel_side",
+    "side": "conquest:block/3_decoration/3_wood/barrel_side",
+    "top": "conquest:block/3_decoration/3_wood/barrel_topbottom",
+    "bottom": "conquest:block/3_decoration/3_wood/barrel_side"
+  }
+}

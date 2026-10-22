@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,half=lower,threaded=false": { "model": "halgventmod:block/loom_frame" },
+    "facing=north,half=upper,threaded=false": { "model": "halgventmod:block/loom_upper" },
+    "facing=north,half=lower,threaded=true": { "model": "halgventmod:block/loom_threaded" },
+    "facing=north,half=upper,threaded=true": { "model": "halgventmod:block/loom_upper" },
+    "facing=east,half=lower,threaded=false": { "model": "halgventmod:block/loom_frame", "y": 90 },
+    "facing=east,half=upper,threaded=false": { "model": "halgventmod:block/loom_upper" },
+    "facing=east,half=lower,threaded=true": { "model": "halgventmod:block/loom_threaded", "y": 90 },
+    "facing=east,half=upper,threaded=true": { "model": "halgventmod:block/loom_upper" },
+    "facing=south,half=lower,threaded=false": { "model": "halgventmod:block/loom_frame", "y": 180 },
+    "facing=south,half=upper,threaded=false": { "model": "halgventmod:block/loom_upper" },
+    "facing=south,half=lower,threaded=true": { "model": "halgventmod:block/loom_threaded", "y": 180 },
+    "facing=south,half=upper,threaded=true": { "model": "halgventmod:block/loom_upper" },
+    "facing=west,half=lower,threaded=false": { "model": "halgventmod:block/loom_frame", "y": 270 },
+    "facing=west,half=upper,threaded=false": { "model": "halgventmod:block/loom_upper" },
+    "facing=west,half=lower,threaded=true": { "model": "halgventmod:block/loom_threaded", "y": 270 },
+    "facing=west,half=upper,threaded=true": { "model": "halgventmod:block/loom_upper" }
+  }
+}

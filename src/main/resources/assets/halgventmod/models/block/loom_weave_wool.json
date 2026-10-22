@@ -1,0 +1,11 @@
+{
+  "loader": "neoforge:obj",
+  "model": "conquest:models/obj/looms/warp_weighted_loom_weave.obj",
+  "emissive_ambient": true,
+  "flip_v": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "weave": "conquest:block/7_tools/3_utility/loom/weaves/medium/loom_weave_gray",
+    "particle": "conquest:block/7_tools/3_utility/loom/weaves/medium/loom_weave_gray"
+  }
+}

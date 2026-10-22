@@ -150,7 +150,9 @@ public final class UseHint {
             RenderSystem.disableBlend();
             return;
         }
-        graphics.drawCenteredString(font, state.getBlock().getName(), x, y - font.lineHeight, COLOR_NAME);
+        // Очаг под перегонным кубом отдаёт всё кубу — и название тоже
+        StationBlockEntity named = StationBlock.station(minecraft.level, pos);
+        graphics.drawCenteredString(font, (named != null ? named.getBlockState() : state).getBlock().getName(), x, y - font.lineHeight, COLOR_NAME);
         graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use." + action(minecraft.level, pos, state),
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);
         // Станция с ожиданием: по ПКМ — как идёт дело (Pickup.onRightClickBlock)

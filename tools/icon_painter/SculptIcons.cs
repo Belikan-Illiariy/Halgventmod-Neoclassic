@@ -313,6 +313,7 @@ public static class SculptIcons {
         Drinks_();
         Grains_();
         Pottery_();
+        Textiles_();
         Effects_();
     }
 
@@ -1064,6 +1065,159 @@ public static class SculptIcons {
 
     /** Выгнуть пластинку чашкой (осколок стенки сосуда). */
     static Sdf Bend(Sdf f, double k) { return (x, y, z) => f(x, y + k * (x * x + z * z) * 0.02, z); }
+
+    // ------------------------------------------------------------------------ ткачество
+    /** Только ткачество — для быстрой проверки. */
+    public static void Textiles(string outRoot) { root = outRoot; Textiles_(); }
+
+    /** Грузило: обожжённое или сырое кольцо глины; два — одно стоит, другое лежит. */
+    static void LoomWeights(string folder, string name, Mtl clay, int seed) {
+        var s = new Scene { Elev = 30, Yaw = -25, Size = 29, Seed = seed };
+        s.Add(S.Rough(S.Rot(S.Squash(S.Torus(0, 0, 0, 3.4, 2.6), 0.85), 'x', 90, 0, 0, 0), 0.25, 0.8, seed), clay);
+        s.Add(S.Move(S.Rough(S.Squash(S.Torus(0, 0, 0, 3.2, 2.3), 0.8), 0.25, 0.8, seed + 1), 5.5, -3.0, 3.5), clay);
+        Save(s, folder, name);
+    }
+
+    /** Отрез ткани: сложенный в несколько слоёв, сверху видно плетение, сбоку — сгибы. */
+    static void ClothFold(string name, Mtl cloth, bool tied, int seed) {
+        var s = new Scene { Elev = 34, Yaw = -28, Size = 29, Seed = seed };
+        var weave = Bumped(cloth, (x, y, z) => 0.05 * Math.Sin(x * 5.5) * Math.Sin(z * 5.5) + 0.05 * (Scene.Noise3(x * 0.8, y * 0.8, z * 0.8, seed) - 0.5));
+        for (int i = 0; i < 3; i++) {
+            double dx = (i % 2 == 0 ? -0.3 : 0.35), y = i * 1.95;
+            s.Add(S.Rough(S.Box(dx, y, 0, 9.2 - i * 0.2, 1.05, 6.2, 0.95), 0.12, 0.7, seed + i), weave);
+        }
+        if (tied) {
+            s.Add(S.Box(-3.5, 2.0, 0, 0.55, 3.3, 6.45, 0.4), Twine); // бечёвка поперёк стопки
+        }
+        Save(s, "textiles", name);
+    }
+
+    /** Клубок: шар с витками в два слоя и свисающим концом нити. */
+    static void YarnBall(string name, Mtl yarn, double wind, int seed) {
+        var s = new Scene { Elev = 26, Yaw = 10, Size = 28, Seed = seed };
+        // Витки в два слоя: какой сверху — по шуму; между нитками — тёмная бороздка
+        Func<double, double, double, double> wrap = (x, y, z) => Scene.Noise3(x * 0.25, y * 0.25, z * 0.25, seed) > 0.5
+            ? Math.Abs(Math.Sin((x * 0.7 + y * 0.7) * wind)) : Math.Abs(Math.Sin((x * 0.6 - z * 0.8) * wind));
+        var groove = M("#2e281e", "#8a7e66", "#b8ac92", 0, 0.04);
+        var wound = Bumped(yarn, (x, y, z) => 0.4 * wrap(x, y, z));
+        wound.Swap = (x, y, z) => wrap(x, y, z) < 0.2 ? groove : null;
+        s.Add(S.Rough(S.Sphere(0, 6.5, 0, 6.5), 0.15, 0.5, seed), wound);
+        s.Add(S.Tube(0.45, 0.4, 5.0, 3.0, 3.6, 7.5, 0.8, 4.5, 9.5, 0.5, 2.5, 11.5, 0.4, 3.5), yarn);
+        Save(s, "textiles", name);
+    }
+
+    static void Textiles_() {
+        Scene s;
+        var linen = M("#5e5644", "#bcb294", "#ece4ca", 0.2, 0.05).With(sheen: 0.3);
+        var wool = M("#7a705e", "#e0d6c0", "#fffaf0", 0, 0.08).With(grainScale: 3);
+
+        // льняное семя: горка блестящих бурых семечек
+        GrainPile("textiles", "flax_seeds", M("#2a1204", "#7a4014", "#c88446", 0.75, 0.03).With(spec: 30), false, 301);
+
+        // лён: сноп золотистых стеблей с коробочками и парой голубых цветков, перевязан бечёвкой
+        var straw = M("#4a3610", "#a88a3c", "#e2ca7a", 0.25, 0.05);
+        var boll = M("#3a2a0a", "#94783a", "#d8be74", 0.3, 0.04);
+        var flower = M("#16246a", "#4a6ad0", "#a8c0ff", 0.2, 0.02);
+        s = new Scene { Elev = 14, Roll = -40, Size = 31, Seed = 302 };
+        var rnd = new Random(302);
+        for (int i = 0; i < 7; i++) {
+            double t = (i - 3) / 3.0, zz = (rnd.NextDouble() - 0.5) * 5;
+            double ex = 6.5 + rnd.NextDouble() * 2.5, ey = t * 5.2;
+            s.Add(S.Cap(-11, t * 0.8, zz * 0.3, ex, ey, zz, 0.55, 0.42), straw);
+            for (int k = 0; k < 3; k++) {
+                double bx = ex + 1.6 + (k == 1 ? 1.0 : 0), by = ey + (k - 1) * 1.6 + t * 0.6;
+                s.Add(S.Cap(ex, ey, zz, bx, by, zz, 0.22), straw);
+                s.Add(S.Sphere(bx, by, zz, k == 1 ? 1.0 : 0.85), (i * 3 + k) % 7 == 2 ? flower : boll);
+            }
+        }
+        s.Add(S.Rot(S.Torus(-5, 0, 0, 1.4, 0.6), 'z', 90, -5, 0, 0), Twine);
+        Save(s, "textiles", "flax");
+
+        // льняная кудель: две серебристые пряди, свитые в жгут; концы распушены
+        var fiber = Bumped(M("#5a5444", "#b4ac92", "#ece6d2", 0.35, 0.04).With(sheen: 0.5),
+            (x, y, z) => 0.3 * (Scene.Noise3(x * 0.2, y * 3.0, z * 3.0, 303) - 0.5));
+        s = new Scene { Elev = 30, Roll = -32, Size = 30, Seed = 303 };
+        for (int h = 0; h < 2; h++) {
+            var pts = new List<double>();
+            for (int i = 0; i <= 16; i++) {
+                double x = -11 + i * 1.375, a = x * 0.42 + h * Math.PI, rr = 1.5 * (1 - Math.Abs(x) / 16);
+                pts.Add(x); pts.Add(Math.Sin(a) * rr); pts.Add(Math.Cos(a) * rr);
+            }
+            s.Add(S.Rough(S.Tube(2.1, 1.3, pts.ToArray()), 0.25, 1.0, 303 + h), fiber);
+        }
+        for (int i = 0; i < 4; i++)
+            s.Add(S.Tube(0.3, 0.15, 10.5, 0, 0, 12.5 + i * 0.5, (i - 1.5) * 1.3, (i % 2) * 0.8, 14.5 + i * 0.3, (i - 1.5) * 2.0, 0.4), fiber);
+        Save(s, "textiles", "flax_fiber");
+
+        // шерстяная кудель: два пушистых валика-ролика, скрученных спиралью
+        var fluff = Bumped(M("#6e6450", "#dcd2bc", "#fffaf0", 0, 0.08).With(grainScale: 3),
+            (x, y, z) => 0.15 * (Scene.Noise3(x * 1.8, y * 1.8, z * 1.8, 304) - 0.5) + 0.32 * Math.Abs(Math.Sin((Math.Atan2(z, y) + x * 1.2) * 0.5)));
+        s = new Scene { Elev = 28, Yaw = -20, Size = 30, Seed = 304 };
+        s.Add(S.Rough(S.Cap(-9, 0, -2.8, 8, 0, -2.8, 3.4, 3.0), 0.35, 1.3, 304), fluff);
+        s.Add(S.Rough(S.Cap(-6, -0.4, 3.4, 9, -0.4, 3.4, 3.0, 2.8), 0.35, 1.3, 305), fluff);
+        Save(s, "textiles", "wool_roving");
+
+        // пакля: спутанный бурый ком с торчащими волокнами
+        var tow = Bumped(M("#3e3020", "#8e7a56", "#c6b48c", 0, 0.1).With(grainScale: 3),
+            (x, y, z) => 0.3 * (Scene.Noise3(x * 2.4, y * 2.4, z * 2.4, 306) - 0.5));
+        s = new Scene { Elev = 30, Yaw = 15, Size = 29, Seed = 306 };
+        s.Add(S.Rough(S.Blend(2.2, S.Ell(0, 2.5, 0, 8, 3.6, 6), S.Ell(3, 4.5, -1, 4.2, 2.6, 3.6), S.Ell(-4, 3.6, 2, 4, 2.5, 3)), 0.9, 1.1, 306), tow);
+        rnd = new Random(306);
+        for (int i = 0; i < 8; i++) {
+            double a = rnd.NextDouble() * Math.PI * 2, r = 6 + rnd.NextDouble() * 2;
+            double x0 = Math.Cos(a) * r * 0.8, z0 = Math.Sin(a) * r * 0.6, y0 = 2 + rnd.NextDouble() * 3;
+            s.Add(S.Tube(0.25, 0.15, x0 * 0.6, y0, z0 * 0.6, x0 * 1.1, y0 + 1.2, z0 * 1.1, x0 * 1.35, y0 + 0.4, z0 * 1.4), tow);
+        }
+        Save(s, "textiles", "tow");
+
+        // льняная пряжа: початок, намотанный на палочку
+        var cop = Bumped(linen, (x, y, z) => 0.14 * Math.Sin(x * 3.4) + 0.05 * (Scene.Noise3(x, y * 3, z * 3, 307) - 0.5));
+        s = new Scene { Elev = 20, Roll = -40, Size = 31, Seed = 307 };
+        s.Add(S.Cap(-13, 0, 0, 12, 0, 0, 0.55, 0.45), Wood);
+        s.Add(S.Rot(S.Lathe(0, -8, 0, 0, 0, 0, 0.8, 2, 3.0, 7, 3.8, 12, 3.2, 16, 0.9), 'z', 90, 0, 0, 0), cop);
+        s.Add(S.Tube(0.2, 0.15, 7.8, 0.6, 0.5, 9.5, 2.5, 1.5, 11.5, 2.0, 2.0), linen);
+        Save(s, "textiles", "linen_yarn");
+
+        // шерстяная пряжа: клубок
+        YarnBall("wool_yarn", M("#5e5442", "#d8ccb0", "#fff8ea", 0, 0.06), 1.3, 308);
+
+        // полотно и сукно: сложенные отрезы
+        ClothFold("linen_cloth", M("#6a6250", "#c8bea2", "#eee8d4", 0.1, 0.05), true, 309);
+        ClothFold("woolen_cloth", Spots(M("#2e261e", "#6e5e4c", "#a8967e", 0, 0.1).With(grainScale: 2.5),
+            M("#4a3e32", "#8e7c66", "#c0ae94", 0, 0.08), 2.2, 0.66, 311), false, 310);
+
+        // чесалка: доска с рукоятью и рядами железных зубьев
+        s = new Scene { Elev = 38, Yaw = -24, Roll = -20, Size = 31, Seed = 312 };
+        s.Add(S.Box(3, 0, 0, 7.5, 0.9, 5.2, 0.5), Wood);
+        s.Add(S.Cap(-4.2, 0, 0, -13, 0, 0, 1.3, 1.5), Wood);
+        for (int ix = 0; ix < 6; ix++)
+            for (int iz = 0; iz < 4; iz++) {
+                double tx = -2.6 + ix * 2.2, tz = -3.6 + iz * 2.4 + (ix % 2) * 0.6;
+                s.Add(S.Cap(tx, 0.8, tz, tx + 0.35, 3.6, tz, 0.3, 0.14), Iron);
+            }
+        Save(s, "textiles", "carding_comb");
+
+        // веретено: тонкое древко, глиняное пряслице внизу, намотанная пряжа и нить с кончика
+        s = new Scene { Elev = 16, Roll = -48, Size = 31, Seed = 313 };
+        s.Add(S.Cap(-13, 0, 0, 13, 0, 0, 0.6, 0.38), Wood);
+        s.Add(S.Rot(S.Cyl(-8.5, 0, 0, 3.0, 0.9, 0.35), 'z', 90, -8.5, 0, 0), Terracotta);
+        var spun = Bumped(linen, (x, y, z) => 0.12 * Math.Sin(x * 3.6));
+        s.Add(S.Rot(S.Lathe(0, -6.5, 0, 0, 0, 0, 0.7, 1.5, 2.2, 6, 2.7, 10, 2.0, 13, 0.7), 'z', 90, 0, 0, 0), spun);
+        s.Add(S.Tube(0.17, 0.14, 6.2, 0.4, 0.4, 9.5, 1.6, 1.0, 12.5, 0.5, 0.2, 15.5, 2.0, 0.6), linen);
+        Save(s, "textiles", "spindle");
+
+        // челнок: деревянная лодочка с острыми концами, в выемке — шпулька с пряжей, сбоку нить
+        Sdf hull = S.Squash(S.Union(S.Cap(-10, 0, 0, -3, 0, 0, 0.45, 3.8), S.Cap(-3, 0, 0, 3, 0, 0, 3.8), S.Cap(3, 0, 0, 10, 0, 0, 3.8, 0.45)), 0.72);
+        s = new Scene { Elev = 50, Yaw = -22, Roll = -30, Size = 31, Seed = 314 };
+        s.Add(S.Sub(hull, S.Box(0, 2.2, 0, 4.4, 2.0, 2.1, 0.5)), Wood);
+        s.Add(S.Rot(S.Lathe(0, -4.0, 0.6, 0, 0, 0, 1.0, 0.6, 1.9, 7.4, 1.9, 8.0, 1.0), 'z', 90, 0, 0.6, 0), Bumped(linen, (x, y, z) => 0.14 * Math.Sin(x * 4)));
+        s.Add(S.Tube(0.25, 0.2, 0, 1.4, 1.9, 0.6, 1.0, 3.6, 2.5, 0.4, 5.6, 4.0, 0.2, 7.5), linen);
+        Save(s, "textiles", "shuttle");
+
+        // грузила: обожжённые и сырые
+        LoomWeights("textiles", "loom_weight", Terracotta, 315);
+        LoomWeights("pottery", "raw_loom_weight", M("#40342a", "#958068", "#cdb99e", 0.05, 0.1).With(grainScale: 2.4), 317);
+    }
 
     // ------------------------------------------------------------------------ значки эффектов (поле 32×32, в игре — 18×18)
     static void Effects_() {
