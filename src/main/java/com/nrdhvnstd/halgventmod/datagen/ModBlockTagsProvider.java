@@ -38,11 +38,10 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.ORANGE_LEAVES.get(), ModBlocks.OLIVE_LEAVES.get(), ModBlocks.GRAPE_VINE.get(),
                 ModBlocks.APPLE_LEAVES.get());
 
+        // Траву и папоротник серп больше не косит — травы с них срезают, ничего не ломая (herbs/HerbGathering)
         tag(FarmingRules.HARVESTABLE)
                 .addTag(BlockTags.CROPS)
-                .add(Blocks.PUMPKIN, Blocks.MELON)
-                // Трава и папоротник: с них серп, коса и нож снимают травы (CookingEvents)
-                .add(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN);
+                .add(Blocks.PUMPKIN, Blocks.MELON);
 
         // По чему кликают семенами, чтобы посадить их в режиме приключения
         tag(FarmingRules.PLANTABLE_SOIL)
@@ -67,5 +66,9 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get());
         tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.CLAY_BARREL.get(), ModBlocks.POTTERY_WHEEL.get(), ModBlocks.DRYING_SHELF.get());
+
+        // Плотник: всё деревянное — топором
+        tag(BlockTags.MINEABLE_WITH_AXE)
+                .add(ModBlocks.CHOPPING_BLOCK.get(), ModBlocks.SAWHORSE.get(), ModBlocks.CARPENTER_BENCH.get());
     }
 }

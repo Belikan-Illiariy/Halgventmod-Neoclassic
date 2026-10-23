@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:thyme_plant" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "random_sequence": "halgventmod:blocks/thyme_plant"
+}

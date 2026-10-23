@@ -14,6 +14,9 @@
     "halgventmod:aging_cask",
     "halgventmod:clay_barrel",
     "halgventmod:pottery_wheel",
-    "halgventmod:drying_shelf"
+    "halgventmod:drying_shelf",
+    "halgventmod:chopping_block",
+    "halgventmod:sawhorse",
+    "halgventmod:carpenter_bench"
   ]
 }

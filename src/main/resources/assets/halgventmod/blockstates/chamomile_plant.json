@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "age=0": [ { "model": "halgventmod:block/herb/cut_a" }, { "model": "halgventmod:block/herb/cut_b" }, { "model": "halgventmod:block/herb/cut_c" } ],
+    "age=1": [ { "model": "halgventmod:block/herb/cut_a" }, { "model": "halgventmod:block/herb/cut_b" }, { "model": "halgventmod:block/herb/cut_c" } ],
+    "age=2": [ { "model": "halgventmod:block/herb/cut_a" }, { "model": "halgventmod:block/herb/cut_b" }, { "model": "halgventmod:block/herb/cut_c" } ],
+    "age=3": [ { "model": "halgventmod:block/herb/chamomile_a" }, { "model": "halgventmod:block/herb/chamomile_b" }, { "model": "halgventmod:block/herb/chamomile_c" } ]
+  }
+}

@@ -1504,15 +1504,77 @@ public final class ModItems {
             .food(8, 4.0F)
             .shelfLife(128)
             .register();
-    public static final DeferredItem<Item> HERBS = item("herbs", "Травы", "Herbs", Gender.PL)
-            .traits(ModTraits.COMMON)
-            .category(Category.FOOD)
-            .lore("Срезаны с травы серпом, косой или ножом. Приправа в горшок, с одной водой — отвар.",
-                    "Cut from grass with a sickle, scythe or knife. A seasoning for the pot; with just water — a tea.")
-            .stacksTo(16)
-            .grams(20)
-            .shelfLife(4)
-            .register();
+    // Травы (herbs/Herb): срезают ножом, серпом или косой — каждую только с её кустика (HerbPlantBlock). Все идут
+    // приправой в горшок (+1 к качеству блюда), на кухонный стол, в брожение «на травах»; сушатся на крюке.
+    // Отвар — трава с одной водой в горшке, 2 порции на траву; действие — по траве, которой больше ⚠️
+    public static final DeferredItem<Item> CHAMOMILE = herb("chamomile", "Ромашка", "Chamomile", Gender.F,
+            "Срезают с куста ромашки. Отвар: снимает тошноту и отравление, Регенерация I на 8 с.",
+            "Cut from a chamomile plant. Tea: clears nausea and food poisoning, Regeneration I for 8 s.");
+    public static final DeferredItem<Item> MINT = herb("mint", "Мята", "Mint", Gender.F,
+            "Срезают с куста мяты. Отвар: снимает тошноту, Скорость I на 30 с.",
+            "Cut from a mint plant. Tea: clears nausea, Speed I for 30 s.");
+    public static final DeferredItem<Item> ST_JOHNS_WORT = herb("st_johns_wort", "Зверобой", "St John's wort", Gender.M,
+            "Срезают с куста зверобоя. Отвар: Сопротивление I на 60 с.",
+            "Cut from a St John's wort plant. Tea: Resistance I for 60 s.");
+    public static final DeferredItem<Item> YARROW = herb("yarrow", "Тысячелистник", "Yarrow", Gender.M,
+            "Срезают с куста тысячелистника. Отвар: Регенерация I на 15 с.",
+            "Cut from a yarrow plant. Tea: Regeneration I for 15 s.");
+    public static final DeferredItem<Item> WORMWOOD = herb("wormwood", "Полынь", "Wormwood", Gender.F,
+            "Срезают с куста полыни. Горький отвар: снимает отравление, голод и яд.",
+            "Cut from a wormwood plant. Bitter tea: clears food poisoning, hunger and poison.");
+    public static final DeferredItem<Item> NETTLE = herb("nettle", "Крапива", "Nettle", Gender.F,
+            "Срезают с зарослей крапивы. Отвар: Бодрость на 60 с — выносливость восстанавливается в 1,3 раза быстрее.",
+            "Cut from nettles. Tea: Vigour for 60 s, stamina recovers 1.3 times faster.");
+    public static final DeferredItem<Item> THYME = herb("thyme", "Чабрец", "Thyme", Gender.M,
+            "Срезают с куста чабреца. Отвар: Поглощение I на 60 с (запас здоровья).",
+            "Cut from a thyme plant. Tea: Absorption I for 60 s (extra health).");
+    public static final DeferredItem<Item> LAVENDER = herb("lavender", "Лаванда", "Lavender", Gender.F,
+            "Срезают с куста лаванды. Отвар: снимает тошноту, слепоту и тьму, Регенерация I на 4 с.",
+            "Cut from a lavender plant. Tea: clears nausea, blindness and darkness, Regeneration I for 4 s.");
+
+    // Кустики трав (herbs/HerbPlantBlock) — для строителей; срезанный отрастает сам
+    public static final DeferredItem<BlockItem> CHAMOMILE_PLANT = herbPlant("chamomile_plant", "Куст ромашки", "Chamomile plant",
+            Gender.M, ModBlocks.CHAMOMILE_PLANT);
+    public static final DeferredItem<BlockItem> MINT_PLANT = herbPlant("mint_plant", "Куст мяты", "Mint plant",
+            Gender.M, ModBlocks.MINT_PLANT);
+    public static final DeferredItem<BlockItem> ST_JOHNS_WORT_PLANT = herbPlant("st_johns_wort_plant", "Куст зверобоя",
+            "St John's wort plant", Gender.M, ModBlocks.ST_JOHNS_WORT_PLANT);
+    public static final DeferredItem<BlockItem> YARROW_PLANT = herbPlant("yarrow_plant", "Куст тысячелистника", "Yarrow plant",
+            Gender.M, ModBlocks.YARROW_PLANT);
+    public static final DeferredItem<BlockItem> WORMWOOD_PLANT = herbPlant("wormwood_plant", "Куст полыни", "Wormwood plant",
+            Gender.M, ModBlocks.WORMWOOD_PLANT);
+    public static final DeferredItem<BlockItem> NETTLE_PLANT = herbPlant("nettle_plant", "Заросли крапивы", "Nettles",
+            Gender.PL, ModBlocks.NETTLE_PLANT);
+    public static final DeferredItem<BlockItem> THYME_PLANT = herbPlant("thyme_plant", "Куст чабреца", "Thyme plant",
+            Gender.M, ModBlocks.THYME_PLANT);
+    public static final DeferredItem<BlockItem> LAVENDER_PLANT = herbPlant("lavender_plant", "Куст лаванды", "Lavender plant",
+            Gender.M, ModBlocks.LAVENDER_PLANT);
+
+    /** Кустик травы: блок для строителей. Модели Conquest — блок сам выбирает, срезан он или вырос. */
+    private static DeferredItem<BlockItem> herbPlant(String id, String ru, String en, Gender gender,
+                                                     net.neoforged.neoforge.registries.DeferredBlock<?> block) {
+        return item(id, ru, en, gender)
+                .category(Category.MATERIALS)
+                .lore("Для строителей. E ножом, серпом или косой по выросшему — срезать траву; срезанный отрастает сам "
+                                + "за полтора-два дня (зимой — нет). Сломать в приключении нельзя.",
+                        "For builders. E with a knife, sickle or scythe at a grown plant cuts the herb; a cut plant grows "
+                                + "back by itself in a day or two (not in winter). Can't be broken in adventure mode.")
+                .grams(200)
+                .draw(DrawType.SMALL)
+                .register(properties -> new BlockItem(block.get(), properties));
+    }
+
+    /** Вид травы: срезают с её кустика (herbs/HerbPlantBlock), сушат на крюке, кладут в горшок и в рецепты. */
+    private static DeferredItem<Item> herb(String id, String ru, String en, Gender gender, String loreRu, String loreEn) {
+        return item(id, ru, en, gender)
+                .traits(ModTraits.COMMON)
+                .category(Category.FOOD)
+                .lore(loreRu, loreEn)
+                .stacksTo(16)
+                .grams(20)
+                .shelfLife(4)
+                .register();
+    }
     public static final DeferredItem<Item> DRIED_HERBS = item("dried_herbs", "Сушёные травы", "Dried herbs", Gender.PL)
             .traits(ModTraits.COMMON)
             .category(Category.FOOD)
@@ -1782,7 +1844,10 @@ public final class ModItems {
     public static final DeferredItem<WareItem> CLAY_CUP = item("clay_cup", "Кружка", "Clay cup", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
-            .lore("ПКМ по воде — набрать, ПКМ — пить. Можно налить из кувшина.", "Right-click water to fill, right-click to drink. A jug can fill it too.")
+            .lore("Мера воды или питья: ПКМ по воде — набрать, ПКМ — пить. Налить можно из кувшина или корчаги: "
+                            + "в инвентаре ПКМ ими по кружке.",
+                    "One measure of water or a drink: right-click water to fill, right-click to drink. A jug or an amphora "
+                            + "can fill it: right-click it onto the cup in your inventory.")
             .stacksTo(1)
             .grams(300)
             .register(properties -> new WareItem(properties, VesselForm.CUP));
@@ -1797,9 +1862,11 @@ public final class ModItems {
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
             .lore("Четыре меры воды или четыре склянки питья: ПКМ по воде — набрать, ПКМ — пить. Питьё — положите склянку "
-                            + "на кувшин или налейте у куба, бочки, давильни. Полный водой заменяет ведро в бочке, горшке и чане.",
+                            + "на кувшин или налейте у куба, бочки, давильни или перелейте из корчаги (ПКМ корчагой по кувшину). "
+                            + "Из кувшина наливают в кружку. Полный водой заменяет ведро в бочке, горшке и чане.",
                     "Four measures of water or four bottles of a drink: right-click water to fill, right-click to drink. "
-                            + "Drop a bottle onto it or fill it at a still, barrel or press. Full of water it does for a bucket.")
+                            + "Drop a bottle onto it or fill it at a still, barrel or press, or pour it from an amphora (right-click the "
+                            + "amphora onto the jug). It fills a cup in turn. Full of water it does for a bucket.")
             .stacksTo(1)
             .grams(900)
             .register(properties -> new WareItem(properties, VesselForm.JUG));
@@ -1816,8 +1883,10 @@ public final class ModItems {
     public static final DeferredItem<WareItem> AMPHORA = item("amphora", "Корчага", "Amphora", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
-            .lore("Шестнадцать мер воды или восемь склянок питья одного рода: положите склянку на корчагу, пустой склянкой — наберите.",
-                    "Sixteen measures of water or eight bottles of one drink: drop a bottle onto it, draw with an empty bottle.")
+            .lore("Шестнадцать мер воды или восемь склянок питья одного рода: положите склянку на корчагу, пустой склянкой — "
+                            + "наберите. В инвентаре ПКМ корчагой по кувшину или кружке — перелить в них питьё.",
+                    "Sixteen measures of water or eight bottles of one drink: drop a bottle onto it, draw with an empty "
+                            + "bottle. In your inventory, right-click the amphora onto a jug or cup to pour the drink into it.")
             .stacksTo(1)
             .kg(3)
             .register(properties -> new WareItem(properties, VesselForm.AMPHORA));
@@ -1966,6 +2035,126 @@ public final class ModItems {
                             + "an empty hand takes the cloth off.")
             .kg(30)
             .register(properties -> new BlockItem(ModBlocks.LOOM.get(), properties));
+
+    // ----- Плотничество (carpentry/*) -----
+    public static final DeferredItem<Item> SAW = item("saw", "Пила", "Saw", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по козлам с бревном — распустить его на доски: ЛКМ — нажать на пилу на толчке, мышью вести "
+                            + "пропил по разметке. Нажим на обратном ходу зажимает пилу.",
+                    "E at a sawhorse with a log rips it into planks: left click presses on the push stroke, the mouse "
+                            + "steers the cut along the line. Pressing on the return stroke jams the saw.")
+            .durability(300)
+            .grams(900)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> PLANE = item("plane", "Рубанок", "Plane", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Строгает заготовку на верстаке плотника. Ведите по волокну, не спешите на сучках. Берётся из инвентаря.",
+                    "Planes the blank at a carpenter's bench. Go with the grain and slow down over knots. "
+                            + "Taken from your inventory.")
+            .durability(250)
+            .grams(700)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> CHISEL = item("chisel", "Долото", "Chisel", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Выбирает гнёзда на верстаке плотника: ЛКМ — лёгкий удар, ПКМ — сильный. Сильный у края колет "
+                            + "древесину вдоль волокна. Берётся из инвентаря.",
+                    "Cuts mortises at a carpenter's bench: left click taps, right click strikes hard. A hard blow near "
+                            + "the edge splits the wood along the grain. Taken from your inventory.")
+            .durability(300)
+            .grams(350)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> BRACE = item("brace", "Коловорот", "Brace and bit", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Сверлит на верстаке плотника: водите мышью кругами по часовой стрелке. Быстро — сверло уводит, "
+                            + "к концу не сбавите — вырвет с изнанки. Берётся из инвентаря.",
+                    "Drills at a carpenter's bench: circle the mouse clockwise. Too fast and the bit wanders; "
+                            + "keep the pace near the end or it blows out the back. Taken from your inventory.")
+            .durability(250)
+            .grams(1200)
+            .draw(DrawType.TOOL)
+            .register();
+    public static final DeferredItem<Item> HAMMER = item("hammer", "Молоток", "Hammer", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("Собирает изделия на верстаке плотника: бейте, когда гвоздь стоит прямо, и в меру. "
+                            + "Берётся из инвентаря.",
+                    "Assembles pieces at a carpenter's bench: strike when the nail stands straight, and not too hard. "
+                            + "Taken from your inventory.")
+            .durability(400)
+            .grams(600)
+            .draw(DrawType.TOOL)
+            .register();
+    // Задел для кузни: деревянные части с верстака плотника, на которые кузнец насадит железо
+    public static final DeferredItem<Item> TOOL_HANDLE = item("tool_handle", "Рукоять", "Tool handle", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Короткая рукоять с пояском — для ножа, долота, молотка, напильника. Пойдёт в кузню.",
+                    "A short handle with a collar for a knife, chisel, hammer or file. Goes to the smithy.")
+            .stacksTo(16)
+            .grams(120)
+            .register();
+    public static final DeferredItem<Item> AXE_HANDLE = item("axe_handle", "Топорище", "Axe handle", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Толстое под проушину, с тонкой шейкой и упором на конце — для топора, колуна, чекана. Пойдёт в кузню.",
+                    "Thick at the eye, a slim neck and a knob at the end: for an axe, a maul, a war hammer. Goes to the smithy.")
+            .stacksTo(16)
+            .grams(450)
+            .register();
+    public static final DeferredItem<Item> HAFT = item("haft", "Черенок", "Haft", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Ровный, конец сведён под втулку — для лопаты, кирки, мотыги, вил, косы. Пойдёт в кузню.",
+                    "Straight, its end tapered for a socket: for a shovel, pick, hoe, fork or scythe. Goes to the smithy.")
+            .stacksTo(16)
+            .grams(700)
+            .register();
+    public static final DeferredItem<Item> SPEAR_SHAFT = item("spear_shaft", "Древко", "Spear shaft", Gender.N)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Долгое, к наконечнику тоньше, с дырой под гвоздь втулки — для копья, рогатины, алебарды. Пойдёт в кузню.",
+                    "Long, slimmer towards the head, with a hole for the socket nail: for a spear, boar spear, halberd. "
+                            + "Goes to the smithy.")
+            .stacksTo(8)
+            .kg(1.5)
+            .register();
+    public static final DeferredItem<Item> SWORD_GRIP = item("sword_grip", "Рукоять меча", "Sword grip", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Деревянная основа рукояти с пазом под хвостовик клинка; её обтянут кожей. Пойдёт в кузню.",
+                    "The wooden core of a hilt, slotted for the blade's tang; it gets wrapped in leather. Goes to the smithy.")
+            .stacksTo(16)
+            .grams(90)
+            .register();
+    public static final DeferredItem<BlockItem> CHOPPING_BLOCK = item("chopping_block", "Колода для колки", "Chopping block", Gender.F)
+            .category(Category.TOOLS)
+            .lore("E бревном — поставить на колоду, E топором — колоть на дрова (бейте с полного замаха), "
+                            + "пустой рукой — снять.",
+                    "E with a log sets it on the block, E with an axe splits it into firewood (strike with a full swing), "
+                            + "an empty hand takes it off.")
+            .kg(25)
+            .register(properties -> new BlockItem(ModBlocks.CHOPPING_BLOCK.get(), properties));
+    public static final DeferredItem<BlockItem> SAWHORSE = item("sawhorse", "Пильные козлы", "Sawhorse", Gender.PL)
+            .category(Category.TOOLS)
+            .lore("E бревном — положить на козлы, E пилой — распустить на доски, пустой рукой — снять нетронутое бревно.",
+                    "E with a log lays it on, E with a saw rips it into planks, an empty hand takes an unsawn log off.")
+            .kg(12)
+            .register(properties -> new BlockItem(ModBlocks.SAWHORSE.get(), properties));
+    public static final DeferredItem<BlockItem> CARPENTER_BENCH = item("carpenter_bench", "Верстак плотника", "Carpenter's bench", Gender.M)
+            .category(Category.TOOLS)
+            .lore("E — окно верстака: выбрать изделие, выложить доски и прочее, «Делать» — пройти этапы работы "
+                            + "инструментами из инвентаря.",
+                    "E opens the bench: pick a product, lay out planks and the rest, \"Make\" works through its steps "
+                            + "with tools from your inventory.")
+            .kg(40)
+            .register(properties -> new BlockItem(ModBlocks.CARPENTER_BENCH.get(), properties));
 
     // ----- Драгоценности -----
     public static final DeferredItem<Item> COIN_GULDEN = item("coin_gulden", "Гульден", "Gulden", Gender.M)

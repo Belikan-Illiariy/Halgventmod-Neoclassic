@@ -1,4 +1,5 @@
 {
-  "parent": "conquest:block/flax_8_c_stage_3",
-  "render_type": "minecraft:cutout"
+  "parent": "minecraft:block/crop",
+  "render_type": "minecraft:cutout",
+  "textures": { "crop": "conquest:block/9_organic/3_plants/flax/flax_stage_3" }
 }

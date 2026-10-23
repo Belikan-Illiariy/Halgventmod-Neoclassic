@@ -182,6 +182,20 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
                     .build());
 
+    // Травы (herbs/*): вид сушёной травы и отвара — ромашка, мята… (Herb.id)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> HERB =
+            COMPONENTS.register("herb", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Плотничество (carpentry/*): качество деревянной вещи с верстака 0–5 (Ужасное…Шедевр), у инструмента — прочность
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> WOOD_QUALITY =
+            COMPONENTS.register("wood_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
     // Склонность глины трескаться при сушке и обжиге, в процентах: жирная — больше, с шамотом — меньше
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CLAY_CRACK =
             COMPONENTS.register("clay_crack", () -> DataComponentType.<Integer>builder()

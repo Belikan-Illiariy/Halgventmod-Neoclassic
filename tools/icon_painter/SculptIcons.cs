@@ -511,6 +511,79 @@ public static class SculptIcons {
         s.Add(S.Lathe(-2, -3.2, 0, 0.8, 0.8, 0, 2.4, 1, 3.6, 2.6, 4.8, 4.2, 5.4), Wood);
         Save(s, "tools", "ladle");
 
+        // пила: стальное полотно с зубьями понизу, сужается к носку; деревянная рукоять с прорезью, две заклёпки
+        s = new Scene { Elev = 14, Roll = -35, Size = 31, Seed = 47 };
+        var sawBlade = new List<double> { -4, 2.4, 13, 1.3 };
+        for (int i = 0; i <= 12; i++) { double tx = 13 - i * 1.42, ty = -1.4 - i * 0.16; sawBlade.Add(tx); sawBlade.Add(ty); sawBlade.Add(tx - 0.71); sawBlade.Add(ty - 0.75); }
+        sawBlade.Add(-4); sawBlade.Add(-3.4);
+        s.Add(S.Plate(0, 0.22, 0.08, sawBlade.ToArray()), Steel);
+        s.Add(S.Sub(S.Box(-7.2, -0.5, 0, 3.4, 3.6, 1.1, 0.9), S.Box(-7.4, 0.3, 0, 1.5, 1.6, 2, 0.6)), Wood);
+        s.Add(S.Sphere(-4.4, 1.6, 0.9, 0.45), Iron).Add(S.Sphere(-4.4, -2.0, 0.9, 0.45), Iron);
+        Save(s, "tools", "saw");
+
+        // рубанок: колодка, косо вбитая железка с клином, рожок спереди и ручка сзади
+        s = new Scene { Elev = 32, Yaw = -30, Size = 30, Seed = 48 };
+        s.Add(S.Box(0, 0, 0, 11, 2.6, 3.4, 0.6), Wood);
+        s.Add(S.Rot(S.Box(1.2, 3.4, 0, 0.35, 2.8, 2.4, 0.1), 'z', -30, 1.2, 2.6, 0), Steel);
+        s.Add(S.Rot(S.Box(2.4, 3.6, 0, 0.6, 2.3, 1.6, 0.2), 'z', -30, 2.4, 2.6, 0), Wood);
+        s.Add(S.Cap(6.5, 2.4, 0, 7.4, 6.0, 0, 1.2, 0.95), Wood);
+        s.Add(S.Cap(-5.6, 2.4, 0, -7.6, 6.6, 0, 1.0, 1.25), Wood);
+        Save(s, "tools", "plane");
+
+        // долото: деревянная рукоять с железным кольцом, плоское стальное полотно с косой фаской
+        s = new Scene { Elev = 14, Roll = -45, Size = 31, Seed = 49 };
+        s.Add(S.Cap(-13, 0, 0, -2.5, 0, 0, 1.6, 1.9), Wood);
+        s.Add(S.Rot(S.Cyl(-2.2, 0, 0, 2.0, 0.7, 0.3), 'z', 90, -2.2, 0, 0), Iron);
+        s.Add(S.Plate(0, 0.45, 0.12, -1.5, 1.3, 12.5, 1.6, 13.5, -1.6, -1.5, -1.3), Steel);
+        Save(s, "tools", "chisel");
+
+        // коловорот: стальное колено буквой П, грибок сверху, ручка на колене, сверло снизу
+        s = new Scene { Elev = 18, Yaw = 20, Roll = 0, Size = 31, Seed = 50 };
+        s.Add(S.Tube(0.9, 0.9, 0, 11, 0, 0, 7, 0, 5, 7, 0, 5, -3, 0, 0, -3, 0, 0, -6, 0), Iron);
+        s.Add(S.Ell(0, 12.4, 0, 3.0, 1.6, 3.0), Wood);
+        s.Add(S.Cap(5, 0.4, 0, 5, 4.0, 0, 1.6), Wood);
+        s.Add(S.Tube(0.75, 0.3, 0, -6, 0, 0.7, -8.5, 0, -0.7, -11, 0, 0.3, -13.5, 0), Steel);
+        Save(s, "tools", "brace");
+
+        // молоток: рукоять и железная головка с бойком и раздвоенным хвостом
+        s = new Scene { Elev = 18, Yaw = 25, Roll = -45, Size = 30, Seed = 51 };
+        s.Add(S.Cap(-12, 0, 0, 7.5, 0, 0, 1.1, 1.3), Wood);
+        s.Add(S.Cyl(9, 2.6, 0, 1.8, 3.4, 0.4), Iron);
+        s.Add(S.Sub(S.Rot(S.Box(9, -3.0, 0, 1.2, 3.0, 1.4, 0.3), 'z', 12, 9, -0.5, 0), S.Box(9, -5.5, 0, 0.35, 1.8, 2.0)), Iron);
+        Save(s, "tools", "hammer");
+
+        // задел для кузни: деревянные части с верстака плотника
+        // рукоять: хват, поясок, шип под насадку
+        s = new Scene { Elev = 14, Roll = -45, Size = 30, Seed = 52 };
+        s.Add(S.Cap(-11, 0, 0, 4.5, 0, 0, 1.8, 2.1), Wood);
+        s.Add(S.Rot(S.Cyl(5.6, 0, 0, 2.5, 0.9, 0.35), 'z', 90, 5.6, 0, 0), BowlWood);
+        s.Add(S.Cap(6.6, 0, 0, 11, 0, 0, 1.2, 0.9), Wood);
+        Save(s, "materials", "tool_handle");
+
+        // топорище: изогнутое, толстое у проушины, шейка, упор на конце
+        s = new Scene { Elev = 14, Roll = -45, Size = 31, Seed = 53 };
+        s.Add(S.Tube(1.5, 1.25, -11, -2.2, 0, -4, -0.4, 0, 4, 0.6, 0, 9, 0.2, 0), Wood);
+        s.Add(S.Ell(-12, -2.6, 0, 2.2, 1.9, 1.7), Wood);
+        s.Add(S.Cap(8.5, 0.3, 0, 13, 0, 0, 2.0, 1.9), Wood);
+        Save(s, "materials", "axe_handle");
+
+        // черенок: ровный, конец сведён под втулку
+        s = new Scene { Elev = 14, Roll = -45, Size = 31, Seed = 54 };
+        s.Add(S.Cap(-14, 0, 0, 12, 0, 0, 1.25, 1.2), Wood);
+        s.Add(S.Cap(12, 0, 0, 15, 0, 0, 1.2, 0.75), Wood);
+        Save(s, "materials", "haft");
+
+        // древко: длинное, тоньше к наконечнику, у конца — дыра под гвоздь
+        s = new Scene { Elev = 14, Roll = -45, Size = 31, Seed = 55 };
+        s.Add(S.Sub(S.Union(S.Cap(-15, 0, 0, 13, 0, 0, 1.2, 0.95), S.Cap(13, 0, 0, 16, 0, 0, 0.95, 0.6)),
+            S.Cyl(13.4, 0, 0, 0.35, 3)), BowlWood);
+        Save(s, "materials", "spear_shaft");
+
+        // рукоять меча: веретёнцем, сверху паз под хвостовик
+        s = new Scene { Elev = 40, Yaw = -25, Roll = -40, Size = 29, Seed = 56 };
+        s.Add(S.Sub(S.Ell(0, 0, 0, 8, 2.1, 1.8), S.Box(0, 1.9, 0, 7.4, 0.9, 0.4)), Wood);
+        Save(s, "materials", "sword_grip");
+
         // дымарь: жестяная банка с носиком, сбоку меха
         s = new Scene { Elev = 20, Yaw = 30, Size = 30, Seed = 46 };
         s.Add(S.Cyl(-2, 0, 0, 4.6, 6.5, 0.6), Iron);
@@ -829,9 +902,19 @@ public static class SculptIcons {
         s.Add(S.Move(Mound(5.5, 3, 4.5, 0.4, 216), 5, 0, 4), spice);
         Save(s, "food", "spices");
 
-        // травы: пучок стеблей, перевязанный бечёвкой, сверху листья
-        Herbs("herbs", Leaf, M("#24300e", "#56702c", "#88a050", 0), 70);
+        // сушёные травы: пучок стеблей, перевязанный бечёвкой, сверху листья
         Herbs("dried_herbs", M("#2e2c0e", "#6e6a34", "#a8a060", 0.05), M("#3a2e14", "#6e5a2c", "#9c8650", 0), 71);
+
+        // виды трав (herbs/Herb): пучок, у цветущих — соцветия на макушках
+        var herbStem = M("#24300e", "#56702c", "#88a050", 0);
+        Herb("chamomile", Leaf, herbStem, M("#8a8a7a", "#f2f0e6", "#ffffff", 0.1), M("#7a5a06", "#e8b81a", "#fff080", 0.2), 1.6, 72);
+        Herb("mint", M("#0e3010", "#2e8a3a", "#7ad080", 0.25), herbStem, null, null, 0, 73);
+        Herb("st_johns_wort", Leaf, herbStem, M("#7a5206", "#f0b412", "#ffe070", 0.2), null, 1.1, 74);
+        Herb("yarrow", M("#1c300e", "#4e7a30", "#90b870", 0), herbStem, M("#8a847a", "#ece6dc", "#ffffff", 0.05), null, 1.9, 75);
+        Herb("wormwood", M("#3a4438", "#8a9a86", "#ccd8c8", 0.1), M("#3a4030", "#7a8668", "#a8b294", 0), null, null, 0, 76);
+        Herb("nettle", M("#0a2008", "#2a5a1c", "#5a8a40", 0.05), herbStem, null, null, 0, 77);
+        Herb("thyme", M("#1a2a10", "#4a6a2e", "#7a9a58", 0), M("#3a2a18", "#6a5034", "#9a7a58", 0), M("#4a1a4a", "#b05ab0", "#e8a8e8", 0.1), null, 0.8, 78);
+        Herb("lavender", M("#2a3a2a", "#6a8a6a", "#a0c0a0", 0), herbStem, M("#2a1a5a", "#7a5ac8", "#c0a8f8", 0.15), null, 1.0, 79);
 
         // сушёные грибы: три шляпки на нитке
         var cap = M("#1e120a", "#583822", "#906848", 0.1, 0.08);
@@ -860,6 +943,40 @@ public static class SculptIcons {
                 double ly = 3 + k * 2.5 + rnd.NextDouble(), lx = tx * (0.3 + 0.7 * (ly / 9));
                 double side = k % 2 == 0 ? 1 : -1;
                 s.Add(S.Rot(S.Squash(S.Ell(lx + side * 1.6, ly, tz, 2.0, 1, 0.9), 0.6), 'z', side * 30, lx, ly, tz), leaf);
+            }
+        }
+        s.Add(S.Torus(0, -3, 0, 1.4, 0.55), Twine);
+        Save(s, "food", name);
+    }
+
+    /**
+     * Трава одного вида: пучок стеблей с листьями, перевязанный бечёвкой; petal — соцветия на макушках
+     * (null — без цветов), heart — серединка цветка (ромашка), size — величина соцветия. Колосок лаванды — столбиком.
+     */
+    static void Herb(string name, Mtl leaf, Mtl stem, Mtl petal, Mtl heart, double size, int seed) {
+        var s = new Scene { Elev = 18, Roll = 15, Size = 30, Seed = seed };
+        var rnd = new Random(seed);
+        bool spike = name == "lavender";
+        for (int i = 0; i < 5; i++) {
+            double tx = -4.5 + i * 2.2 + rnd.NextDouble(), tz = rnd.NextDouble() * 2 - 1;
+            double top = 7 + rnd.NextDouble() * 2;
+            s.Add(S.Tube(0.35, 0.3, 0, -10, 0, tx * 0.3, 0, tz * 0.3, tx, top, tz), stem);
+            for (int k = 0; k < 3; k++) {
+                double ly = 2 + k * 2.2 + rnd.NextDouble(), lx = tx * (0.3 + 0.7 * (ly / 9));
+                double side = k % 2 == 0 ? 1 : -1;
+                double w = name == "mint" || name == "nettle" ? 2.3 : name == "yarrow" || name == "thyme" ? 1.3 : 1.9;
+                s.Add(S.Rot(S.Squash(S.Ell(lx + side * 1.6, ly, tz, w, 1, 0.9), 0.6), 'z', side * 30, lx, ly, tz), leaf);
+            }
+            if (petal == null) continue;
+            if (spike) {
+                s.Add(S.Cap(tx, top - 0.5, tz, tx * 1.08, top + 4, tz, size * 0.8, size * 0.45), petal);
+            } else if (heart != null) {
+                s.Add(S.Squash(S.Cyl(tx, top + 0.4, tz, size * 1.3, 0.3, 0.2), 0.8), petal);
+                s.Add(S.Sphere(tx, top + 0.8, tz, size * 0.55), heart);
+            } else {
+                for (int f = 0; f < 3; f++) {
+                    s.Add(S.Sphere(tx + (f - 1) * size * 0.8, top + 0.6 + (f % 2) * 0.4, tz + (f - 1) * 0.3, size * 0.6), petal);
+                }
             }
         }
         s.Add(S.Torus(0, -3, 0, 1.4, 0.55), Twine);
@@ -1241,5 +1358,12 @@ public static class SculptIcons {
         s.Add(S.Lathe(0, 0, 0, 0, 0, 0.6, 3.6, 2, 5.0, 4, 5.5, 6, 5.1, 7.4, 3.9), M("#1a3006", "#5a9a1a", "#b8f060", 0.4, 0.02));
         s.Add(S.Sphere(-1.5, 8.6, 1, 0.9), M("#3a6a10", "#a0e040", "#eaffb0", 0.8)).Add(S.Sphere(1.2, 10.5, 0.4, 0.7), M("#3a6a10", "#a0e040", "#eaffb0", 0.8)).Add(S.Sphere(-0.3, 13.6, 0, 0.8), M("#3a6a10", "#a0e040", "#eaffb0", 0.8));
         s.Render(Path.Combine(fx, "poisoning.png"));
+
+        // «Бодрость»: глиняная кружка крапивного отвара, сбоку — лист крапивы
+        s = new Scene { Elev = 28, Size = 28, Seed = 243 };
+        s.Add(S.Lathe(0, 0, 0, 0.7, 0.8, 0, 3.6, 1, 4.4, 5, 4.6, 8, 4.2), Terracotta);
+        s.Add(S.Cyl(0, 6.8, 0, 3.6, 0.25), M("#1c3a0e", "#4a8a2a", "#9ad060", 0.6).With(spec: 30));
+        s.Add(S.Rot(S.Squash(S.Ell(5.5, 7.5, 2, 3.4, 1, 1.8), 0.5), 'z', -35, 5.5, 7.5, 2), M("#0a2008", "#2a5a1c", "#5a8a40", 0.1));
+        s.Render(Path.Combine(fx, "vigor.png"));
     }
 }

@@ -8,6 +8,9 @@ import com.nrdhvnstd.halgventmod.brewing.AgingCaskBlock;
 import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlock;
 import com.nrdhvnstd.halgventmod.brewing.StillBlock;
 import com.nrdhvnstd.halgventmod.brewing.WinePressBlock;
+import com.nrdhvnstd.halgventmod.carpentry.CarpenterBenchBlock;
+import com.nrdhvnstd.halgventmod.carpentry.ChoppingBlock;
+import com.nrdhvnstd.halgventmod.carpentry.SawhorseBlock;
 import com.nrdhvnstd.halgventmod.farming.BerryBushBlock;
 import com.nrdhvnstd.halgventmod.farming.FieldCropBlock;
 import com.nrdhvnstd.halgventmod.farming.FruitLeavesBlock;
@@ -19,6 +22,8 @@ import com.nrdhvnstd.halgventmod.cooking.HookBlock;
 import com.nrdhvnstd.halgventmod.cooking.KitchenTableBlock;
 import com.nrdhvnstd.halgventmod.cooking.OvenBlock;
 import com.nrdhvnstd.halgventmod.cooking.QuernBlock;
+import com.nrdhvnstd.halgventmod.herbs.Herb;
+import com.nrdhvnstd.halgventmod.herbs.HerbPlantBlock;
 import com.nrdhvnstd.halgventmod.leather.DryingRackBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlock;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlock;
@@ -136,6 +141,24 @@ public final class ModBlocks {
         return BLOCKS.register(id, () -> new FieldCropBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHEAT), seed));
     }
 
+    // Кустики трав (herbs/HerbPlantBlock) — ставят строители, травы срезают ножом, серпом или косой на E
+    public static final DeferredBlock<HerbPlantBlock> CHAMOMILE_PLANT = herbPlant("chamomile_plant", () -> Herb.CHAMOMILE);
+    public static final DeferredBlock<HerbPlantBlock> MINT_PLANT = herbPlant("mint_plant", () -> Herb.MINT);
+    public static final DeferredBlock<HerbPlantBlock> ST_JOHNS_WORT_PLANT = herbPlant("st_johns_wort_plant", () -> Herb.ST_JOHNS_WORT);
+    public static final DeferredBlock<HerbPlantBlock> YARROW_PLANT = herbPlant("yarrow_plant", () -> Herb.YARROW);
+    public static final DeferredBlock<HerbPlantBlock> WORMWOOD_PLANT = herbPlant("wormwood_plant", () -> Herb.WORMWOOD);
+    public static final DeferredBlock<HerbPlantBlock> NETTLE_PLANT = herbPlant("nettle_plant", () -> Herb.NETTLE);
+    public static final DeferredBlock<HerbPlantBlock> THYME_PLANT = herbPlant("thyme_plant", () -> Herb.THYME);
+    public static final DeferredBlock<HerbPlantBlock> LAVENDER_PLANT = herbPlant("lavender_plant", () -> Herb.LAVENDER);
+
+    // Вид травы — через поставщика: Herb ссылается на ModItems, а ModItems — на эти блоки
+    private static DeferredBlock<HerbPlantBlock> herbPlant(String id, Supplier<Herb> herb) {
+        return BLOCKS.register(id, () -> new HerbPlantBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.PLANT).randomTicks().noCollission().instabreak()
+                .sound(SoundType.GRASS).noOcclusion().offsetType(BlockBehaviour.OffsetType.XZ)
+                .pushReaction(PushReaction.DESTROY).ignitedByLava(), herb.get()));
+    }
+
     private static DeferredBlock<BerryBushBlock> bush(String id, Supplier<Item> berry) {
         return BLOCKS.register(id, () -> new BerryBushBlock(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.PLANT).randomTicks().noCollission().strength(0.2F)
@@ -163,6 +186,13 @@ public final class ModBlocks {
 
     // Ткачество (weaving/*). Модели — из Conquest Reforged
     public static final DeferredBlock<LoomBlock> LOOM = BLOCKS.register("loom", () -> new LoomBlock(wood()));
+
+    // Плотничество (carpentry/*): колода — пень Conquest Reforged, козлы и верстак — свои модели из ванильного дерева
+    public static final DeferredBlock<ChoppingBlock> CHOPPING_BLOCK = BLOCKS.register("chopping_block",
+            () -> new ChoppingBlock(wood()));
+    public static final DeferredBlock<SawhorseBlock> SAWHORSE = BLOCKS.register("sawhorse", () -> new SawhorseBlock(wood()));
+    public static final DeferredBlock<CarpenterBenchBlock> CARPENTER_BENCH = BLOCKS.register("carpenter_bench",
+            () -> new CarpenterBenchBlock(wood()));
 
     private static BlockBehaviour.Properties stone() {
         return BlockBehaviour.Properties.of()

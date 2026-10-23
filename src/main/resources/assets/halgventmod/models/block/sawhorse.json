@@ -1,0 +1,17 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "particle": "minecraft:block/stripped_spruce_log", "beam": "minecraft:block/stripped_spruce_log", "leg": "minecraft:block/spruce_log" },
+  "elements": [
+    { "from": [0, 11, 6], "to": [16, 14, 10], "faces": { "down": {"texture": "#beam"}, "up": {"texture": "#beam"}, "north": {"texture": "#beam"}, "south": {"texture": "#beam"}, "west": {"texture": "#beam"}, "east": {"texture": "#beam"} } }
+,
+    { "from": [1.5, -1, 7], "to": [3.5, 13, 9], "rotation": { "angle": 22.5, "axis": "x", "origin": [2.5, 12, 8] }, "faces": { "down": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "up": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "north": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "south": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "west": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "east": {"texture": "#leg", "uv": [7, 1, 9, 15]} } }
+,
+    { "from": [1.5, -1, 7], "to": [3.5, 13, 9], "rotation": { "angle": -22.5, "axis": "x", "origin": [2.5, 12, 8] }, "faces": { "down": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "up": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "north": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "south": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "west": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "east": {"texture": "#leg", "uv": [7, 1, 9, 15]} } }
+,
+    { "from": [12.5, -1, 7], "to": [14.5, 13, 9], "rotation": { "angle": 22.5, "axis": "x", "origin": [13.5, 12, 8] }, "faces": { "down": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "up": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "north": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "south": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "west": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "east": {"texture": "#leg", "uv": [7, 1, 9, 15]} } }
+,
+    { "from": [12.5, -1, 7], "to": [14.5, 13, 9], "rotation": { "angle": -22.5, "axis": "x", "origin": [13.5, 12, 8] }, "faces": { "down": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "up": {"texture": "#leg", "uv": [7, 7, 9, 9]}, "north": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "south": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "west": {"texture": "#leg", "uv": [7, 1, 9, 15]}, "east": {"texture": "#leg", "uv": [7, 1, 9, 15]} } }
+,
+    { "from": [3.5, 4, 7.25], "to": [12.5, 5.5, 8.75], "faces": { "down": {"texture": "#beam"}, "up": {"texture": "#beam"}, "north": {"texture": "#beam"}, "south": {"texture": "#beam"}, "west": {"texture": "#beam"}, "east": {"texture": "#beam"} } }
+  ]
+}

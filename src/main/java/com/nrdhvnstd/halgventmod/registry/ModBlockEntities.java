@@ -6,6 +6,9 @@ import com.nrdhvnstd.halgventmod.brewing.AgingCaskBlockEntity;
 import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlockEntity;
 import com.nrdhvnstd.halgventmod.brewing.StillBlockEntity;
 import com.nrdhvnstd.halgventmod.brewing.WinePressBlockEntity;
+import com.nrdhvnstd.halgventmod.carpentry.CarpenterBenchBlockEntity;
+import com.nrdhvnstd.halgventmod.carpentry.ChoppingBlockEntity;
+import com.nrdhvnstd.halgventmod.carpentry.SawhorseBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.BrineBarrelBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.cooking.HookBlockEntity;
@@ -108,6 +111,17 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<KilnBlockEntity>> KILN =
             BLOCK_ENTITIES.register("kiln", () -> BlockEntityType.Builder
                     .of(KilnBlockEntity::new, ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get()).build(null));
+
+    // Плотничество: колода для колки, пильные козлы, верстак плотника
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChoppingBlockEntity>> CHOPPING_BLOCK =
+            BLOCK_ENTITIES.register("chopping_block", () -> BlockEntityType.Builder
+                    .of(ChoppingBlockEntity::new, ModBlocks.CHOPPING_BLOCK.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SawhorseBlockEntity>> SAWHORSE =
+            BLOCK_ENTITIES.register("sawhorse", () -> BlockEntityType.Builder
+                    .of(SawhorseBlockEntity::new, ModBlocks.SAWHORSE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpenterBenchBlockEntity>> CARPENTER_BENCH =
+            BLOCK_ENTITIES.register("carpenter_bench", () -> BlockEntityType.Builder
+                    .of(CarpenterBenchBlockEntity::new, ModBlocks.CARPENTER_BENCH.get()).build(null));
 
     private ModBlockEntities() {}
 

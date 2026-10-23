@@ -3,6 +3,8 @@ package com.nrdhvnstd.halgventmod.cooking;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nrdhvnstd.halgventmod.herbs.Herb;
+import com.nrdhvnstd.halgventmod.herbs.HerbGathering;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -68,7 +70,7 @@ public class HookBlockEntity extends StationBlockEntity {
     }
 
     private static boolean dryable(ItemStack stack) {
-        return stack.is(ModItems.HERBS.get()) || stack.is(ModItems.WET_GRAIN.get()) || stack.is(ModItems.SALTED_FISH.get())
+        return stack.is(HerbGathering.HERBS) || stack.is(ModItems.WET_GRAIN.get()) || stack.is(ModItems.SALTED_FISH.get())
                 || (stack.is(Cookery.Kind.MUSHROOM.tag()) && !stack.is(ModItems.DRIED_MUSHROOMS.get()));
     }
 
@@ -82,7 +84,13 @@ public class HookBlockEntity extends StationBlockEntity {
         if (raw.is(ModItems.SALTED_FISH.get())) {
             return new ItemStack(ModItems.DRIED_FISH.get()); // провялилась
         }
-        return new ItemStack(raw.is(ModItems.HERBS.get()) ? ModItems.DRIED_HERBS.get() : ModItems.DRIED_MUSHROOMS.get());
+        if (raw.is(HerbGathering.HERBS)) {
+            // Сушёная трава помнит вид: «Сушёная мята»; луговая смесь — просто «Сушёные травы»
+            ItemStack dried = new ItemStack(ModItems.DRIED_HERBS.get());
+            Herb herb = Herb.of(raw);
+            return herb == null ? dried : herb.mark(dried);
+        }
+        return new ItemStack(ModItems.DRIED_MUSHROOMS.get());
     }
 
     /** Идёт ли снизу дым: горящий очаг или костёр не дальше SMOKE_REACH блоков. */

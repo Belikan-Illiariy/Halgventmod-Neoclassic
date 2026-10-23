@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:st_johns_wort_plant" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "random_sequence": "halgventmod:blocks/st_johns_wort_plant"
+}
