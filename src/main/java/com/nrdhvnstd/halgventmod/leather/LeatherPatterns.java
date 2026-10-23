@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.nrdhvnstd.halgventmod.registry.ModItems;
+import com.nrdhvnstd.halgventmod.smithing.SmithingItems;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -100,7 +101,7 @@ public final class LeatherPatterns {
         leather(ModItems.LEATHER_STRAP, 2, 0, 0, CutShape.STRAP).leather(ModItems.LEATHER_SCRAPS, 2);
         leather(ModItems.LEATHER_STRAP, 4, 0, 0, CutShape.STRAP).leather(ModItems.TANNED_LEATHER, 1);
         leather(ModItems.LEATHER_BELT, 1, 6, 1, CutShape.BELT).leather(ModItems.TANNED_LEATHER, 2)
-                .extra(() -> Items.IRON_NUGGET, 1);
+                .extra(SmithingItems.BRASS_BUCKLE, 1);
         leather(ModItems.SMALL_POUCH, 1, 6, 1, CutShape.POUCH).leather(ModItems.TANNED_LEATHER, 1)
                 .extra(ModItems.LEATHER_STRAP, 1);
         leather(ModItems.POUCH, 1, 8, 1, CutShape.POUCH).leather(ModItems.TANNED_LEATHER, 2).extra(ModItems.LEATHER_STRAP, 1);
@@ -111,9 +112,9 @@ public final class LeatherPatterns {
                 .extra(ModItems.LEATHER_STRAP, 1);
         leather(ModItems.ARCHER_GLOVES, 1, 8, 1, CutShape.MITTEN).leather(ModItems.SOFT_LEATHER, 2);
         leather(ModItems.LEATHER_GAUNTLETS, 1, 10, 2, CutShape.MITTEN).leather(ModItems.BOILED_LEATHER, 2)
-                .extra(ModItems.HIDE_GLUE, 1).extra(() -> Items.IRON_NUGGET, 4);
+                .extra(ModItems.HIDE_GLUE, 1).extra(SmithingItems.RIVETS, 4);
         leather(ModItems.LEATHER_BRIGANDINE, 1, 14, 3, CutShape.BODY).leather(ModItems.BOILED_LEATHER, 4)
-                .extra(ModItems.HIDE_GLUE, 2).extra(() -> Items.IRON_INGOT, 2).extra(() -> Items.IRON_NUGGET, 8)
+                .extra(ModItems.HIDE_GLUE, 2).extra(SmithingItems.IRON_INGOT, 2).extra(SmithingItems.RIVETS, 8)
                 .extra(ModItems.LEATHER_STRAP, 2);
         leather(ModItems.FUR_CLOAK, 1, 10, 2, CutShape.CLOAK).leather(ModItems.DRESSED_FUR, 3).extra(ModItems.LEATHER_STRAP, 1);
 
@@ -123,9 +124,9 @@ public final class LeatherPatterns {
         cloth(ModItems.WOOLEN_MITTENS, 1, 6, 1, CutShape.MITTEN).leather(ModItems.WOOLEN_CLOTH, 1);
         cloth(ModItems.CLOTH_GAUNTLETS, 1, 6, 1, CutShape.MITTEN).leather(ModItems.LINEN_CLOTH, 1);
         cloth(ModItems.PADDED_MITTENS, 1, 8, 1, CutShape.MITTEN).leather(ModItems.LINEN_CLOTH, 1).extra(ModItems.TOW, 2);
-        cloth(ModItems.WOOLEN_CLOAK, 1, 8, 1, CutShape.CLOAK).leather(ModItems.WOOLEN_CLOTH, 3).extra(() -> Items.IRON_NUGGET, 1);
+        cloth(ModItems.WOOLEN_CLOAK, 1, 8, 1, CutShape.CLOAK).leather(ModItems.WOOLEN_CLOTH, 3).extra(SmithingItems.BRONZE_CLASP, 1);
         cloth(ModItems.FINE_CLOAK, 1, 12, 2, CutShape.CLOAK).leather(ModItems.WOOLEN_CLOTH, 3).leather(ModItems.LINEN_CLOTH, 1)
-                .extra(() -> Items.IRON_NUGGET, 1);
+                .extra(SmithingItems.BRONZE_CLASP, 1);
         cloth(ModItems.SIMPLE_SURCOAT, 1, 8, 1, CutShape.VEST).leather(ModItems.LINEN_CLOTH, 2);
         cloth(ModItems.SURCOAT, 1, 12, 2, CutShape.VEST).leather(ModItems.WOOLEN_CLOTH, 2).leather(ModItems.LINEN_CLOTH, 1);
         cloth(ModItems.SIMPLE_AKETON, 1, 14, 2, CutShape.BODY).leather(ModItems.LINEN_CLOTH, 3).extra(ModItems.TOW, 4);

@@ -93,7 +93,9 @@ public static class Vessels {
         lamp.Holes.Add(new[] { 9.0, 3.4, 0, 0.85 });                      // отверстие для фитиля
         Handle(lamp, -1, 4.6, 2.6, 5.9, 3.8, 6.3, 5.6, 5.4, 6.8, 4.3, 6.0, 3.9, 3.6); // ручка-кольцо сзади
         lamp.Flame = new[] { 9.0, 3.6, 0 };
-        return new[] { cup, bowl, jug, pot, amphora, lamp };
+        // тигель: толстостенный, с толстым дном
+        var crucible = new Form { Id = "crucible", Outer = new Profile(0, 3.4, 0.6, 4.0, 3.0, 4.6, 6.0, 4.9, 7.6, 5.1), Wall = 1.5, Floor = 1.8, Lip = 0.9, Elev = 30, Inside = 0.38, Size = 24 };
+        return new[] { cup, bowl, jug, pot, amphora, lamp, crucible };
     }
 
     // Что задело: 0 — снаружи, 1 — внутри полости, 2 — трубки

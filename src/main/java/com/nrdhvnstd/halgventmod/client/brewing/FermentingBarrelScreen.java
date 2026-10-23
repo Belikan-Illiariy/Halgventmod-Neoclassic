@@ -36,6 +36,21 @@ public class FermentingBarrelScreen extends StationScreen<FermentingBarrelMenu> 
     }
 
     @Override
+    protected java.util.List<BookEntry> book() {
+        return java.util.List.of(
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.BEER.get()), "gui.halgventmod.barrel.book.beer"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.CIDER.get()), "gui.halgventmod.barrel.book.cider"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.WINE.get()), "gui.halgventmod.barrel.book.wine"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.MEAD.get()), "gui.halgventmod.barrel.book.mead"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.TINCTURE.get()), "gui.halgventmod.barrel.book.tincture"));
+    }
+
+    @Override
+    protected Component bookHint() {
+        return Component.translatable("gui.halgventmod.barrel.book_hint", (int) com.nrdhvnstd.halgventmod.brewing.Brewing.SOUR_AFTER_DAYS);
+    }
+
+    @Override
     protected void containerTick() {
         super.containerTick();
         boolean any = menu.get(FermentingBarrelBlockEntity.D_PORTIONS) > 0;

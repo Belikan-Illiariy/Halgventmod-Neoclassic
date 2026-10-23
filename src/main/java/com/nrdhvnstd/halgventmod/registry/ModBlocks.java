@@ -215,6 +215,7 @@ public final class ModBlocks {
     private ModBlocks() {}
 
     public static void register(IEventBus modEventBus) {
+        com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.init();
         BLOCKS.register(modEventBus);
     }
 }

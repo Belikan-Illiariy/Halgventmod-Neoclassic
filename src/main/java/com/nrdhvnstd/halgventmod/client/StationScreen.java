@@ -41,6 +41,78 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
     protected void init() {
         super.init();
         topPos = Math.max(topPos, font.lineHeight + TITLE_GAP);
+        if (!book().isEmpty()) {
+            leftPos = Math.min(width - imageWidth, leftPos + (BOOK_WIDTH + BOOK_GAP) / 2);
+        }
+    }
+
+    // ---------------------------------------------------------------- книга «что сделать» слева от окна
+
+    /** Строка книги: значок и ключ перевода (название; .how — что делать; .serve — что выйдет, необязательно). */
+    public record BookEntry(net.minecraft.world.item.ItemStack icon, String key) {}
+
+    protected static final int BOOK_WIDTH = 132;
+    protected static final int BOOK_GAP = 4;
+    protected static final int BOOK_ROW = 16;
+
+    /** Что делают на станции — строки книги слева; пусто — книги нет. */
+    protected java.util.List<BookEntry> book() {
+        return java.util.List.of();
+    }
+
+    /** Подпись под строками книги или null. */
+    protected Component bookHint() {
+        return null;
+    }
+
+    private void renderBook(GuiGraphics g, int mouseX, int mouseY) {
+        java.util.List<BookEntry> entries = book();
+        int left = leftPos - BOOK_WIDTH - BOOK_GAP;
+        int top = topPos;
+        ConquestUi.window(g, left, top, left + BOOK_WIDTH, top + imageHeight);
+        ConquestUi.inset(g, left + 4, top + 4, left + BOOK_WIDTH - 4, top + 18 + entries.size() * BOOK_ROW + 2);
+        plaque(g, Component.translatable("gui.halgventmod.recipes.what"), -BOOK_WIDTH - BOOK_GAP + 8, 6, -BOOK_GAP - 8);
+        for (int i = 0; i < entries.size(); i++) {
+            int ry = top + 18 + i * BOOK_ROW;
+            boolean hover = mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + BOOK_ROW;
+            if (hover) {
+                g.fill(left + 4, ry, left + BOOK_WIDTH - 4, ry + BOOK_ROW, 0x30FFFFFF);
+            }
+            g.renderItem(entries.get(i).icon(), left + 6, ry);
+            fit(g, Component.translatable(entries.get(i).key()), left + 25, ry + 4, BOOK_WIDTH - 31, hover ? TEXT : TEXT_DIM);
+        }
+        Component hint = bookHint();
+        if (hint != null) {
+            smallWrap(g, hint, left + 8, top + 18 + entries.size() * BOOK_ROW + 6, BOOK_WIDTH - 14, top + imageHeight - 4, TEXT_DIM);
+        }
+    }
+
+    /** Подсказка строки книги под мышью: название, что делать, что выйдет. true — показана. */
+    private boolean bookTooltip(GuiGraphics g, int mouseX, int mouseY) {
+        java.util.List<BookEntry> entries = book();
+        int left = leftPos - BOOK_WIDTH - BOOK_GAP;
+        for (int i = 0; i < entries.size(); i++) {
+            int ry = topPos + 18 + i * BOOK_ROW;
+            if (mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + BOOK_ROW) {
+                String key = entries.get(i).key();
+                java.util.List<net.minecraft.util.FormattedCharSequence> lines = new java.util.ArrayList<>();
+                lines.add(Component.translatable(key).withStyle(net.minecraft.ChatFormatting.GOLD).getVisualOrderText());
+                lines.addAll(font.split(Component.translatable(key + ".how"), 200));
+                if (net.minecraft.client.resources.language.I18n.exists(key + ".serve")) {
+                    lines.addAll(font.split(Component.translatable(key + ".serve").withStyle(net.minecraft.ChatFormatting.GRAY), 200));
+                }
+                g.renderTooltip(font, lines, mouseX, mouseY);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
+        boolean inBook = !book().isEmpty() && mouseX >= left - BOOK_WIDTH - BOOK_GAP && mouseX < left && mouseY >= top
+                && mouseY < top + imageHeight;
+        return !inBook && super.hasClickedOutside(mouseX, mouseY, left, top, button);
     }
 
     protected void click(int id) {
@@ -57,6 +129,12 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.render(g, mouseX, mouseY, partialTick);
         g.drawString(font, title, leftPos, topPos - font.lineHeight - TITLE_GAP, 0xFFFFFF, true);
+        if (!book().isEmpty()) {
+            renderBook(g, mouseX, mouseY);
+            if (menu.getCarried().isEmpty() && bookTooltip(g, mouseX, mouseY)) {
+                return;
+            }
+        }
         renderTooltip(g, mouseX, mouseY);
     }
 

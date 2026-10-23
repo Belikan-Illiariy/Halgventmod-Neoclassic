@@ -39,6 +39,21 @@ public class StillScreen extends StationScreen<StillMenu> {
     }
 
     @Override
+    protected java.util.List<BookEntry> book() {
+        return java.util.List.of(
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.BEER.get()), "gui.halgventmod.still.book.bread"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.WINE.get()), "gui.halgventmod.still.book.brandy"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.CHERRY.get()), "gui.halgventmod.still.book.fruit"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.CIDER.get()), "gui.halgventmod.still.book.apple"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.MEAD.get()), "gui.halgventmod.still.book.mead"));
+    }
+
+    @Override
+    protected Component bookHint() {
+        return Component.translatable("gui.halgventmod.still.book_hint", com.nrdhvnstd.halgventmod.brewing.Brewing.DISTILL_RATIO);
+    }
+
+    @Override
     protected void containerTick() {
         super.containerTick();
         fireButton.visible = menu.hasHearth();

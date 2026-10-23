@@ -9,6 +9,7 @@ import com.nrdhvnstd.halgventmod.carpentry.Carpentry;
 import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.smithing.Smithing;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -29,6 +30,9 @@ public final class QualityTooltip {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
+        if (Smithing.roasted(stack)) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.roasted").withStyle(ChatFormatting.GOLD));
+        }
         if (FoodQuality.has(stack)) {
             event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.food", times(FoodQuality.factor(stack)))
                     .withStyle(ChatFormatting.DARK_GRAY));
@@ -38,6 +42,11 @@ public final class QualityTooltip {
         if (Carpentry.hasQuality(stack) && stack.isDamageableItem()) {
             event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.durability",
                     times(Carpentry.durabilityFactor(stack))).withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
+        if (Smithing.hasQuality(stack) && stack.isDamageableItem() && !GearQuality.applies(stack)) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.durability",
+                    times(Smithing.durabilityFactor(stack))).withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         if (!GearQuality.applies(stack)) {

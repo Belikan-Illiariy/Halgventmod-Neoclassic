@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.nrdhvnstd.halgventmod.registry.ModItems;
+import com.nrdhvnstd.halgventmod.smithing.SmithingItems;
 
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
@@ -137,27 +138,29 @@ public final class BenchProducts {
                 .step(Operation.WHITTLE, WorkShape.SHUTTLE).step(Operation.CHISEL, WorkShape.CAVITY);
         product(ModItems.SPINDLE, 1, 0).planks(1)
                 .step(Operation.WHITTLE, WorkShape.SPINDLE);
-        product(ModItems.CARDING_COMB, 1, 1).planks(1).need(() -> Items.IRON_NUGGET, 4)
+        product(ModItems.CARDING_COMB, 1, 1).planks(1).need(SmithingItems.NAILS, 4)
                 .step(Operation.PLANE).step(Operation.DRILL, 4).step(Operation.NAIL, 4);
         // Кухня, кожевник, гончар
         product(ModItems.LADLE, 1, 1).planks(1)
                 .step(Operation.CHISEL, WorkShape.BOWL).step(Operation.WHITTLE, WorkShape.LADLE_HANDLE);
         product(() -> Items.BOWL, 2, 0).planks(1).plain()
                 .step(Operation.CHISEL, WorkShape.DISH).step(Operation.WHITTLE, WorkShape.BOWL_SIDE);
+        product(SmithingItems.GOLD_PAN, 1, 1).planks(2)
+                .step(Operation.PLANE).step(Operation.CHISEL, WorkShape.DISH);
         product(ModItems.LEATHER_MALLET, 1, 1).planks(1).need(ModItems.RAWHIDE, 1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.DRILL, 1).step(Operation.NAIL, 1);
-        product(ModItems.BRICK_MOULD, 1, 2).planks(4).need(() -> Items.IRON_NUGGET, 4)
+        product(ModItems.BRICK_MOULD, 1, 2).planks(4).need(SmithingItems.NAILS, 4)
                 .step(Operation.PLANE).step(Operation.NAIL, 4);
         // Инструмент плотника
-        product(ModItems.SAW, 1, 1).planks(1).need(() -> Items.IRON_INGOT, 2)
+        product(ModItems.SAW, 1, 1).planks(1).need(SmithingItems.IRON_INGOT, 2)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.DRILL, 2).step(Operation.NAIL, 2);
-        product(ModItems.PLANE, 1, 2).planks(2).need(() -> Items.IRON_INGOT, 1)
+        product(ModItems.PLANE, 1, 2).planks(2).need(SmithingItems.IRON_INGOT, 1)
                 .step(Operation.PLANE).step(Operation.CHISEL, WorkShape.MOUTH).step(Operation.NAIL, 1);
-        product(ModItems.CHISEL, 1, 0).planks(1).need(() -> Items.IRON_INGOT, 1)
+        product(ModItems.CHISEL, 1, 0).planks(1).need(SmithingItems.IRON_INGOT, 1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.NAIL, 1);
-        product(ModItems.BRACE, 1, 1).planks(2).need(() -> Items.IRON_INGOT, 1)
+        product(ModItems.BRACE, 1, 1).planks(2).need(SmithingItems.IRON_INGOT, 1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.DRILL, 1).step(Operation.NAIL, 1);
-        product(ModItems.HAMMER, 1, 0).planks(1).need(() -> Items.IRON_INGOT, 1)
+        product(ModItems.HAMMER, 1, 0).planks(1).need(SmithingItems.IRON_INGOT, 1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.NAIL, 1);
         // Задел для кузни: деревянные части, на которые кузнец насадит железо (качество дерева пойдёт в вещь)
         product(ModItems.TOOL_HANDLE, 2, 0).planks(1)

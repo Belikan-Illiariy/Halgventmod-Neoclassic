@@ -622,6 +622,7 @@ public class ModLanguageProvider extends LanguageProvider {
         weavingTranslations();
         carpentryTranslations();
         herbsTranslations();
+        SmithingLang.add((key, ru, en) -> add(key, russian ? ru : en));
     }
 
     /** Травы: кустики, виды, сушёные и отвары (herbs/*). */
@@ -1170,7 +1171,8 @@ public class ModLanguageProvider extends LanguageProvider {
         String[][] forms = {
                 {"cup", "Кружка", "кружка", "Cup"}, {"bowl", "Миска", "миска", "Bowl"},
                 {"jug", "Кувшин", "кувшин", "Jug"}, {"pot", "Горшок", "горшок", "Pot"},
-                {"amphora", "Корчага", "корчага", "Amphora"}, {"lamp", "Светильник", "светильник", "Lamp"}};
+                {"amphora", "Корчага", "корчага", "Amphora"}, {"lamp", "Светильник", "светильник", "Lamp"},
+                {"crucible", "Тигель", "тигель", "Crucible"}};
         for (String[] form : forms) {
             add("pottery.halgventmod.form." + form[0], russian ? form[1] : form[3]);
             add("pottery.halgventmod.form_lower." + form[0], russian ? form[2] : form[3].toLowerCase());

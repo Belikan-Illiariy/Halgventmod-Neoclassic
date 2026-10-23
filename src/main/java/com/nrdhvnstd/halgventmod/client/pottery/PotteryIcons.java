@@ -36,7 +36,7 @@ public final class PotteryIcons {
     public static void setup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             for (Item item : new Item[] {ModItems.CLAY_CUP.get(), ModItems.CLAY_BOWL.get(), ModItems.CLAY_JUG.get(),
-                    ModItems.CLAY_POT.get(), ModItems.AMPHORA.get(), ModItems.OIL_LAMP.get()}) {
+                    ModItems.CLAY_POT.get(), ModItems.AMPHORA.get(), ModItems.OIL_LAMP.get(), ModItems.CLAY_CRUCIBLE.get()}) {
                 ItemProperties.register(item, LOOK, (stack, level, entity, seed) -> ware(stack));
             }
             ItemProperties.register(ModItems.GREENWARE.get(), LOOK, (stack, level, entity, seed) -> greenware(stack));

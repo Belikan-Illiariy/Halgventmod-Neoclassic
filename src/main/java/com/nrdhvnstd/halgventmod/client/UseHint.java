@@ -129,9 +129,49 @@ public final class UseHint {
         return false;
     }
 
+    /**
+     * Рудная жила или ил (кузнечество): прицел — бить по искре, под ним название и «Бить: ЛКМ» (с киркой или лопатой
+     * в руке). true — нарисовано.
+     */
+    private static boolean renderVein(GuiGraphics graphics, Minecraft minecraft) {
+        LocalPlayer player = minecraft.player;
+        if (player == null || minecraft.level == null || minecraft.screen != null || player.isSpectator()
+                || !(minecraft.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
+            return false;
+        }
+        BlockState state = minecraft.level.getBlockState(hit.getBlockPos());
+        if (!(state.getBlock() instanceof com.nrdhvnstd.halgventmod.smithing.OreVeinBlock vein)) {
+            return false;
+        }
+        Font font = minecraft.font;
+        int x = graphics.guiWidth() / 2;
+        int y = graphics.guiHeight() / 2;
+        boolean tool = player.getMainHandItem().is(vein.kind().tool());
+        if (tool) {
+            RenderSystem.enableBlend();
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ZERO);
+            graphics.blitSprite(CROSSHAIR, (graphics.guiWidth() - 15) / 2, (graphics.guiHeight() - 15) / 2, 15, 15);
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableBlend();
+        }
+        int below = y + 10;
+        graphics.drawCenteredString(font, state.getBlock().getName(), x, below, COLOR_NAME);
+        int richness = state.getValue(com.nrdhvnstd.halgventmod.smithing.OreVeinBlock.RICHNESS);
+        graphics.drawCenteredString(font, Component.translatable(richness == 0 ? "hud.halgventmod.use.vein_empty"
+                : tool ? "hud.halgventmod.use.mine" : vein.kind().dug() ? "hud.halgventmod.use.need_shovel"
+                : "hud.halgventmod.use.need_pickaxe", minecraft.options.keyAttack.getTranslatedKeyMessage()), x,
+                below + font.lineHeight + 1, richness == 0 ? COLOR_STATUS : COLOR_ACTION);
+        return true;
+    }
+
     private static void render(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui) {
+            return;
+        }
+        if (renderVein(graphics, minecraft)) {
             return;
         }
         BlockHitResult hit = target(minecraft);

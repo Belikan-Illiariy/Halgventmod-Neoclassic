@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:cementation_box" } ], "conditions": [ { "condition": "minecraft:survives_explosion" }, { "condition": "minecraft:block_state_property", "block": "halgventmod:cementation_box", "properties": { "half": "lower" } } ] } ],
+  "random_sequence": "halgventmod:blocks/cementation_box"
+}

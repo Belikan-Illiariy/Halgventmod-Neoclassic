@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "half=lower,lit=false,facing=north": { "model": "halgventmod:block/smithing/cementation_lower" },
+    "half=lower,lit=false,facing=east": { "model": "halgventmod:block/smithing/cementation_lower", "y": 90 },
+    "half=lower,lit=false,facing=south": { "model": "halgventmod:block/smithing/cementation_lower", "y": 180 },
+    "half=lower,lit=false,facing=west": { "model": "halgventmod:block/smithing/cementation_lower", "y": 270 },
+    "half=lower,lit=true,facing=north": { "model": "halgventmod:block/smithing/cementation_lower_lit" },
+    "half=lower,lit=true,facing=east": { "model": "halgventmod:block/smithing/cementation_lower_lit", "y": 90 },
+    "half=lower,lit=true,facing=south": { "model": "halgventmod:block/smithing/cementation_lower_lit", "y": 180 },
+    "half=lower,lit=true,facing=west": { "model": "halgventmod:block/smithing/cementation_lower_lit", "y": 270 },
+    "half=upper,lit=false,facing=north": { "model": "halgventmod:block/smithing/cementation_upper" },
+    "half=upper,lit=false,facing=east": { "model": "halgventmod:block/smithing/cementation_upper", "y": 90 },
+    "half=upper,lit=false,facing=south": { "model": "halgventmod:block/smithing/cementation_upper", "y": 180 },
+    "half=upper,lit=false,facing=west": { "model": "halgventmod:block/smithing/cementation_upper", "y": 270 },
+    "half=upper,lit=true,facing=north": { "model": "halgventmod:block/smithing/cementation_upper" },
+    "half=upper,lit=true,facing=east": { "model": "halgventmod:block/smithing/cementation_upper", "y": 90 },
+    "half=upper,lit=true,facing=south": { "model": "halgventmod:block/smithing/cementation_upper", "y": 180 },
+    "half=upper,lit=true,facing=west": { "model": "halgventmod:block/smithing/cementation_upper", "y": 270 }
+  }
+}

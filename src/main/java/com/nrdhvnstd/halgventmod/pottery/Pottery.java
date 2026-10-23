@@ -181,6 +181,7 @@ public final class Pottery {
             case POT -> ModItems.CLAY_POT.get();
             case AMPHORA -> ModItems.AMPHORA.get();
             case LAMP -> ModItems.OIL_LAMP.get();
+            case CRUCIBLE -> ModItems.CLAY_CRUCIBLE.get();
         };
     }
 

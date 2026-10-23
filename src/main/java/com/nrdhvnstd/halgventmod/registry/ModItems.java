@@ -1248,10 +1248,12 @@ public final class ModItems {
                     "E with a hide in hand lays it down; E with the fleshing knife, scraper or salt works it.")
             .kg(30)
             .register(properties -> new BlockItem(ModBlocks.FLESHING_BEAM.get(), properties));
-    public static final DeferredItem<BlockItem> TANNING_VAT = item("tanning_vat", "Дубильный чан", "Tanning vat", Gender.M)
+    public static final DeferredItem<BlockItem> TANNING_VAT = item("tanning_vat", "Чан", "Vat", Gender.M)
             .category(Category.TOOLS)
-            .lore("E ведром воды — налить; E золой, корой, квасцами с солью или салом — раствор; E шкурой — опустить. Над огнём варит.",
-                    "E with a water bucket fills it; E with ash, bark, alum and salt or fat makes the bath; E with a hide sinks it. Over a fire it boils.")
+            .lore("E ведром воды — налить; E золой, корой, квасцами с солью или салом — раствор; E шкурой — опустить. Над огнём варит. "
+                            + "У наковальни служит закалочной бочкой: вода, рассол (вода с солью) или жир.",
+                    "E with a water bucket fills it; E with ash, bark, alum and salt or fat makes the bath; E with a hide sinks it. Over a fire it boils. "
+                            + "By an anvil it serves as a quench tub: water, brine (water with salt) or fat.")
             .kg(20)
             .register(properties -> new BlockItem(ModBlocks.TANNING_VAT.get(), properties));
     public static final DeferredItem<BlockItem> DRYING_RACK = item("drying_rack", "Рама для сушки", "Drying rack", Gender.F)
@@ -1898,6 +1900,16 @@ public final class ModItems {
             .stacksTo(1)
             .grams(250)
             .register(properties -> new WareItem(properties, VesselForm.LAMP));
+    public static final DeferredItem<WareItem> CLAY_CRUCIBLE = item("clay_crucible", "Тигель", "Crucible", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.POTTERY)
+            .lore("Толстостенный горшочек для расплава, до десяти слитков. Поставьте его в кузнечный горн, в окне горна "
+                            + "положите шихту и плавьте; с жидким металлом (вынимают клещами) — к литейному столу. Опустев, может треснуть.",
+                    "A thick-walled little pot for molten metal, up to ten ingots. Set it in the forge, charge it in the forge "
+                            + "window and melt; take the molten metal (lifted with tongs) to the casting table. Emptied, it may crack.")
+            .stacksTo(1)
+            .grams(400)
+            .register(properties -> new WareItem(properties, VesselForm.CRUCIBLE));
     // Станции гончара
     public static final DeferredItem<BlockItem> CLAY_BARREL = item("clay_barrel", "Бочка для замеса", "Clay barrel", Gender.F)
             .category(Category.TOOLS)
@@ -2195,6 +2207,7 @@ public final class ModItems {
     private ModItems() {}
 
     public static void register(IEventBus modEventBus) {
+        com.nrdhvnstd.halgventmod.smithing.SmithingItems.init(); // кузнечество — свои предметы в общем списке
         ITEMS.register(modEventBus);
         modEventBus.addListener(ModItems::setDefaultTraits);
     }

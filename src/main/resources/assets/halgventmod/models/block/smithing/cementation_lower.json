@@ -1,0 +1,19 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": { "particle": "conquest:block/1_basic_refined/1_stone/2_granite/granite_cobble", "stone": "conquest:block/1_basic_refined/1_stone/2_granite/granite_cobble", "brick": "conquest:block/1_basic_refined/1_stone/1_clay/dark_lime_mortar_clay_brick", "fire": "conquest:block/8_topography/2_ores_crystals/pile_of_coal" },
+  "elements": [
+    { "from": [0, 0, 2], "to": [16, 16, 16], "faces": { "north": {"texture": "#stone"}, "south": {"texture": "#stone"}, "west": {"texture": "#stone"}, "east": {"texture": "#stone"}, "up": {"texture": "#stone"}, "down": {"texture": "#stone"} } }
+,
+    { "from": [0, 0, 0], "to": [5, 16, 2], "faces": { "north": {"texture": "#stone"}, "south": {"texture": "#stone"}, "west": {"texture": "#stone"}, "east": {"texture": "#stone"}, "up": {"texture": "#stone"}, "down": {"texture": "#stone"} } }
+,
+    { "from": [11, 0, 0], "to": [16, 16, 2], "faces": { "north": {"texture": "#stone"}, "south": {"texture": "#stone"}, "west": {"texture": "#stone"}, "east": {"texture": "#stone"}, "up": {"texture": "#stone"}, "down": {"texture": "#stone"} } }
+,
+    { "from": [5, 8, 0], "to": [11, 16, 2], "faces": { "north": {"texture": "#stone"}, "south": {"texture": "#stone"}, "west": {"texture": "#stone"}, "east": {"texture": "#stone"}, "up": {"texture": "#stone"}, "down": {"texture": "#stone"} } }
+,
+    { "from": [4, 7, -0.5], "to": [12, 8.5, 0.5], "faces": { "north": {"texture": "#brick"}, "south": {"texture": "#brick"}, "west": {"texture": "#brick"}, "east": {"texture": "#brick"}, "up": {"texture": "#brick"}, "down": {"texture": "#brick"} } }
+,
+    { "from": [5, 0, 1.9], "to": [11, 8, 2], "faces": { "north": {"texture": "#fire"}, "south": {"texture": "#fire"}, "west": {"texture": "#fire"}, "east": {"texture": "#fire"}, "up": {"texture": "#fire"}, "down": {"texture": "#fire"} } }
+
+  ]
+}

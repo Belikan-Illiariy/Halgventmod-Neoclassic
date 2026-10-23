@@ -126,6 +126,7 @@ public final class ModBlockEntities {
     private ModBlockEntities() {}
 
     public static void register(IEventBus modEventBus) {
+        com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initEntities();
         BLOCK_ENTITIES.register(modEventBus);
     }
 }

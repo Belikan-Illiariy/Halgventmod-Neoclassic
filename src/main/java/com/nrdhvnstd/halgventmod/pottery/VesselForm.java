@@ -12,7 +12,8 @@ public enum VesselForm {
     JUG     ("jug",     2,      0.60F,   1,       true),
     POT     ("pot",     3,      0.60F,   0,       false),
     AMPHORA ("amphora", 6,      0.95F,   2,       true),
-    LAMP    ("lamp",    1,      0.35F,   1,       false);
+    LAMP    ("lamp",    1,      0.35F,   1,       false),
+    CRUCIBLE("crucible", 1,     0.35F,   0,       false);
 
     private final String id;
     private final int lumps;
