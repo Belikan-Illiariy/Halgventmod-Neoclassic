@@ -16,6 +16,7 @@ import com.nrdhvnstd.halgventmod.brewing.Brewing;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.ModFoods;
+import com.nrdhvnstd.halgventmod.herbs.Herb;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -223,6 +224,10 @@ public final class Cookery {
             ItemStack tea = new ItemStack(Result.HERBAL_TEA.item());
             tea.set(ModComponents.DISH.get(),
                     new Dish(0, 0, TEA_THIRST, List.copyOf(names)));
+            Herb herb = mainHerb(contents);
+            if (herb != null) {
+                herb.mark(tea); // «Мятный отвар» — с действием мяты
+            }
             return new Outcome(Result.HERBAL_TEA, portions, FoodQuality.set(tea, quality));
         }
 
@@ -265,6 +270,25 @@ public final class Cookery {
             Result.POTATO_STEW, Result.WHEAT_PORRIDGE, Result.RYE_PORRIDGE, Result.BARLEY_PORRIDGE, Result.OAT_PORRIDGE);
 
     /** Каша — по зерну, которого больше: пшеница, рожь, ячмень или овёс (мука — как её зерно). */
+    /** Главная трава отвара: вида, которого в горшке больше (свежей и сушёной); null — одна луговая смесь. */
+    @Nullable
+    private static Herb mainHerb(List<ItemStack> contents) {
+        Map<Herb, Integer> herbs = new EnumMap<>(Herb.class);
+        for (ItemStack stack : contents) {
+            Herb herb = stack.isEmpty() ? null : Herb.of(stack);
+            if (herb != null) {
+                herbs.merge(herb, stack.getCount(), Integer::sum);
+            }
+        }
+        Herb best = null;
+        for (Map.Entry<Herb, Integer> entry : herbs.entrySet()) {
+            if (best == null || entry.getValue() > herbs.get(best)) {
+                best = entry.getKey();
+            }
+        }
+        return best;
+    }
+
     private static Result porridge(List<ItemStack> contents) {
         Map<Result, Integer> grains = new EnumMap<>(Result.class);
         for (ItemStack stack : contents) {

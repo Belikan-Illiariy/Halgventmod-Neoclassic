@@ -32,6 +32,10 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> POISONING =
             EFFECTS.register("poisoning", () -> new FoodEffect(MobEffectCategory.HARMFUL, 0x6E8A2E));
 
+    // Травы (herbs/Herb): крапивный отвар — «Бодрость», выносливость восстанавливается быстрее (needs/Stamina)
+    public static final DeferredHolder<MobEffect, MobEffect> VIGOR =
+            EFFECTS.register("vigor", () -> new FoodEffect(MobEffectCategory.BENEFICIAL, 0x5A8A3A));
+
     private ModEffects() {}
 
     public static void register(IEventBus modEventBus) {

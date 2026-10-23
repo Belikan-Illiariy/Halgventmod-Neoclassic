@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "halgventmod:item/food/herbs"
+    "layer0": "halgventmod:item/materials/haft"
   }
 }

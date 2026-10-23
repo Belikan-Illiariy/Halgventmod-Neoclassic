@@ -4,6 +4,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.food.FoodEffects;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
+import com.nrdhvnstd.halgventmod.registry.ModEffects;
 import com.nrdhvnstd.halgventmod.sound.PlayerVoice;
 import com.nrdhvnstd.halgventmod.sound.Voices;
 
@@ -51,6 +52,7 @@ public final class Stamina {
     // Восстановление
     public static final int REGEN_DELAY = 20;            // через секунду после последней траты
     public static final float REGEN_PER_TICK = 0.5F;     // 10 в секунду: с нуля до полной за 10 секунд
+    public static final float VIGOR_REGEN = 1.3F;        // «Бодрость» (крапивный отвар) — восстановление ×1,3 ⚠️
     public static final float SPRINT_MIN = 15.0F;        // начать бег можно только с 15 и выше
 
     // Изнеможение
@@ -132,9 +134,11 @@ public final class Stamina {
         if (data.regenDelay > 0) {
             data.regenDelay--;
         } else if (data.level < max(player)) {
-            // Навеселе — быстрее; после горячего сложного блюда («Улучшенное насыщение») — тоже
+            // Навеселе — быстрее; после горячего сложного блюда («Улучшенное насыщение») и крапивного отвара
+            // («Бодрость») — тоже
             float regen = REGEN_PER_TICK * Intoxication.staminaFactor(player)
-                    * (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_REGEN : 1.0F);
+                    * (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_REGEN : 1.0F)
+                    * (player.hasEffect(ModEffects.VIGOR) ? VIGOR_REGEN : 1.0F);
             data.level = Math.min(data.level + regen, max(player));
         } else if (data.level > max(player)) {
             data.level = max(player); // эффект прошёл — запас обратно до обычного

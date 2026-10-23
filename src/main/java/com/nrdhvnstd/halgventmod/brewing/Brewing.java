@@ -2,8 +2,9 @@ package com.nrdhvnstd.halgventmod.brewing;
 
 import javax.annotation.Nullable;
 
-import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.cooking.KitchenRecipes;
+import com.nrdhvnstd.halgventmod.herbs.HerbGathering;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.world.Calendar;
 
@@ -129,7 +130,7 @@ public final class Brewing {
         if (stack.is(ModItems.HONEY.get())) {
             return "honey";
         }
-        if (stack.is(ModItems.HERBS.get()) || stack.is(ModItems.DRIED_HERBS.get())) {
+        if (stack.is(HerbGathering.HERBS) || stack.is(ModItems.DRIED_HERBS.get())) {
             return "herbs";
         }
         if (stack.is(KitchenRecipes.BERRY_TAG) || stack.is(Items.GLOW_BERRIES)) {

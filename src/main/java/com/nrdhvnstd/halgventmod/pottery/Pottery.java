@@ -43,6 +43,7 @@ public final class Pottery {
     public static final int POT_CAPACITY = 16;        // еды в горшке
     public static final int AMPHORA_DRINKS = 8;       // склянок питья в корчаге
     public static final int JUG_DRINKS = 4;           // и в кувшине
+    public static final int CUP_DRINKS = 1;           // и в кружке — одна мера питья
     public static final double POT_RATE = 0.5;        // в горшке еда портится вдвое медленнее
     public static final double SEALED_RATE = 0.25;    // запечатанном воском
     public static final int POT_USES_BASE = 10;       // варок у Ужасного горшка
@@ -277,7 +278,7 @@ public final class Pottery {
 
     /** Вынуть содержимое: срок годности сдвигается на сбережённые сутки. */
     /**
-     * Можно ли налить ещё склянку этого питья в посудину: корчага или кувшин, целая, без воды и печати, пустая или
+     * Можно ли налить ещё склянку этого питья в посудину: корчага, кувшин или кружка, целая, без воды и печати, пустая или
      * с тем же питьём, не полная. Наливают перегонный куб, бродильная бочка, давильня и горшок на огне.
      */
     public static boolean canPour(ItemStack vessel, ItemStack drink, Level level) {
@@ -292,7 +293,7 @@ public final class Pottery {
         return !stored.sealed() && inside.getCount() < drinkCapacity(vessel) && ItemStack.isSameItemSameComponents(inside, drink);
     }
 
-    /** Питьё в корчаге или кувшине (одна склянка, сколько всего — getCount); пусто — нет или запечатано. */
+    /** Питьё в корчаге, кувшине или кружке (одна склянка, сколько всего — getCount); пусто — нет или запечатано. */
     public static ItemStack storedDrink(ItemStack vessel, Level level) {
         if (drinkCapacity(vessel) <= 0) {
             return ItemStack.EMPTY;
@@ -315,10 +316,18 @@ public final class Pottery {
         }
     }
 
-    /** Сколько склянок питья держит посудина: корчага, кувшин; 0 — питьё не держит. */
+    /** Сколько склянок питья держит посудина: корчага, кувшин, кружка; 0 — питьё не держит. */
     public static int drinkCapacity(ItemStack vessel) {
         VesselForm form = form(vessel);
-        return form == VesselForm.AMPHORA ? AMPHORA_DRINKS : form == VesselForm.JUG ? JUG_DRINKS : 0;
+        if (form == null) {
+            return 0;
+        }
+        return switch (form) {
+            case AMPHORA -> AMPHORA_DRINKS;
+            case JUG -> JUG_DRINKS;
+            case CUP -> CUP_DRINKS;
+            default -> 0;
+        };
     }
 
     /** Налить склянку питья в корчагу или кувшин (сначала canPour). */

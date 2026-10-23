@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.herbs.HerbGathering;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
@@ -51,8 +52,8 @@ public final class KitchenRecipes {
     private static final Need DOUGH = new Need(stack -> stack.is(ModItems.DOUGH.get()), 1, ModItems.DOUGH::get);
     private static final Need SWEETENER = new Need(stack -> stack.is(ModItems.HONEY.get()), 1, ModItems.HONEY::get);
     // Пряные травы — свежие или сушёные (чеснок и пряности — отдельно)
-    private static final Need HERB_NEED = new Need(stack -> stack.is(ModItems.HERBS.get()) || stack.is(ModItems.DRIED_HERBS.get()),
-            1, ModItems.HERBS::get);
+    private static final Need HERB_NEED = new Need(stack -> stack.is(HerbGathering.HERBS) || stack.is(ModItems.DRIED_HERBS.get()),
+            1, ModItems.THYME::get);
 
     private static Extra extra(Item item, float saturation) {
         return new Extra(stack -> stack.is(item), () -> item, saturation);
@@ -66,7 +67,7 @@ public final class KitchenRecipes {
     private static final Extra POTATO = extra(Items.POTATO, 8);
     private static final Extra EGG = extra(Items.EGG, 8);
     private static final Extra MUSHROOM = new Extra(stack -> stack.is(Cookery.Kind.MUSHROOM.tag()), () -> Items.BROWN_MUSHROOM, 6);
-    private static final Extra HERBS = new Extra(stack -> stack.is(Cookery.Kind.HERB.tag()), ModItems.HERBS::get, 4);
+    private static final Extra HERBS = new Extra(stack -> stack.is(Cookery.Kind.HERB.tag()), ModItems.THYME::get, 4);
     private static final Extra CHEESE = extra(ModItems.CHEESE, 12);
     private static final Extra SALO = extra(ModItems.SALO, 10);
     private static final Extra HONEY = extra(ModItems.HONEY, 10);

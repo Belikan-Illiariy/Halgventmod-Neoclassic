@@ -5,6 +5,7 @@ import java.util.Locale;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.brewing.Brewing;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
+import com.nrdhvnstd.halgventmod.carpentry.Carpentry;
 import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
@@ -32,6 +33,11 @@ public final class QualityTooltip {
             event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.food", times(FoodQuality.factor(stack)))
                     .withStyle(ChatFormatting.DARK_GRAY));
             drink(event, stack);
+            return;
+        }
+        if (Carpentry.hasQuality(stack) && stack.isDamageableItem()) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.durability",
+                    times(Carpentry.durabilityFactor(stack))).withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         if (!GearQuality.applies(stack)) {

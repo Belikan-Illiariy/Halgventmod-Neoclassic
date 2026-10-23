@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.registry;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.menu.AgingCaskMenu;
 import com.nrdhvnstd.halgventmod.menu.ArmorStandMenu;
+import com.nrdhvnstd.halgventmod.menu.CarpenterBenchMenu;
 import com.nrdhvnstd.halgventmod.menu.FermentingBarrelMenu;
 import com.nrdhvnstd.halgventmod.menu.HearthMenu;
 import com.nrdhvnstd.halgventmod.menu.KilnMenu;
@@ -35,6 +36,10 @@ public final class ModMenus {
     // Шитейный стол: выкройки, ячейки стола 3×3 + сумки, карманы и вторая рука игрока
     public static final DeferredHolder<MenuType<?>, MenuType<SewingTableMenu>> SEWING_TABLE =
             MENUS.register("sewing_table", () -> IMenuTypeExtension.create(SewingTableMenu::fromNetwork));
+
+    // Верстак плотника: изделия, ячейки верстака 3×3 + сумки, карманы и вторая рука игрока
+    public static final DeferredHolder<MenuType<?>, MenuType<CarpenterBenchMenu>> CARPENTER_BENCH =
+            MENUS.register("carpenter_bench", () -> IMenuTypeExtension.create(CarpenterBenchMenu::fromNetwork));
 
     // Огонь и печи: очаг и костёр (с горшком), хлебная печь, горн
     public static final DeferredHolder<MenuType<?>, MenuType<HearthMenu>> HEARTH =

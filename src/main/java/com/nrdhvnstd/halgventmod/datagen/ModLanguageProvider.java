@@ -602,6 +602,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.SATIETY.get(), russian ? "Сытость" : "Satiety");
         add(ModEffects.WELL_FED.get(), russian ? "Улучшенное насыщение" : "Well fed");
         add(ModEffects.POISONING.get(), russian ? "Отравление" : "Food poisoning");
+        add(ModEffects.VIGOR.get(), russian ? "Бодрость" : "Vigour");
         foodTranslations();
 
         // Субтитры звуков: обычные события и голоса (один ключ на вид крика для всех наборов)
@@ -619,6 +620,46 @@ public class ModLanguageProvider extends LanguageProvider {
         brewingTranslations();
         potteryTranslations();
         weavingTranslations();
+        carpentryTranslations();
+        herbsTranslations();
+    }
+
+    /** Травы: кустики, виды, сушёные и отвары (herbs/*). */
+    private void herbsTranslations() {
+        add("hud.halgventmod.use.cut_herbs", russian ? "Срезать: %s" : "Cut: %s");
+        herbs("cut", "Срезано: %s × %s", "Cut: %s × %s");
+        herbs("regrowing", "%s: здесь уже срезали — отрастёт за пару дней (зимой не растёт)",
+                "%s: already cut here, it grows back in a couple of days (not in winter)");
+        herbs("need_cutter", "%s: срезать ножом, серпом или косой (E с ними в руке)",
+                "%s: cut it with a knife, sickle or scythe (E with one in hand)");
+        add("tooltip.halgventmod.herb.effect", russian ? "Действие: %s" : "Effect: %s");
+        add("tooltip.halgventmod.herb.in_tea", russian ? "В отваре: %s" : "In a tea: %s");
+        herb("chamomile", "Сушёная ромашка", "Ромашковый отвар", "снимает тошноту и отравление, Регенерация I на 8 с",
+                "Dried chamomile", "Chamomile tea", "clears nausea and food poisoning, Regeneration I for 8 s");
+        herb("mint", "Сушёная мята", "Мятный отвар", "снимает тошноту, Скорость I на 30 с",
+                "Dried mint", "Mint tea", "clears nausea, Speed I for 30 s");
+        herb("st_johns_wort", "Сушёный зверобой", "Отвар зверобоя", "Сопротивление I на 60 с",
+                "Dried St John's wort", "St John's wort tea", "Resistance I for 60 s");
+        herb("yarrow", "Сушёный тысячелистник", "Отвар тысячелистника", "Регенерация I на 15 с",
+                "Dried yarrow", "Yarrow tea", "Regeneration I for 15 s");
+        herb("wormwood", "Сушёная полынь", "Полынный отвар", "снимает отравление, голод и яд",
+                "Dried wormwood", "Wormwood tea", "clears food poisoning, hunger and poison");
+        herb("nettle", "Сушёная крапива", "Крапивный отвар", "Бодрость на 60 с: выносливость восстанавливается ×1,3",
+                "Dried nettle", "Nettle tea", "Vigour for 60 s: stamina recovers ×1.3");
+        herb("thyme", "Сушёный чабрец", "Отвар чабреца", "Поглощение I на 60 с",
+                "Dried thyme", "Thyme tea", "Absorption I for 60 s");
+        herb("lavender", "Сушёная лаванда", "Лавандовый отвар", "снимает тошноту, слепоту и тьму, Регенерация I на 4 с",
+                "Dried lavender", "Lavender tea", "clears nausea, blindness and darkness, Regeneration I for 4 s");
+    }
+
+    private void herbs(String key, String ru, String en) {
+        add("message.halgventmod.herbs." + key, russian ? ru : en);
+    }
+
+    private void herb(String id, String driedRu, String teaRu, String effectRu, String driedEn, String teaEn, String effectEn) {
+        add("item.halgventmod.dried_herbs." + id, russian ? driedRu : driedEn);
+        add("item.halgventmod.herbal_tea." + id, russian ? teaRu : teaEn);
+        add("tooltip.halgventmod.herb." + id, russian ? effectRu : effectEn);
     }
 
     /** Кожевенное дело: шкуры, растворы, станции, окно шитья (leather/*). */
@@ -1407,6 +1448,140 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void weaving(String key, String ru, String en) {
         add("message.halgventmod.weaving." + key, russian ? ru : en);
+    }
+
+    /** Плотничество: колода для колки, пильные козлы, верстак плотника (carpentry/*). */
+    private void carpentryTranslations() {
+        // Колода для колки
+        carpentry("block_busy", "На колоде уже стоит бревно", "There is a log on the block already");
+        carpentry("not_firewood", "Это дерево на дрова не годится — не горит", "This wood won't do for firewood: it doesn't burn");
+        carpentry("log_on_block", "Бревно на колоде — колите топором с полного замаха", "The log is on the block: split it with full axe swings");
+        carpentry("need_log_block", "Сначала поставьте на колоду бревно", "Set a log on the block first");
+        carpentry("chop_rushed", "Топор соскользнул — бейте с полного замаха", "The axe glanced off: strike with a full swing");
+        carpentry("chop_progress", "Колете: %s / %s", "Splitting: %s / %s");
+        carpentry("split", "Расколото: %s полена дров", "Split: %s pieces of firewood");
+        carpentry("split_bark", "Расколото: %s полена дров, отошла кора", "Split: %s pieces of firewood, and the bark came off");
+        carpentry("report_block_empty", "Колода пуста. E бревном — поставить, E топором — колоть", "The block is empty. E with a log sets it, E with an axe splits");
+        carpentry("report_block", "На колоде: %s — %s / %s удара. E топором — колоть, пустой рукой — снять",
+                "On the block: %s — %s / %s strikes. E with an axe splits, an empty hand takes it off");
+        // Пильные козлы
+        carpentry("horse_busy", "На козлах уже лежит бревно", "There is a log on the sawhorse already");
+        carpentry("log_on_horse", "Бревно на козлах. E пилой — %s пропила по разметке", "The log is on the sawhorse. E with a saw: %s cuts along the lines");
+        carpentry("need_log_horse", "Сначала положите на козлы бревно", "Lay a log on the sawhorse first");
+        carpentry("sawn", "Распилено: досок — %s, кривых пропилов — %s (горбыль — на дрова)",
+                "Sawn: %s planks, %s crooked cuts (the offcuts go for firewood)");
+        carpentry("sawn_even", "Распилено ровно: досок — %s", "Sawn true: %s planks");
+        carpentry("sawing", "Бревно уже в работе: %s / %s пропилов — допилите", "The log is being sawn: %s / %s cuts, finish it");
+        carpentry("report_horse_empty", "Козлы пусты. E бревном — положить, E пилой — пилить", "The sawhorse is empty. E with a log lays it on, E with a saw saws");
+        carpentry("report_horse", "На козлах: %s — пропилов %s / %s, кривых — %s. E пилой — пилить",
+                "On the sawhorse: %s — %s / %s cuts, %s crooked. E with a saw saws");
+        // Верстак плотника
+        carpentry("pick_product", "Выберите изделие в окне верстака", "Pick a product in the bench window");
+        carpentry("need_materials", "На верстаке не хватает материалов", "The bench is missing materials");
+        carpentry("need_tool", "Нужен инструмент в инвентаре: %s", "You need a tool in your inventory: %s");
+        carpentry("product", "Изделие: %s — %s", "Product: %s — %s");
+        carpentry("made", "Сделано: %s", "Made: %s");
+        carpentry("worked", "Работа: %s из 100", "Work: %s of 100");
+        carpentry("worked_clean", "Работа: %s из 100 — изделие вышло лучше", "Work: %s of 100: the piece came out better");
+        carpentry("worked_rough", "Работа: %s из 100 — изделие вышло хуже", "Work: %s of 100: the piece came out worse");
+        gui("carpenter_bench.products", "Изделия", "Products");
+        gui("carpenter_bench.on_bench", "На верстаке", "On the bench");
+        gui("carpenter_bench.work", "Делать", "Make");
+        gui("carpenter_bench.planks", "доски", "planks");
+        add("tooltip.halgventmod.quality.durability", russian ? "Прочность ×%s" : "Durability ×%s");
+        // Ванильная миска — деревянная, с верстака плотника (глиняная — «Миска» гончара)
+        add(net.minecraft.world.item.Items.BOWL, russian ? "Деревянная миска" : "Wooden bowl");
+
+        // Окно распила
+        gui("sawing.title", "Пильные козлы", "Sawhorse");
+        gui("sawing.title_of", "Распил: %s", "Ripping: %s");
+        gui("sawing.progress", "Пропил %s / %s · кривых: %s · зажимало: %s", "Cut %s / %s · crooked: %s · jammed: %s");
+        gui("sawing.hint", "ЛКМ или Пробел — нажать на толчке · мышь — куда вести пилу",
+                "Left click or Space presses on the push · the mouse steers the saw");
+        gui("sawing.done", "Распилено — доски у вас", "Sawn: the planks are yours");
+        gui("sawing.even", "Ровный пропил", "A true cut");
+        gui("sawing.crooked", "Пропил увело — доска уйдёт в горбыль", "The cut wandered: that plank is an offcut");
+        gui("sawing.jam", "Пилу зажало — жмите только на толчке", "The saw jammed: press only on the push");
+        gui("sawing.wrong", "Пила вязнет — это обратный ход", "The saw binds: that's the return stroke");
+        gui("sawing.knot", "Сучок дёрнул пилу — в сучке точнее", "The knot jerked the saw: be precise in knots");
+        gui("sawing.crack", "Трещина тянет пилу", "The crack pulls the saw");
+        gui("sawing.tempo", "Ровно ×%s — темп растёт", "Steady ×%s: the pace picks up");
+        gui("sawing.push", "толчок", "push");
+        gui("sawing.pull", "назад", "back");
+        gui("sawing.heat", "нагрев", "heat");
+        gui("sawing.pace", "темп ×%s", "pace ×%s");
+
+        // Работа на верстаке: этапы
+        gui("bench_work.title", "Верстак плотника", "Carpenter's bench");
+        gui("bench_work.title_of", "Изделие: %s", "Making: %s");
+        gui("bench_work.stage", "Этап %s / %s: %s", "Step %s / %s: %s");
+        gui("bench_work.stage_done", "Этап готов: %s из 100", "Step done: %s of 100");
+        gui("bench_work.finishing", "Изделие готово…", "The piece is ready…");
+        gui("bench_work.quality", "Выйдет: %s", "Will come out: %s");
+        gui("bench_work.grade_0", "ужасно", "terrible");
+        gui("bench_work.grade_1", "плохо", "poor");
+        gui("bench_work.grade_2", "посредственно", "mediocre");
+        gui("bench_work.grade_3", "добротно", "fine");
+        gui("bench_work.grade_4", "отменно", "excellent");
+        gui("bench_work.grade_5", "шедевр", "a masterwork");
+        gui("bench_work.op.plane", "строгание", "planing");
+        gui("bench_work.op.chisel", "выборка долотом", "chiselling");
+        gui("bench_work.op.drill", "сверление", "drilling");
+        gui("bench_work.op.whittle", "обстругивание ножом", "whittling");
+        gui("bench_work.op.nail", "сборка", "assembly");
+        // Строгание
+        gui("bench_work.plane_status", "Неровность: %s · задиры: %s · перестрогано: %s",
+                "Unevenness: %s · tear-outs: %s · overcut: %s");
+        gui("bench_work.plane_hint_right", "Зажмите ЛКМ, ведите вправо по волокну · колесо — стружка: %s · Enter — хватит",
+                "Hold left click, push right with the grain · wheel: shaving %s · Enter: enough");
+        gui("bench_work.plane_hint_left", "Зажмите ЛКМ, ведите влево по волокну · колесо — стружка: %s · Enter — хватит",
+                "Hold left click, push left with the grain · wheel: shaving %s · Enter: enough");
+        gui("bench_work.depth_0", "тончайшая", "finest");
+        gui("bench_work.depth_1", "тонкая", "thin");
+        gui("bench_work.depth_2", "средняя", "medium");
+        gui("bench_work.depth_3", "толстая", "thick");
+        gui("bench_work.plane_against", "Задир — против волокна", "Tear-out: against the grain");
+        gui("bench_work.plane_knot", "Сучок вырвало — тише на сучках", "The knot tore out: slow down over knots");
+        // Долото
+        gui("bench_work.chisel_status", "Выбрано: %s / %s · сколов: %s · прочих огрехов: %s",
+                "Removed: %s / %s · chips: %s · other flaws: %s");
+        gui("bench_work.chisel_hint", "ЛКМ — лёгкий удар, ПКМ — сильный: середину сильными, у края и по дну — лёгкими",
+                "Left click taps, right click strikes hard: the middle hard, the edges and the floor lightly");
+        gui("bench_work.chisel_chip", "Скол вдоль волокна — у края бейте легко", "A split along the grain: tap near the edge");
+        gui("bench_work.chisel_punch", "Дно пробито — по тонкому дну легко", "Punched through: tap a thin floor lightly");
+        gui("bench_work.chisel_gouge", "Мимо гнезда — задир на лице", "Off the mortise: a gouge on the face");
+        // Сверление
+        gui("bench_work.drill_status", "Дыра %s / %s · глубина %s%% · обороты %s/с", "Hole %s / %s · depth %s%% · %s turns/s");
+        gui("bench_work.drill_hint", "Зажмите ЛКМ и крутите мышью по часовой вокруг метки, в зелёном",
+                "Hold left click and circle the mouse clockwise around the mark, in the green");
+        gui("bench_work.drill_hint_end", "Выход — тише! Медленные обороты, иначе вырвет с изнанки",
+                "Breaking through: slow down, or it blows out the back");
+        gui("bench_work.drill_wander", "Сверло увело — крутите медленнее", "The bit wandered: turn slower");
+        gui("bench_work.drill_blowout", "Вырвало с изнанки", "Blown out at the back");
+        gui("bench_work.drill_clean", "Чистая дыра", "A clean hole");
+        gui("bench_work.drill_done", "Просверлено", "Drilled");
+        // Нож
+        gui("bench_work.whittle_status", "Отход от разметки: %s · задиры: %s · перерезано: %s",
+                "Off the line: %s · tear-outs: %s · overcut: %s");
+        gui("bench_work.whittle_hint_right", "Зажмите ЛКМ и ведите нож вправо по разметке, от себя · Enter — хватит",
+                "Hold left click and draw the knife right along the line · Enter: enough");
+        gui("bench_work.whittle_hint_left", "Зажмите ЛКМ и ведите нож влево по разметке, от себя · Enter — хватит",
+                "Hold left click and draw the knife left along the line · Enter: enough");
+        gui("bench_work.whittle_against", "Нож задрал — против волокна", "The knife tore: against the grain");
+        gui("bench_work.whittle_slip", "Нож сорвался на сучке", "The knife slipped on a knot");
+        // Сборка
+        gui("bench_work.nail_status", "Гвоздь %s / %s · погнуто: %s · вмятин: %s", "Nail %s / %s · bent: %s · dents: %s");
+        gui("bench_work.wedge_status", "Насадка %s / %s · погнуто: %s · вмятин: %s", "Fitting %s / %s · bent: %s · dents: %s");
+        gui("bench_work.nail_hint", "Зажмите ЛКМ — замах, отпустите, когда гвоздь стоит прямо; сила — в зелёном",
+                "Hold left click to swing, release while the nail stands straight; strength in the green");
+        gui("bench_work.nail_bent", "Гвоздь погнулся — забейте новый", "The nail bent: drive a new one");
+        gui("bench_work.nail_dent", "Забит, но молоток оставил вмятину", "Driven, but the hammer left a dent");
+        gui("bench_work.nail_home", "Забит чисто", "Driven home cleanly");
+        gui("bench_work.nail_weak", "Слабо — бейте крепче", "Too light: strike harder");
+    }
+
+    private void carpentry(String key, String ru, String en) {
+        add("message.halgventmod.carpentry." + key, russian ? ru : en);
     }
 
     private void gui(String key, String ru, String en) {

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "conquest:block/tree_stump" },
+    "facing=east": { "model": "conquest:block/tree_stump", "y": 90 },
+    "facing=south": { "model": "conquest:block/tree_stump", "y": 180 },
+    "facing=west": { "model": "conquest:block/tree_stump", "y": 270 }
+  }
+}

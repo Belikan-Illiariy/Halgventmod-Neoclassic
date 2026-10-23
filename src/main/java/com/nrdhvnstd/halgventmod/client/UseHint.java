@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
+import com.nrdhvnstd.halgventmod.herbs.HerbPlantBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.StationBlock;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
@@ -83,9 +84,13 @@ public final class UseHint {
         return USABLE.get(block.getClass()) && !(block instanceof RedStoneOreBlock) && !(block instanceof RedStoneWireBlock);
     }
 
-    // Ключ действия: open, close или use
+    // Ключ действия: open, close, use или cut_herbs
     private static String action(Level level, BlockPos pos, BlockState state) {
         Block block = state.getBlock();
+        // Выросший кустик травы — срезать (herbs/HerbPlantBlock)
+        if (block instanceof HerbPlantBlock && HerbPlantBlock.grown(state)) {
+            return "cut_herbs";
+        }
         if (block instanceof DoorBlock || block instanceof TrapDoorBlock || block instanceof FenceGateBlock) {
             return state.getValue(BlockStateProperties.OPEN) ? "close" : "open";
         }

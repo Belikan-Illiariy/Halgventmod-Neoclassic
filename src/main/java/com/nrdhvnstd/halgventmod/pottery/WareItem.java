@@ -63,12 +63,17 @@ public class WareItem extends Item {
         return form;
     }
 
-    /** Корчага и кувшин держат питьё (склянками); кувшин — ещё и воду, но не вместе. */
+    /** Корчага, кувшин и кружка держат питьё (склянками); кувшин и кружка — ещё и воду, но не вместе. */
     private boolean holdsDrinks() {
-        return form == VesselForm.AMPHORA || form == VesselForm.JUG;
+        return form == VesselForm.AMPHORA || form == VesselForm.JUG || form == VesselForm.CUP;
     }
 
-    /** Питьё внутри кувшина (пусто — нет). */
+    /** Из кувшина и кружки пьют прямо: и воду, и питьё. */
+    private boolean sippable() {
+        return form == VesselForm.JUG || form == VesselForm.CUP;
+    }
+
+    /** Питьё внутри кувшина или кружки (пусто — нет). */
     private static ItemStack drinkInside(ItemStack stack, Level level) {
         Stored stored = stack.get(ModComponents.STORED.get());
         return stored == null || stored.sealed() ? ItemStack.EMPTY : Pottery.unpack(stored, stack, level);
@@ -131,8 +136,8 @@ public class WareItem extends Item {
                 }
             }
         }
-        // Кувшин с питьём (пиво, вино, морс…) — пить прямо из него
-        if (form == VesselForm.JUG && !drinkInside(stack, level).isEmpty()) {
+        // Кувшин или кружка с питьём (пиво, вино, морс…) — пить прямо из них
+        if (sippable() && !drinkInside(stack, level).isEmpty()) {
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);
         }
@@ -145,7 +150,7 @@ public class WareItem extends Item {
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
-        boolean drink = form == VesselForm.JUG && stack.has(ModComponents.STORED.get());
+        boolean drink = sippable() && stack.has(ModComponents.STORED.get());
         return (Pottery.water(stack) > 0 || drink) && form != VesselForm.AMPHORA ? UseAnim.DRINK : UseAnim.NONE;
     }
 
@@ -156,7 +161,7 @@ public class WareItem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        ItemStack inside = form == VesselForm.JUG ? drinkInside(stack, level) : ItemStack.EMPTY;
+        ItemStack inside = sippable() ? drinkInside(stack, level) : ItemStack.EMPTY;
         if (entity instanceof Player player && !level.isClientSide && !inside.isEmpty()) {
             // Глоток — как выпить одну склянку: её действие и те же события (жажда, хмель, свежесть); склянки нет
             ItemStack sip = inside.copyWithCount(1);
@@ -300,6 +305,10 @@ public class WareItem extends Item {
             if (other.is(Items.GLASS_BOTTLE)) {
                 return draw(me, other, player, carried);
             }
+            // Перелить питьё из посудины на курсоре в эту (корчагу в кувшин или кружку, кувшин в кружку)
+            if (Pottery.drinkCapacity(other) > 0 && other.has(ModComponents.STORED.get())) {
+                return pourDrink(other, me, player);
+            }
         }
         // Перелить воду из посудины на курсоре в эту (кувшин в кружку)
         if (Pottery.waterCapacity(other) > 0 && Pottery.water(other) > 0) {
@@ -308,7 +317,7 @@ public class WareItem extends Item {
         return false;
     }
 
-    /** Посудиной с курсора щёлкнули ПКМ по вещи в ячейке: налить в неё воды. */
+    /** Посудиной с курсора щёлкнули ПКМ по вещи в ячейке: налить в неё воды или питья. */
     @Override
     public boolean overrideStackedOnOther(ItemStack me, Slot slot, ClickAction action, Player player) {
         if (action != ClickAction.SECONDARY || !slot.allowModification(player)) {
@@ -318,7 +327,52 @@ public class WareItem extends Item {
         if (Pottery.water(me) > 0 && Pottery.waterCapacity(other) > 0 && other != me) {
             return pour(me, other, player);
         }
+        if (me.has(ModComponents.STORED.get()) && holdsDrinks() && Pottery.drinkCapacity(other) > 0 && other != me) {
+            return pourDrink(me, other, player);
+        }
         return false;
+    }
+
+    /**
+     * Перелить питьё из одной посудины в другую — сколько влезет: из корчаги в кувшин или кружку, из кувшина в кружку
+     * (и обратно). Только одно и то же питьё; в посудину с водой, треснувшую или запечатанную — нельзя.
+     */
+    private static boolean pourDrink(ItemStack from, ItemStack to, Player player) {
+        Level level = player.level();
+        ItemStack drink = Pottery.storedDrink(from, level);
+        if (drink.isEmpty()) {
+            message(player, "sealed");
+            return true;
+        }
+        if (Pottery.cracked(to)) {
+            message(player, "ware_cracked_use");
+            return true;
+        }
+        if (Pottery.water(to) > 0) {
+            message(player, "has_water");
+            return true;
+        }
+        Stored stored = to.get(ModComponents.STORED.get());
+        if (stored != null && stored.sealed()) {
+            message(player, "sealed");
+            return true;
+        }
+        ItemStack inside = stored == null ? ItemStack.EMPTY : Pottery.unpack(stored, to, level);
+        if (!inside.isEmpty() && !ItemStack.isSameItemSameComponents(inside, drink)) {
+            message(player, "other_inside");
+            return true;
+        }
+        int moved = Math.min(Pottery.drinkCapacity(to) - inside.getCount(), drink.getCount());
+        if (moved <= 0) {
+            message(player, "full");
+            return true;
+        }
+        ItemStack next = inside.isEmpty() ? drink.copyWithCount(moved) : inside.copyWithCount(inside.getCount() + moved);
+        to.set(ModComponents.STORED.get(), new Stored(next, Freshness.currentDay(level), false));
+        shrinkStored(from, drink, moved, player);
+        player.playSound(SoundEvents.BOTTLE_EMPTY, 0.7F, 1.0F);
+        Pottery.wear(from, player); // от пользования посудина может треснуть
+        return true;
     }
 
     private static boolean pour(ItemStack from, ItemStack to, Player player) {

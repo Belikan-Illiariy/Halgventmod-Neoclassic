@@ -1,4 +1,5 @@
 {
-  "parent": "conquest:block/barley_8_stage_1",
-  "render_type": "minecraft:cutout"
+  "parent": "minecraft:block/cross",
+  "render_type": "minecraft:cutout",
+  "textures": { "cross": "conquest:block/9_organic/3_plants/barley/barley_stage_1" }
 }
