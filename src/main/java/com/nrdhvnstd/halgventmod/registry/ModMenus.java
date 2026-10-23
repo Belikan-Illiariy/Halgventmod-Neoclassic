@@ -58,6 +58,7 @@ public final class ModMenus {
     private ModMenus() {}
 
     public static void register(IEventBus modEventBus) {
+        com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initMenus();
         MENUS.register(modEventBus);
     }
 }

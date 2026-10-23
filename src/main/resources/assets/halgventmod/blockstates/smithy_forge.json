@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "lit=false,facing=north": { "model": "halgventmod:block/smithing/smithy_forge" },
+    "lit=false,facing=east": { "model": "halgventmod:block/smithing/smithy_forge", "y": 90 },
+    "lit=false,facing=south": { "model": "halgventmod:block/smithing/smithy_forge", "y": 180 },
+    "lit=false,facing=west": { "model": "halgventmod:block/smithing/smithy_forge", "y": 270 },
+    "lit=true,facing=north": { "model": "halgventmod:block/smithing/smithy_forge_lit" },
+    "lit=true,facing=east": { "model": "halgventmod:block/smithing/smithy_forge_lit", "y": 90 },
+    "lit=true,facing=south": { "model": "halgventmod:block/smithing/smithy_forge_lit", "y": 180 },
+    "lit=true,facing=west": { "model": "halgventmod:block/smithing/smithy_forge_lit", "y": 270 }
+  }
+}

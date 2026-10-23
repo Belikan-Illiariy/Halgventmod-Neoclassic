@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "richness=0": { "model": "halgventmod:block/smithing/gold_placer_0" },
+    "richness=1": { "model": "halgventmod:block/smithing/gold_placer_1" },
+    "richness=2": { "model": "halgventmod:block/smithing/gold_placer_2" },
+    "richness=3": { "model": "halgventmod:block/smithing/gold_placer_3" }
+  }
+}

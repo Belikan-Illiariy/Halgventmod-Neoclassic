@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "richness=0": { "model": "halgventmod:block/smithing/silver_vein_0" },
+    "richness=1": { "model": "halgventmod:block/smithing/silver_vein_1" },
+    "richness=2": { "model": "halgventmod:block/smithing/silver_vein_2" },
+    "richness=3": { "model": "halgventmod:block/smithing/silver_vein_3" }
+  }
+}

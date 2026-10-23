@@ -256,11 +256,17 @@ public class WareItem extends Item {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return Pottery.water(stack) > 0 || (form == VesselForm.LAMP && lampFuel(stack) > 0);
+        return Pottery.water(stack) > 0 || (form == VesselForm.LAMP && lampFuel(stack) > 0)
+                || (form == VesselForm.CRUCIBLE && com.nrdhvnstd.halgventmod.smithing.Crucible.total(
+                        com.nrdhvnstd.halgventmod.smithing.Crucible.melt(stack)) > 0);
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
+        if (form == VesselForm.CRUCIBLE) {
+            int parts = com.nrdhvnstd.halgventmod.smithing.Crucible.total(com.nrdhvnstd.halgventmod.smithing.Crucible.melt(stack));
+            return Math.min(13, Math.round(13.0F * parts / com.nrdhvnstd.halgventmod.smithing.Crucible.CAPACITY));
+        }
         if (form == VesselForm.LAMP) {
             return Math.min(13, Math.round(13.0F * lampFuel(stack) / Pottery.LAMP_MAX_FUEL));
         }
@@ -270,6 +276,10 @@ public class WareItem extends Item {
 
     @Override
     public int getBarColor(ItemStack stack) {
+        if (form == VesselForm.CRUCIBLE) {
+            com.nrdhvnstd.halgventmod.smithing.Melt melt = com.nrdhvnstd.halgventmod.smithing.Crucible.melt(stack);
+            return melt != null && melt.molten() ? 0xF08A2A : 0x9A9AA0; // расплавлено — рыжая, шихта — серая
+        }
         return form == VesselForm.LAMP ? 0xE8B040 : 0x3F76E4;
     }
 

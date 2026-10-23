@@ -9,8 +9,8 @@ mkdir -p "$dir/pottery"
 
 ware_states=(terracotta underfired overfired burnished black)
 green_states=(wet dry cracked burnished)
-forms=(cup bowl jug pot amphora lamp)
-declare -A item_of=([cup]=clay_cup [bowl]=clay_bowl [jug]=clay_jug [pot]=clay_pot [amphora]=amphora [lamp]=oil_lamp)
+forms=(cup bowl jug pot amphora lamp crucible)
+declare -A item_of=([cup]=clay_cup [bowl]=clay_bowl [jug]=clay_jug [pot]=clay_pot [amphora]=amphora [lamp]=oil_lamp [crucible]=clay_crucible)
 
 # Тело модели: плоская иконка
 body() { # $1 — текстура

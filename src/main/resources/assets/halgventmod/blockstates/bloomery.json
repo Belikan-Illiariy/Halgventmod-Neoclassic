@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "lit=false,facing=north": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood" },
+    "lit=false,facing=east": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 90 },
+    "lit=false,facing=south": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 180 },
+    "lit=false,facing=west": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 270 },
+    "lit=true,facing=north": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals" },
+    "lit=true,facing=east": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 90 },
+    "lit=true,facing=south": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 180 },
+    "lit=true,facing=west": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 270 }
+  }
+}

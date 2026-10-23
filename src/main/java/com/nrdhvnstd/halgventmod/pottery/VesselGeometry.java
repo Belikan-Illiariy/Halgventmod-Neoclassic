@@ -502,6 +502,14 @@ public final class VesselGeometry {
                     plane(d, 15, y);
                 }
             }
+            case CRUCIBLE -> {
+                // Толстостенный, с толстым дном — держит расплав
+                rings(p, 0, 0, 5);
+                rings(p, 1, 0, 5);
+                for (int y = 2; y <= 8; y++) {
+                    rings(p, y, 3, 5);
+                }
+            }
         }
         int[] details = d.stream().mapToInt(Integer::intValue).filter(i -> !body(p, x(i), y(i), z(i)))
                 .sorted().distinct().toArray();

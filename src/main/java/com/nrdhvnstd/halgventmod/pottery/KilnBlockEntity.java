@@ -9,6 +9,7 @@ import com.nrdhvnstd.halgventmod.menu.KilnMenu;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
+import com.nrdhvnstd.halgventmod.smithing.Smithing;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -165,9 +166,9 @@ public class KilnBlockEntity extends StationBlockEntity {
 
     /** Можно ли сейчас загрузить это (окно и E). */
     private boolean loadable(ItemStack stack) {
-        return (Pottery.isGreenware(stack) || Pottery.isRawClay(stack)) && Pottery.has(stack, Pottery.DRIED)
-                && !Pottery.has(stack, Pottery.CRACKED) && heat <= 30 && soak <= 0 && items.size() < capacity()
-                && !broken();
+        boolean ware = (Pottery.isGreenware(stack) || Pottery.isRawClay(stack)) && Pottery.has(stack, Pottery.DRIED)
+                && !Pottery.has(stack, Pottery.CRACKED);
+        return (ware || Smithing.roastable(stack)) && heat <= 30 && soak <= 0 && items.size() < capacity() && !broken();
     }
 
     /** Вид окна на загруженное: вынуть — значит получить обожжённое (как E пустой рукой). */
@@ -355,6 +356,9 @@ public class KilnBlockEntity extends StationBlockEntity {
     }
 
     private boolean load(Player player, ItemStack stack) {
+        if (Smithing.roastable(stack)) {
+            return loadOre(player, stack);
+        }
         boolean greenware = Pottery.isGreenware(stack);
         boolean brick = Pottery.isRawClay(stack);
         if (!greenware && !brick) {
@@ -383,6 +387,34 @@ public class KilnBlockEntity extends StationBlockEntity {
         items.add(stack.copyWithCount(1));
         consumeOne(player, stack);
         sound(SoundEvents.DECORATED_POT_INSERT, 0.8F, 0.9F);
+        Pottery.say(player, "kiln_loaded", items.size(), capacity());
+        changed();
+        return true;
+    }
+
+    /** Руда на обжиг (кузнечество): до Smithing.ROAST_STACK штук одного рода в ячейку. */
+    private boolean loadOre(Player player, ItemStack stack) {
+        if (heat > 30 || soak > 0) {
+            Pottery.say(player, "kiln_busy");
+            return true;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            ItemStack there = items.get(i);
+            if (ItemStack.isSameItemSameComponents(there, stack) && there.getCount() < Smithing.ROAST_STACK) {
+                items.set(i, there.copyWithCount(there.getCount() + 1));
+                consumeOne(player, stack);
+                sound(SoundEvents.GRAVEL_PLACE, 0.8F, 0.9F);
+                changed();
+                return true;
+            }
+        }
+        if (items.size() >= capacity()) {
+            Pottery.say(player, "kiln_full", capacity());
+            return true;
+        }
+        items.add(stack.copyWithCount(1));
+        consumeOne(player, stack);
+        sound(SoundEvents.GRAVEL_PLACE, 0.8F, 0.9F);
         Pottery.say(player, "kiln_loaded", items.size(), capacity());
         changed();
         return true;
@@ -564,6 +596,9 @@ public class KilnBlockEntity extends StationBlockEntity {
 
     /** Что вышло из вещи после этого обжига. */
     private ItemStack fire(ItemStack raw, boolean hot) {
+        if (Smithing.roastable(raw)) {
+            return Smithing.roast(raw, soak >= SOAK_NEEDED * 2 / 3); // руда не трескается: недожог — какой положили
+        }
         if (soak < SOAK_NEEDED / 3) {
             return raw; // толком не обожглось — какой положили, такой и вынули
         }

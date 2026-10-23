@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "lit=false,facing=north": { "model": "halgventmod:block/smithing/cr_cooking_brazier" },
+    "lit=false,facing=east": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 90 },
+    "lit=false,facing=south": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 180 },
+    "lit=false,facing=west": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 270 },
+    "lit=true,facing=north": { "model": "halgventmod:block/smithing/cr_cooking_brazier" },
+    "lit=true,facing=east": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 90 },
+    "lit=true,facing=south": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 180 },
+    "lit=true,facing=west": { "model": "halgventmod:block/smithing/cr_cooking_brazier", "y": 270 }
+  }
+}

@@ -48,6 +48,10 @@ public final class QualityDisplay {
         if (wood != null) {
             return grades[Math.clamp(wood, 0, grades.length - 1)];
         }
+        Integer metal = stack.get(ModComponents.METAL_QUALITY.get());
+        if (metal != null) {
+            return grades[Math.clamp(metal, 0, grades.length - 1)];
+        }
         return null;
     }
 

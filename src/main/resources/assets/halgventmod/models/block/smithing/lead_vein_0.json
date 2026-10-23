@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/cube_all", "textures": { "all": "halgventmod:block/smithing/lead_vein_0" } }

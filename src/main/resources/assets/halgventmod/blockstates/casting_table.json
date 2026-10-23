@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/smithing/cr_cutting_table" },
+    "facing=east": { "model": "halgventmod:block/smithing/cr_cutting_table", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/smithing/cr_cutting_table", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/smithing/cr_cutting_table", "y": 270 }
+  }
+}

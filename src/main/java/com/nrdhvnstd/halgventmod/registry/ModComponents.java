@@ -196,6 +196,27 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
                     .build());
 
+    // Кузнечество (smithing/*): качество металла и кованой вещи 0–5 — у крицы, слитков, инструментов (прочность)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> METAL_QUALITY =
+            COMPONENTS.register("metal_quality", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, 5))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Руда обожжена в гончарном горне (болотная, медная): плавится чище
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ROASTED =
+            COMPONENTS.register("roasted", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    // Что в тигле: шихта или расплав (smithing/Crucible)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.nrdhvnstd.halgventmod.smithing.Melt>> CRUCIBLE_MELT =
+            COMPONENTS.register("crucible_melt", () -> DataComponentType.<com.nrdhvnstd.halgventmod.smithing.Melt>builder()
+                    .persistent(com.nrdhvnstd.halgventmod.smithing.Melt.CODEC)
+                    .networkSynchronized(com.nrdhvnstd.halgventmod.smithing.Melt.STREAM_CODEC)
+                    .build());
+
     // Склонность глины трескаться при сушке и обжиге, в процентах: жирная — больше, с шамотом — меньше
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CLAY_CRACK =
             COMPONENTS.register("clay_crack", () -> DataComponentType.<Integer>builder()

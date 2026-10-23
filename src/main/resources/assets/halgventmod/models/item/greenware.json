@@ -24,6 +24,10 @@
     { "predicate": { "halgventmod:look": 20 }, "model": "halgventmod:item/pottery/greenware_lamp_wet" },
     { "predicate": { "halgventmod:look": 21 }, "model": "halgventmod:item/pottery/greenware_lamp_dry" },
     { "predicate": { "halgventmod:look": 22 }, "model": "halgventmod:item/pottery/greenware_lamp_cracked" },
-    { "predicate": { "halgventmod:look": 23 }, "model": "halgventmod:item/pottery/greenware_lamp_burnished" }
+    { "predicate": { "halgventmod:look": 23 }, "model": "halgventmod:item/pottery/greenware_lamp_burnished" },
+    { "predicate": { "halgventmod:look": 24 }, "model": "halgventmod:item/pottery/greenware_crucible_wet" },
+    { "predicate": { "halgventmod:look": 25 }, "model": "halgventmod:item/pottery/greenware_crucible_dry" },
+    { "predicate": { "halgventmod:look": 26 }, "model": "halgventmod:item/pottery/greenware_crucible_cracked" },
+    { "predicate": { "halgventmod:look": 27 }, "model": "halgventmod:item/pottery/greenware_crucible_burnished" }
   ]
 }

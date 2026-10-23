@@ -96,6 +96,17 @@ public class TanningVatBlockEntity extends StationBlockEntity {
         java.util.Arrays.fill(slots, ItemStack.EMPTY);
     }
 
+    /**
+     * Чан как закалочная бочка (кузнечество, SmithArea): 1 — вода, 2 — рассол (вода с солью, без квасцов), 3 — жир
+     * (закалка в масле); 0 — в таком растворе не закаливают.
+     */
+    public int quenchLiquid() {
+        if (solution == Solution.WATER) {
+            return salt > 0 && alum == 0 ? 2 : 1;
+        }
+        return solution == Solution.FAT ? 3 : 0;
+    }
+
     public Solution solution() {
         return solution;
     }
