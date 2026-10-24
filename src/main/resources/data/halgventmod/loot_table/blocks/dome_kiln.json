@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:dome_kiln" } ], "conditions": [ { "condition": "minecraft:survives_explosion" }, { "condition": "minecraft:block_state_property", "block": "halgventmod:dome_kiln", "properties": { "part": "0" } } ] } ],
+  "random_sequence": "halgventmod:blocks/dome_kiln"
+}

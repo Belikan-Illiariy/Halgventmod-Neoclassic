@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.brewing;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nrdhvnstd.halgventmod.alchemy.Alchemy;
 import com.nrdhvnstd.halgventmod.cooking.FoodQuality;
 import com.nrdhvnstd.halgventmod.food.Freshness;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
@@ -41,6 +42,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * и не разливают — сначала «Распечатать». Открытая не бродит и не киснет.
  * <p>ПКМ — окно (FermentingBarrelMenu): сусло или крепкое — в ячейку «влить» (пустые склянки выходят в ячейку склянок),
  * добавка — в свою ячейку; готовое само наливается в склянки (в ячейку «готовое»), в корчагу или кувшин в ячейке склянок.
+ * <p><b>Алхимия</b> (alchemy/Alchemy.steeps): крепкое, уксус или вода (склянкой, ведром, кувшином) + реагент — по одному
+ * на каждую склянку основы (E реагентом или в ячейку добавки) — настаивается, сгущается или осаждается под печатью.
+ * Жидкое (бальзамы, териак, эссенции) разливают, твёрдое (краска, ярь-медянка, купорос) выгребают пустой рукой или оно
+ * само выходит в ячейку «готовое». Алхимическое не киснет.
  */
 public class FermentingBarrelBlockEntity extends StationBlockEntity {
     // Меняйте здесь
@@ -52,6 +57,9 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
     private ItemStack base = ItemStack.EMPTY;
     private int portions;
     private final List<String> flavours = new ArrayList<>();
+    /** Алхимический реагент (одна штука — образец) и сколько положено: по одному на склянку основы. */
+    private ItemStack reagent = ItemStack.EMPTY;
+    private int reagents;
     // Бродит по календарю, как портится еда: сутки под печатью до последней распечатки + с дня запечатывания
     private int daysBefore;
     private int sealedDay = -1;
@@ -62,14 +70,15 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
 
     public static final int SLOT_IN = 0, SLOT_FLAVOUR = 1, SLOT_BOTTLES = 2, SLOT_OUT = 3;
     public static final int D_PORTIONS = 0, D_STATE = 1, D_PROGRESS = 2, D_DAYS_LEFT = 3, D_FLAVOURS = 4, D_SEALED = 5,
-            DATA = 6;
-    public static final int STATE_EMPTY = 0, STATE_NEEDS_FLAVOUR = 1, STATE_FERMENTING = 2, STATE_READY = 3, STATE_SOUR = 4;
+            D_REAGENTS = 6, DATA = 7;
+    public static final int STATE_EMPTY = 0, STATE_NEEDS_FLAVOUR = 1, STATE_FERMENTING = 2, STATE_READY = 3, STATE_SOUR = 4,
+            STATE_NEEDS_REAGENT = 5;
     private final SimpleContainer slots = new SimpleContainer(4) {
         @Override
         public boolean canPlaceItem(int slot, ItemStack stack) {
             return switch (slot) {
-                case SLOT_IN -> liquid(stack) || Pottery.drinkCapacity(stack) > 0;
-                case SLOT_FLAVOUR -> Brewing.flavour(stack) != null;
+                case SLOT_IN -> liquid(stack) || Pottery.drinkCapacity(stack) > 0 || Pottery.isWater(stack, 1);
+                case SLOT_FLAVOUR -> Brewing.flavour(stack) != null || Alchemy.reagent(stack);
                 case SLOT_BOTTLES -> StillBlockEntity.vessel(stack);
                 default -> false;
             };
@@ -80,13 +89,15 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         public int get(int index) {
             return switch (index) {
                 case D_PORTIONS -> portions;
-                case D_STATE -> portions <= 0 ? STATE_EMPTY : spirit() && flavours.isEmpty() ? STATE_NEEDS_FLAVOUR
+                case D_STATE -> portions <= 0 ? STATE_EMPTY : needsReagent() ? STATE_NEEDS_REAGENT
+                        : spirit() && flavours.isEmpty() && reagents == 0 ? STATE_NEEDS_FLAVOUR
                         : sour() ? STATE_SOUR : ready() ? STATE_READY : STATE_FERMENTING;
                 case D_PROGRESS -> progress();
-                case D_DAYS_LEFT -> !started() || (ready() && spirit()) ? NO_DAY
+                case D_DAYS_LEFT -> !started() || (ready() && !souring()) ? NO_DAY
                         : Math.max(0, (ready() ? souredAt() : needed()) - elapsed());
                 case D_FLAVOURS -> flavours.size();
                 case D_SEALED -> sealed ? 1 : 0;
+                case D_REAGENTS -> reagents;
                 default -> 0;
             };
         }
@@ -122,6 +133,59 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         return flavours;
     }
 
+    /** Алхимический реагент (для окна): пусто — нет. */
+    public ItemStack reagent() {
+        return reagent;
+    }
+
+    /** Что выйдет по алхимии (для окна): пусто — не алхимия. */
+    public ItemStack steepResult() {
+        Alchemy.Steep steep = steep();
+        return steep == null ? ItemStack.EMPTY : steep.result().apply(reagent);
+    }
+
+    // ---------------------------------------------------------------- алхимия
+
+    /** Настой по основе, реагенту и добавкам; null — обычное брожение (или ещё нет реагента). */
+    @javax.annotation.Nullable
+    private Alchemy.Steep steep() {
+        return portions <= 0 ? null : Alchemy.steep(Alchemy.base(base), reagent, flavours);
+    }
+
+    /** Основа — уксус или вода: без реагента в них ничего не выйдет. */
+    private boolean alchemyOnly() {
+        Alchemy.Base kind = Alchemy.base(base);
+        return kind == Alchemy.Base.VINEGAR || kind == Alchemy.Base.WATER;
+    }
+
+    /** Ждёт реагента: уксус или вода без него, реагентов меньше, чем склянок, или к нему нет нужной добавки (мёда). */
+    private boolean needsReagent() {
+        if (portions <= 0) {
+            return false;
+        }
+        if (reagent.isEmpty()) {
+            return alchemyOnly();
+        }
+        return reagents < portions || steep() == null;
+    }
+
+    /** Подходит ли реагент к налитому (добавку, например мёд к териаку, можно положить и после). */
+    private boolean reagentFits(ItemStack stack) {
+        Alchemy.Base kind = Alchemy.base(base);
+        return kind != null && Alchemy.steeps().stream().anyMatch(s -> s.base() == kind && s.reagent().test(stack));
+    }
+
+    /** Готовое — твёрдое: выгребают руками, а не разливают. */
+    public boolean solid() {
+        Alchemy.Steep steep = steep();
+        return steep != null && steep.solid();
+    }
+
+    /** Может ли готовое скиснуть: только перебродившее сусло. */
+    private boolean souring() {
+        return !spirit() && steep() == null;
+    }
+
     public boolean sealed() {
         return sealed;
     }
@@ -149,14 +213,21 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         return base.is(ModItems.SPIRIT.get());
     }
 
-    /** Брожение идёт: у сусла — сразу, у крепкого — только с добавкой (настойка). */
+    /**
+     * Брожение идёт: у сусла — сразу, у крепкого — только с добавкой (настойка) или реагентом; алхимия — когда
+     * реагентов хватает на все склянки.
+     */
     private boolean started() {
-        return portions > 0 && (!spirit() || !flavours.isEmpty());
+        if (portions <= 0 || needsReagent()) {
+            return false;
+        }
+        return steep() != null || (!spirit() && !alchemyOnly()) || !flavours.isEmpty();
     }
 
     /** Сколько календарных суток бродить (с поправкой на время года), не меньше суток. */
     private int needed() {
-        return Math.max(1, (int) Math.round(Brewing.ferment(base) * factor));
+        Alchemy.Steep steep = steep();
+        return Math.max(1, (int) Math.round((steep != null ? steep.days() : Brewing.ferment(base)) * factor));
     }
 
     /** На какие сутки брожения готовое скисает. */
@@ -175,7 +246,7 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
     }
 
     private boolean sour() {
-        return ready() && !spirit() && elapsed() >= souredAt();
+        return ready() && souring() && elapsed() >= souredAt();
     }
 
     /** Полоса брожения, 0–100: целые сутки и доля текущих (пока под печатью). */
@@ -241,9 +312,63 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
 
     private int lastStage = -1;
 
-    /** Что вливают в бочку: сусло или крепкое. */
+    /** Что вливают в бочку: сусло, крепкое; для алхимии — ещё уксус и склянка воды. */
     public static boolean liquid(ItemStack stack) {
-        return stack.is(ModItems.MUST.get()) || stack.is(ModItems.SPIRIT.get());
+        return stack.is(ModItems.MUST.get()) || stack.is(ModItems.SPIRIT.get()) || stack.is(ModItems.VINEGAR.get())
+                || Alchemy.water(stack);
+    }
+
+    /**
+     * Влить воду из ведра (до {@link Pottery#BUCKET_MEASURES} склянок, ведро пустеет целиком) или из кувшина, кружки,
+     * корчаги (мера — склянка), сколько влезет.
+     * @return сколько влито; 0 — не вода или не влезает
+     */
+    private int pourWater(ItemStack stack, java.util.function.Consumer<ItemStack> emptyBucket) {
+        ItemStack water = Alchemy.waterBottle();
+        if (!accepts(water)) {
+            return 0;
+        }
+        int poured = 0;
+        if (stack.is(Items.WATER_BUCKET)) {
+            poured = Math.min(Pottery.BUCKET_MEASURES, MAX_PORTIONS - portions);
+            emptyBucket.accept(new ItemStack(Items.BUCKET));
+        } else {
+            while (Pottery.waterCapacity(stack) > 0 && Pottery.water(stack) > 0 && portions + poured < MAX_PORTIONS) {
+                Pottery.setWater(stack, Pottery.water(stack) - 1);
+                poured++;
+            }
+        }
+        for (int i = 0; i < poured; i++) {
+            addLiquid(water);
+        }
+        return poured;
+    }
+
+    /**
+     * Положить реагент (по одному на склянку основы; один и тот же). Сначала — основа.
+     * @return null — положен, иначе ключ сообщения, почему нет
+     */
+    @javax.annotation.Nullable
+    private String addReagent(ItemStack stack) {
+        if (portions <= 0) {
+            return "barrel_reagent_first";
+        }
+        if (ready()) {
+            return "barrel_pour_first";
+        }
+        if (!reagentFits(stack)) {
+            return "barrel_reagent_wrong";
+        }
+        if (!reagent.isEmpty() && !ItemStack.isSameItemSameComponents(reagent, stack.copyWithCount(1))) {
+            return "barrel_reagent_mixed";
+        }
+        if (reagents >= portions) {
+            return "barrel_reagent_enough";
+        }
+        reagent = stack.copyWithCount(1);
+        reagents++;
+        restart(); // настаивается с последнего реагента
+        return null;
     }
 
     /** Примет ли бочка ещё склянку этого. */
@@ -256,6 +381,8 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         if (portions == 0) {
             base = liquid.copyWithCount(1);
             flavours.clear();
+            reagent = ItemStack.EMPTY;
+            reagents = 0;
         }
         portions++;
         restart();
@@ -275,20 +402,24 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
             }
             return;
         }
+        if (Pottery.isWater(stack, 1)) {
+            // Вода из ведра или кувшина — для купороса
+            if (pourWater(stack, bucket -> slots.setItem(SLOT_IN, bucket)) > 0) {
+                sound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.0F);
+                slots.setChanged();
+                updateState();
+            }
+            return;
+        }
         if (!liquid(stack)) {
             return;
         }
         ItemStack bottles = slots.getItem(SLOT_BOTTLES);
         boolean room = bottles.isEmpty() || (bottles.is(Items.GLASS_BOTTLE) && bottles.getCount() < bottles.getMaxStackSize());
-        if (stack.isEmpty() || !room || ready() || portions >= MAX_PORTIONS || (portions > 0 && !sameLiquid(stack))) {
+        if (stack.isEmpty() || !room || !accepts(stack)) {
             return;
         }
-        if (portions == 0) {
-            base = stack.copyWithCount(1);
-            flavours.clear();
-        }
-        portions++;
-        restart();
+        addLiquid(stack);
         stack.shrink(1);
         if (bottles.isEmpty()) {
             slots.setItem(SLOT_BOTTLES, new ItemStack(Items.GLASS_BOTTLE));
@@ -300,9 +431,18 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         updateState();
     }
 
-    /** Окно: добавка из ячейки. */
+    /** Окно: добавка (или алхимический реагент) из ячейки. */
     private void addFlavour() {
         ItemStack stack = slots.getItem(SLOT_FLAVOUR);
+        if (Alchemy.reagent(stack)) {
+            if (addReagent(stack) == null) {
+                stack.shrink(1);
+                sound(SoundEvents.GENERIC_SPLASH, 0.4F, 1.1F);
+                slots.setChanged();
+                changed();
+            }
+            return;
+        }
         String flavour = Brewing.flavour(stack);
         if (flavour == null || portions <= 0 || ready() || flavours.contains(flavour) || flavours.size() >= MAX_FLAVOURS) {
             return;
@@ -324,7 +464,17 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         }
         ItemStack bottles = slots.getItem(SLOT_BOTTLES);
         ItemStack drink = pour();
-        if (Pottery.drinkCapacity(bottles) > 0) {
+        if (solid()) {
+            // Осадок — прямо в «готовое», без склянок
+            ItemStack out = slots.getItem(SLOT_OUT);
+            if (out.isEmpty()) {
+                slots.setItem(SLOT_OUT, drink);
+            } else if (ItemStack.isSameItemSameComponents(out, drink) && out.getCount() + drink.getCount() <= out.getMaxStackSize()) {
+                out.grow(drink.getCount());
+            } else {
+                return;
+            }
+        } else if (Pottery.drinkCapacity(bottles) > 0) {
             if (!Pottery.canPour(bottles, drink, level)) {
                 return;
             }
@@ -387,8 +537,12 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         updateState();
     }
 
-    /** Что нальётся сейчас: напиток, настойка или уксус. */
+    /** Что нальётся (или выгребется) сейчас: напиток, настойка, уксус или то, что вышло по алхимии. */
     private ItemStack pour() {
+        Alchemy.Steep steep = steep();
+        if (steep != null) {
+            return steep.result().apply(reagent);
+        }
         if (sour()) {
             return new ItemStack(ModItems.VINEGAR.get());
         }
@@ -403,8 +557,8 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
         boolean liquid = liquid(stack);
-        boolean touches = liquid || Brewing.flavour(stack) != null || stack.is(Items.GLASS_BOTTLE)
-                || Pottery.drinkCapacity(stack) > 0 || (stack.isEmpty() && player.isShiftKeyDown());
+        boolean touches = liquid || Brewing.flavour(stack) != null || stack.is(Items.GLASS_BOTTLE) || Alchemy.reagent(stack)
+                || Pottery.drinkCapacity(stack) > 0 || Pottery.isWater(stack, 1) || (stack.isEmpty() && player.isShiftKeyDown());
         if (sealed && touches && portions > 0) {
             tell(player, "barrel_sealed");
             return true;
@@ -430,6 +584,25 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
             updateState();
             return true;
         }
+        // Ведром или кувшином воды — влить воду (для купороса)
+        if (Pottery.isWater(stack, 1) && stack.getCount() == 1) {
+            if (ready()) {
+                tell(player, "barrel_pour_first");
+                return true;
+            }
+            if (pourWater(stack, bucket -> {
+                if (!player.getAbilities().instabuild) {
+                    player.setItemInHand(hand, bucket);
+                }
+            }) <= 0) {
+                tell(player, portions >= MAX_PORTIONS ? "barrel_full" : "barrel_mixed");
+                return true;
+            }
+            sound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.0F);
+            status(player);
+            updateState();
+            return true;
+        }
         if (liquid) {
             if (ready()) {
                 tell(player, "barrel_pour_first");
@@ -443,17 +616,25 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
                 tell(player, "barrel_full");
                 return true;
             }
-            if (portions == 0) {
-                base = stack.copyWithCount(1);
-                flavours.clear();
-            }
-            portions++;
-            restart();
+            addLiquid(stack);
             consumeOne(player, stack);
             give(player, new ItemStack(Items.GLASS_BOTTLE));
             sound(SoundEvents.BOTTLE_EMPTY, 1.0F, 0.9F);
             status(player);
             updateState();
+            return true;
+        }
+        // Алхимический реагент — по одному на склянку основы
+        if (Alchemy.reagent(stack)) {
+            String why = addReagent(stack);
+            if (why != null) {
+                tell(player, why);
+                return true;
+            }
+            consumeOne(player, stack);
+            sound(SoundEvents.GENERIC_SPLASH, 0.4F, 1.1F);
+            tell(player, "barrel_reagent_added", reagent.getHoverName(), reagents, portions);
+            changed();
             return true;
         }
         String flavour = Brewing.flavour(stack);
@@ -490,6 +671,10 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
                 status(player);
                 return true;
             }
+            if (solid()) {
+                tell(player, "barrel_solid");
+                return true;
+            }
             int poured = 0;
             while (portions > 0 && Pottery.canPour(stack, pour(), level)) {
                 Pottery.pour(stack, pour(), level);
@@ -515,6 +700,10 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
                 status(player);
                 return true;
             }
+            if (solid()) {
+                tell(player, "barrel_solid");
+                return true;
+            }
             consumeOne(player, stack);
             give(player, pour());
             sound(SoundEvents.BOTTLE_FILL, 1.0F, 1.0F);
@@ -531,6 +720,17 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
             clear();
             sound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.0F);
             tell(player, "barrel_poured_out");
+            updateState();
+            return true;
+        }
+        // Осело твёрдое — выгрести руками всё
+        if (!sealed && ready() && solid()) {
+            ItemStack out = pour();
+            out.setCount(out.getCount() * portions);
+            tell(player, "barrel_took_solid", out.getHoverName(), out.getCount());
+            give(player, out);
+            clear();
+            sound(SoundEvents.GRAVEL_BREAK, 0.6F, 1.2F);
             updateState();
             return true;
         }
@@ -552,6 +752,8 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         portions = 0;
         sealed = false;
         flavours.clear();
+        reagent = ItemStack.EMPTY;
+        reagents = 0;
         daysBefore = 0;
         sealedDay = -1;
     }
@@ -571,14 +773,19 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
     }
 
     private void status(Player player) {
+        Alchemy.Steep steep = steep();
         if (portions <= 0) {
             tell(player, "barrel_empty");
+        } else if (needsReagent()) {
+            tell(player, "barrel_needs_reagent", portions, reagents);
         } else if (!sealed && !ready()) {
             tell(player, "barrel_open", portions);
-        } else if (spirit() && flavours.isEmpty()) {
+        } else if (spirit() && flavours.isEmpty() && reagent.isEmpty()) {
             tell(player, "barrel_tincture_needs", portions);
         } else if (sour()) {
             tell(player, "barrel_sour", portions);
+        } else if (ready() && steep != null) {
+            tell(player, steep.solid() ? "barrel_ready_solid" : "barrel_ready_tincture", portions);
         } else if (ready() && spirit()) {
             tell(player, "barrel_ready_tincture", portions);
         } else if (ready()) {
@@ -600,6 +807,10 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
             tag.put("Base", base.save(registries));
         }
         tag.putInt("Portions", portions);
+        if (!reagent.isEmpty()) {
+            tag.put("Reagent", reagent.save(registries));
+        }
+        tag.putInt("Reagents", reagents);
         ListTag list = new ListTag();
         flavours.forEach(f -> list.add(StringTag.valueOf(f)));
         tag.put("Flavours", list);
@@ -620,6 +831,8 @@ public class FermentingBarrelBlockEntity extends StationBlockEntity {
         super.loadAdditional(tag, registries);
         base = tag.contains("Base") ? ItemStack.parseOptional(registries, tag.getCompound("Base")) : ItemStack.EMPTY;
         portions = tag.getInt("Portions");
+        reagent = tag.contains("Reagent") ? ItemStack.parseOptional(registries, tag.getCompound("Reagent")) : ItemStack.EMPTY;
+        reagents = tag.getInt("Reagents");
         flavours.clear();
         ListTag list = tag.getList("Flavours", Tag.TAG_STRING);
         for (int i = 0; i < list.size(); i++) {

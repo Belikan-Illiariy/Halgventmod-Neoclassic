@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.RecipeTabs;
 import com.nrdhvnstd.halgventmod.cooking.KitchenRecipes;
 import com.nrdhvnstd.halgventmod.network.KitchenChoosePayload;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -70,6 +71,9 @@ public class KitchenScreen extends Screen {
     private final BlockPos pos;
     private final int current;
     private final List<KitchenRecipes.Recipe> patterns = KitchenRecipes.all();
+    private final List<KitchenRecipes.Group> groups = new ArrayList<>();
+    private final List<Integer> visible = new ArrayList<>();
+    private final RecipeTabs tabs;
     private int selected;
     private int lastClicked = -1;
     private long lastClickAt;
@@ -80,6 +84,16 @@ public class KitchenScreen extends Screen {
         this.pos = pos;
         this.current = current;
         this.selected = Math.max(0, current);
+        List<RecipeTabs.Tab> list = new ArrayList<>();
+        for (KitchenRecipes.Recipe recipe : patterns) {
+            if (!groups.contains(recipe.group())) {
+                groups.add(recipe.group());
+                list.add(new RecipeTabs.Tab(recipe.makeResult(), recipe.group().langKey()));
+            }
+        }
+        this.tabs = new RecipeTabs(list);
+        tabs.select(groups.indexOf(patterns.get(selected).group()));
+        refresh();
     }
 
     public static void open(BlockPos pos, int current) {
@@ -91,8 +105,24 @@ public class KitchenScreen extends Screen {
         return false;
     }
 
+    /** Рецепты выбранной темы. */
+    private void refresh() {
+        visible.clear();
+        KitchenRecipes.Group group = groups.isEmpty() ? null : groups.get(tabs.selected());
+        for (int i = 0; i < patterns.size(); i++) {
+            if (patterns.get(i).group() == group) {
+                visible.add(i);
+            }
+        }
+    }
+
+    /** Рядов рецептов — по самой длинной теме: окно не прыгает, когда листают вкладки. */
     private int rows() {
-        return Mth.positiveCeilDiv(patterns.size(), RECIPE_COLUMNS);
+        int most = 0;
+        for (KitchenRecipes.Group group : groups) {
+            most = Math.max(most, (int) patterns.stream().filter(recipe -> recipe.group() == group).count());
+        }
+        return Mth.positiveCeilDiv(Math.max(most, 1), RECIPE_COLUMNS);
     }
 
     private int left() {
@@ -125,7 +155,7 @@ public class KitchenScreen extends Screen {
             return -1;
         }
         int index = (int) ry / RECIPE * RECIPE_COLUMNS + (int) rx / RECIPE;
-        return index < patterns.size() ? index : -1;
+        return index < visible.size() ? visible.get(index) : -1;
     }
 
     // ---------------------------------------------------------------- что нужно
@@ -180,6 +210,7 @@ public class KitchenScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(g, mouseX, mouseY, partialTick);
+        tabs.render(g, left(), top());
         g.blitSprite(PANEL, left(), top(), WIDTH, panelHeight);
     }
 
@@ -196,9 +227,10 @@ public class KitchenScreen extends Screen {
 
         // Выкройки: 2 столбца
         int hovered = recipeAt(mouseX, mouseY);
-        for (int i = 0; i < patterns.size(); i++) {
-            int cx = x + RECIPES_X + (i % RECIPE_COLUMNS) * RECIPE;
-            int cy = y + TOP + (i / RECIPE_COLUMNS) * RECIPE;
+        for (int at = 0; at < visible.size(); at++) {
+            int i = visible.get(at);
+            int cx = x + RECIPES_X + (at % RECIPE_COLUMNS) * RECIPE;
+            int cy = y + TOP + (at / RECIPE_COLUMNS) * RECIPE;
             g.blitSprite(CELL, cx, cy, RECIPE, RECIPE);
             if (i == selected) {
                 g.renderOutline(cx, cy, RECIPE, RECIPE, 0xFFFFD27F);
@@ -266,6 +298,9 @@ public class KitchenScreen extends Screen {
             g.drawString(font, Component.translatable("gui.halgventmod.pattern.current"), x + GRID_X, infoY + 22, ENOUGH, false);
         }
 
+        if (tabs.tooltip(g, font, mouseX, mouseY, left(), top())) {
+            return;
+        }
         if (!hoveredStack.isEmpty()) {
             g.renderTooltip(font, hoveredStack, mouseX, mouseY);
         }
@@ -302,6 +337,10 @@ public class KitchenScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (tabs.click(mouseX, mouseY, button, left(), top())) {
+            refresh();
+            return true;
+        }
         int index = recipeAt(mouseX, mouseY);
         if (index >= 0 && button == 0) {
             long now = System.currentTimeMillis();

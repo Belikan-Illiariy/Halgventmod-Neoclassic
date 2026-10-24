@@ -60,10 +60,10 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.BRINE_BARREL.get(), ModBlocks.KITCHEN_TABLE.get(), ModBlocks.SKEP.get(), ModBlocks.FIRE_PIT.get(),
                         ModBlocks.WINE_PRESS.get(), ModBlocks.FERMENTING_BARREL.get(), ModBlocks.AGING_CASK.get());
-        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STILL.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STILL.get(), com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.RETORT.get());
 
         // Гончар: горны — киркой, деревянное — топором
-        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.DOME_KILN.get(), com.nrdhvnstd.halgventmod.glass.GlassBlocks.GLASS_FURNACE.get());
         tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.CLAY_BARREL.get(), ModBlocks.POTTERY_WHEEL.get(), ModBlocks.DRYING_SHELF.get());
 

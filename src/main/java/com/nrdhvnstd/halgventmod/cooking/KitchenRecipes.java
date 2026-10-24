@@ -35,6 +35,21 @@ public final class KitchenRecipes {
     /** Необязательная добавка: что подходит, чем показывать, сколько насыщения прибавляет. */
     public record Extra(Predicate<ItemStack> matches, Supplier<Item> icon, float saturation) {}
 
+    /** Темы рецептов: тесто и выпечка, блюда для печи, прочее (морс, замочить зерно, мёд). */
+    public enum Group {
+        BAKING("baking"), DISHES("dishes"), OTHER("other");
+
+        private final String id;
+
+        Group(String id) {
+            this.id = id;
+        }
+
+        public String langKey() {
+            return "gui.halgventmod.kitchen.group." + id;
+        }
+    }
+
     public record Recipe(String id, Supplier<ItemStack> result, Supplier<ItemStack> byproduct, int kneads,
                          boolean water, boolean salted, List<Need> needs, List<Extra> extras) {
         public ItemStack makeResult() {
@@ -43,6 +58,15 @@ public final class KitchenRecipes {
 
         public ItemStack makeByproduct() {
             return byproduct.get();
+        }
+
+        /** Тема — вкладка в окне кухонного стола. */
+        public Group group() {
+            return switch (id) {
+                case "dough", "rye_dough", "meat_pie", "mushroom_pie", "berry_pie", "sweet_bun" -> Group.BAKING;
+                case "salmon_herbs", "hare_herbs", "exquisite_mutton" -> Group.DISHES;
+                default -> Group.OTHER;
+            };
         }
     }
 

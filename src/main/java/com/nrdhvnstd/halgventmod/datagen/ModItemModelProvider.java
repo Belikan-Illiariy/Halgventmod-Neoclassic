@@ -1,8 +1,10 @@
 package com.nrdhvnstd.halgventmod.datagen;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.glass.Glassmaking;
 import com.nrdhvnstd.halgventmod.leather.Animals;
 import com.nrdhvnstd.halgventmod.leather.HideItem;
+import com.nrdhvnstd.halgventmod.pottery.WareItem;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.data.PackOutput;
@@ -50,6 +52,22 @@ public class ModItemModelProvider extends ItemModelProvider {
         ItemModelBuilder model = withExistingParent(id, parent).texture("layer0", texture);
         if (def.item().get() instanceof HideItem) {
             animalOverrides(model, id, def.category().folder());
+        }
+        if (def.item().get() instanceof WareItem ware && ware.glass()) {
+            tintOverrides(model, id, def.category().folder());
+        }
+    }
+
+    /** Выдувное стекло: своя иконка для каждого цвета (glass/&lt;предмет&gt;_&lt;цвет&gt;), лесное — основная. */
+    private void tintOverrides(ItemModelBuilder model, String id, String folder) {
+        for (Glassmaking.Tint tint : Glassmaking.Tint.values()) {
+            ResourceLocation texture = modLoc("item/" + folder + "/" + id + "_" + tint.id());
+            if (tint.ordinal() == 0 || !files.exists(texture, TEXTURE)) {
+                continue;
+            }
+            ItemModelBuilder variant = withExistingParent("item/" + folder + "/" + id + "_" + tint.id(),
+                    mcLoc("item/generated")).texture("layer0", texture);
+            model.override().predicate(Glassmaking.TINT, tint.ordinal()).model(variant).end();
         }
     }
 

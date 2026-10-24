@@ -6,6 +6,7 @@ import java.util.List;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.carpentry.BenchProducts;
 import com.nrdhvnstd.halgventmod.client.ConquestUi;
+import com.nrdhvnstd.halgventmod.client.RecipeTabs;
 import com.nrdhvnstd.halgventmod.client.TextFit;
 import com.nrdhvnstd.halgventmod.menu.CarpenterBenchMenu;
 import com.nrdhvnstd.halgventmod.menu.StorageSlot;
@@ -40,6 +41,9 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
     private record Ghost(ItemStack stack, int count, boolean have) {}
 
     private final List<BenchProducts.Product> products = BenchProducts.all();
+    private final List<BenchProducts.Group> groups = new ArrayList<>();
+    private final List<Integer> visible = new ArrayList<>();
+    private final RecipeTabs tabs;
     private int scroll;
     private Button workButton;
 
@@ -47,19 +51,45 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
         super(menu, inventory, title);
         this.imageWidth = CarpenterBenchMenu.WIDTH;
         this.imageHeight = CarpenterBenchMenu.HEIGHT;
+        List<RecipeTabs.Tab> list = new ArrayList<>();
+        for (BenchProducts.Product product : products) {
+            if (!groups.contains(product.group())) {
+                groups.add(product.group());
+                list.add(new RecipeTabs.Tab(product.result(), product.group().langKey()));
+            }
+        }
+        this.tabs = new RecipeTabs(list);
     }
 
     @Override
     protected void init() {
         super.init();
         topPos = Math.max(topPos, font.lineHeight + TITLE_GAP);
+        leftPos = Math.max(leftPos, tabs.width());
         workButton = addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.carpenter_bench.work"),
                 button -> click(CarpenterBenchMenu.BUTTON_WORK))
                 .bounds(leftPos + CarpenterBenchMenu.GRID_X - 1, topPos + CarpenterBenchMenu.BUTTONS_Y, 128, 16).build());
         int selected = menu.product();
         if (selected >= 0) {
-            scroll = Mth.clamp(selected / CarpenterBenchMenu.PRODUCT_COLUMNS - CarpenterBenchMenu.PRODUCT_ROWS + 1, 0, maxScroll());
+            tabs.select(groups.indexOf(products.get(selected).group()));
         }
+        refresh();
+        int at = visible.indexOf(selected);
+        if (at >= 0) {
+            scroll = Mth.clamp(at / CarpenterBenchMenu.PRODUCT_COLUMNS - CarpenterBenchMenu.PRODUCT_ROWS + 1, 0, maxScroll());
+        }
+    }
+
+    /** Изделия выбранной темы. */
+    private void refresh() {
+        visible.clear();
+        BenchProducts.Group group = groups.isEmpty() ? null : groups.get(tabs.selected());
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).group() == group) {
+                visible.add(i);
+            }
+        }
+        scroll = Mth.clamp(scroll, 0, maxScroll());
     }
 
     private void click(int id) {
@@ -69,7 +99,8 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
     }
 
     private int maxScroll() {
-        return Math.max(0, Mth.positiveCeilDiv(products.size(), CarpenterBenchMenu.PRODUCT_COLUMNS) - CarpenterBenchMenu.PRODUCT_ROWS);
+        return Math.max(0, Mth.positiveCeilDiv(visible.size(), CarpenterBenchMenu.PRODUCT_COLUMNS)
+                - CarpenterBenchMenu.PRODUCT_ROWS);
     }
 
     @Override
@@ -88,7 +119,7 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
         }
         int index = ((int) ry / CarpenterBenchMenu.STEP + scroll) * CarpenterBenchMenu.PRODUCT_COLUMNS
                 + (int) rx / CarpenterBenchMenu.STEP;
-        return index < products.size() ? index : -1;
+        return index < visible.size() ? visible.get(index) : -1;
     }
 
     // ---------------------------------------------------------------- что нужно
@@ -139,6 +170,9 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
         super.render(g, mouseX, mouseY, partialTick);
         g.drawString(font, title, leftPos, topPos - font.lineHeight - TITLE_GAP, 0xFFFFFF, true);
         ItemStack hovered = hoveredGhost(mouseX, mouseY);
+        if (menu.getCarried().isEmpty() && tabs.tooltip(g, font, mouseX, mouseY, leftPos, topPos)) {
+            return;
+        }
         if (!hovered.isEmpty() && menu.getCarried().isEmpty()) {
             g.renderTooltip(font, hovered, mouseX, mouseY);
         } else {
@@ -196,10 +230,12 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
+        tabs.render(g, x, y);
         ConquestUi.window(g, x, y, x + imageWidth, y + imageHeight);
         ConquestUi.inset(g, x + 4, y + 4, x + 105, y + 112);
         ConquestUi.inset(g, x + 106, y + 4, x + 252, y + 126);
-        plaque(g, Component.translatable("gui.halgventmod.carpenter_bench.products"), 8, 6, 100);
+        plaque(g, Component.translatable(tabs.shown() ? tabs.current().langKey()
+                : "gui.halgventmod.carpenter_bench.products"), 8, 6, 100);
         plaque(g, Component.translatable("gui.halgventmod.carpenter_bench.on_bench"), 110, 6, 248);
         for (Slot slot : menu.slots) {
             if (slot.isActive()) {
@@ -212,13 +248,14 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
         int selected = menu.product();
         for (int row = 0; row < CarpenterBenchMenu.PRODUCT_ROWS; row++) {
             for (int col = 0; col < CarpenterBenchMenu.PRODUCT_COLUMNS; col++) {
-                int index = (row + scroll) * CarpenterBenchMenu.PRODUCT_COLUMNS + col;
+                int at = (row + scroll) * CarpenterBenchMenu.PRODUCT_COLUMNS + col;
                 int ix = x + CarpenterBenchMenu.PRODUCTS_X + col * CarpenterBenchMenu.STEP + 1;
                 int iy = y + CarpenterBenchMenu.PRODUCTS_Y + row * CarpenterBenchMenu.STEP + 1;
-                ConquestUi.slot(g, ix, iy, index >= products.size());
-                if (index >= products.size()) {
+                ConquestUi.slot(g, ix, iy, at >= visible.size());
+                if (at >= visible.size()) {
                     continue;
                 }
+                int index = visible.get(at);
                 if (index == selected) {
                     g.renderOutline(ix - 1, iy - 1, 18, 18, SELECTED);
                 } else if (index == hovered) {
@@ -280,6 +317,11 @@ public class CarpenterBenchScreen extends AbstractContainerScreen<CarpenterBench
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (tabs.click(mouseX, mouseY, button, leftPos, topPos)) {
+            scroll = 0;
+            refresh();
+            return true;
+        }
         int index = productAt(mouseX, mouseY);
         if (index >= 0 && button == 0) {
             click(index);

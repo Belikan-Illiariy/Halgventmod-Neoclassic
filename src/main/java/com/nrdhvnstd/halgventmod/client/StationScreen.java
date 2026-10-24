@@ -42,18 +42,58 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
         super.init();
         topPos = Math.max(topPos, font.lineHeight + TITLE_GAP);
         if (!book().isEmpty()) {
-            leftPos = Math.min(width - imageWidth, leftPos + (BOOK_WIDTH + BOOK_GAP) / 2);
+            leftPos = Math.min(width - imageWidth, leftPos + (BOOK_WIDTH + BOOK_GAP + bookTabs().width()) / 2);
         }
     }
 
     // ---------------------------------------------------------------- книга «что сделать» слева от окна
 
-    /** Строка книги: значок и ключ перевода (название; .how — что делать; .serve — что выйдет, необязательно). */
-    public record BookEntry(net.minecraft.world.item.ItemStack icon, String key) {}
+    /**
+     * Строка книги: значок и ключ перевода (название; .how — что делать; .serve — что выйдет, необязательно) и тема.
+     * Тем больше одной — у книги вкладки (RecipeTabs), название темы — gui.halgventmod.recipes.group.&lt;тема&gt;.
+     */
+    public record BookEntry(net.minecraft.world.item.ItemStack icon, String key, String group) {
+        public BookEntry(net.minecraft.world.item.ItemStack icon, String key) {
+            this(icon, key, "");
+        }
+    }
+
+    private RecipeTabs bookTabs;
+    private final java.util.List<String> bookGroups = new java.util.ArrayList<>();
+
+    /** Вкладки тем книги — по темам строк, в порядке появления. */
+    private RecipeTabs bookTabs() {
+        if (bookTabs == null) {
+            java.util.List<RecipeTabs.Tab> tabs = new java.util.ArrayList<>();
+            for (BookEntry entry : book()) {
+                if (!bookGroups.contains(entry.group())) {
+                    bookGroups.add(entry.group());
+                    tabs.add(new RecipeTabs.Tab(entry.icon(), "gui.halgventmod.recipes.group." + entry.group()));
+                }
+            }
+            bookTabs = new RecipeTabs(tabs);
+        }
+        return bookTabs;
+    }
+
+    /** Строки книги выбранной темы. */
+    private java.util.List<BookEntry> shownBook() {
+        RecipeTabs tabs = bookTabs();
+        if (!tabs.shown()) {
+            return book();
+        }
+        String group = bookGroups.get(tabs.selected());
+        return book().stream().filter(entry -> entry.group().equals(group)).toList();
+    }
 
     protected static final int BOOK_WIDTH = 132;
     protected static final int BOOK_GAP = 4;
     protected static final int BOOK_ROW = 16;
+
+    /** Высота строки книги: обычно BOOK_ROW, а когда строк много — теснее, чтобы книга не вылезла за окно. */
+    private int bookRow(int entries) {
+        return Math.max(11, Math.min(BOOK_ROW, (imageHeight - 24) / Math.max(1, entries)));
+    }
 
     /** Что делают на станции — строки книги слева; пусто — книги нет. */
     protected java.util.List<BookEntry> book() {
@@ -66,34 +106,51 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
     }
 
     private void renderBook(GuiGraphics g, int mouseX, int mouseY) {
-        java.util.List<BookEntry> entries = book();
+        java.util.List<BookEntry> entries = shownBook();
         int left = leftPos - BOOK_WIDTH - BOOK_GAP;
         int top = topPos;
+        bookTabs().render(g, left, top);
         ConquestUi.window(g, left, top, left + BOOK_WIDTH, top + imageHeight);
-        ConquestUi.inset(g, left + 4, top + 4, left + BOOK_WIDTH - 4, top + 18 + entries.size() * BOOK_ROW + 2);
+        int row = bookRow(entries.size());
+        ConquestUi.inset(g, left + 4, top + 4, left + BOOK_WIDTH - 4, top + 18 + entries.size() * row + 2);
         plaque(g, Component.translatable("gui.halgventmod.recipes.what"), -BOOK_WIDTH - BOOK_GAP + 8, 6, -BOOK_GAP - 8);
         for (int i = 0; i < entries.size(); i++) {
-            int ry = top + 18 + i * BOOK_ROW;
-            boolean hover = mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + BOOK_ROW;
+            int ry = top + 18 + i * row;
+            boolean hover = mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + row;
             if (hover) {
-                g.fill(left + 4, ry, left + BOOK_WIDTH - 4, ry + BOOK_ROW, 0x30FFFFFF);
+                g.fill(left + 4, ry, left + BOOK_WIDTH - 4, ry + row, 0x30FFFFFF);
             }
-            g.renderItem(entries.get(i).icon(), left + 6, ry);
-            fit(g, Component.translatable(entries.get(i).key()), left + 25, ry + 4, BOOK_WIDTH - 31, hover ? TEXT : TEXT_DIM);
+            // Тесная строка — значок помельче
+            g.pose().pushPose();
+            g.pose().translate(left + 6, ry, 0);
+            g.pose().scale(row / 16F, row / 16F, 1);
+            g.renderItem(entries.get(i).icon(), 0, 0);
+            g.pose().popPose();
+            // Длинное название — мелко в две строки
+            Component name = Component.translatable(entries.get(i).key());
+            if (font.width(name) <= BOOK_WIDTH - 31) {
+                g.drawString(font, name, left + 25, ry + (row - 8) / 2, hover ? TEXT : TEXT_DIM, false);
+            } else {
+                smallWrap(g, name, left + 25, ry + 1, BOOK_WIDTH - 31, ry + row + 1, hover ? TEXT : TEXT_DIM);
+            }
         }
         Component hint = bookHint();
         if (hint != null) {
-            smallWrap(g, hint, left + 8, top + 18 + entries.size() * BOOK_ROW + 6, BOOK_WIDTH - 14, top + imageHeight - 4, TEXT_DIM);
+            smallWrap(g, hint, left + 8, top + 18 + entries.size() * row + 6, BOOK_WIDTH - 14, top + imageHeight - 4, TEXT_DIM);
         }
     }
 
     /** Подсказка строки книги под мышью: название, что делать, что выйдет. true — показана. */
     private boolean bookTooltip(GuiGraphics g, int mouseX, int mouseY) {
-        java.util.List<BookEntry> entries = book();
+        java.util.List<BookEntry> entries = shownBook();
+        if (bookTabs().tooltip(g, font, mouseX, mouseY, leftPos - BOOK_WIDTH - BOOK_GAP, topPos)) {
+            return true;
+        }
+        int row = bookRow(entries.size());
         int left = leftPos - BOOK_WIDTH - BOOK_GAP;
         for (int i = 0; i < entries.size(); i++) {
-            int ry = topPos + 18 + i * BOOK_ROW;
-            if (mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + BOOK_ROW) {
+            int ry = topPos + 18 + i * row;
+            if (mouseX >= left + 4 && mouseX < left + BOOK_WIDTH - 4 && mouseY >= ry && mouseY < ry + row) {
                 String key = entries.get(i).key();
                 java.util.List<net.minecraft.util.FormattedCharSequence> lines = new java.util.ArrayList<>();
                 lines.add(Component.translatable(key).withStyle(net.minecraft.ChatFormatting.GOLD).getVisualOrderText());
@@ -109,8 +166,17 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
     }
 
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!book().isEmpty() && bookTabs().click(mouseX, mouseY, button, leftPos - BOOK_WIDTH - BOOK_GAP, topPos)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
-        boolean inBook = !book().isEmpty() && mouseX >= left - BOOK_WIDTH - BOOK_GAP && mouseX < left && mouseY >= top
+        boolean inBook = !book().isEmpty() && mouseX >= left - BOOK_WIDTH - BOOK_GAP - bookTabs().width()
+                && mouseX < left && mouseY >= top
                 && mouseY < top + imageHeight;
         return !inBook && super.hasClickedOutside(mouseX, mouseY, left, top, button);
     }
@@ -269,8 +335,21 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
         g.pose().popPose();
     }
 
-    /** Мелкий текст с переносом по ширине width (в пикселях окна); не ниже maxY. */
-    protected void smallWrap(GuiGraphics g, Component text, int x, int y, int width, int maxY, int color) {
+    /** Мелкий текст, а если и мелким не влезает в width — ещё мельче, ровно по ширине. */
+    protected void smallFit(GuiGraphics g, Component text, int x, int y, int width, int color) {
+        float scale = Math.min(SMALL, width / (float) Math.max(1, font.width(text)));
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(scale, scale, 1);
+        g.drawString(font, text, 0, 0, color, false);
+        g.pose().popPose();
+    }
+
+    /**
+     * Мелкий текст с переносом по ширине width (в пикселях окна); не ниже maxY.
+     * @return y под последней нарисованной строкой
+     */
+    protected int smallWrap(GuiGraphics g, Component text, int x, int y, int width, int maxY, int color) {
         int line = 0;
         for (net.minecraft.util.FormattedCharSequence part : font.split(text, Math.round(width / SMALL))) {
             int ly = y + Math.round(line * (font.lineHeight + 1) * SMALL);
@@ -284,14 +363,15 @@ public abstract class StationScreen<T extends StationMenu> extends AbstractConta
             g.pose().popPose();
             line++;
         }
+        return y + Math.round(line * (font.lineHeight + 1) * SMALL);
     }
 
-    /** Обычный текст, а если не влезает в width — мелкий. */
+    /** Обычный текст, а если не влезает в width — мелкий (и ещё мельче, если и мелким не влезает). */
     protected void fit(GuiGraphics g, Component text, int x, int y, int width, int color) {
         if (font.width(text) <= width) {
             g.drawString(font, text, x, y, color, false);
         } else {
-            small(g, text, x, y + 1, color);
+            smallFit(g, text, x, y + 1, width, color);
         }
     }
 

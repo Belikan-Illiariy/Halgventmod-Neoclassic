@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.menu;
 
 import javax.annotation.Nullable;
 
+import com.nrdhvnstd.halgventmod.alchemy.Alchemy;
 import com.nrdhvnstd.halgventmod.brewing.Brewing;
 import com.nrdhvnstd.halgventmod.brewing.FermentingBarrelBlockEntity;
 import com.nrdhvnstd.halgventmod.brewing.StillBlockEntity;
@@ -61,7 +62,8 @@ public class FermentingBarrelMenu extends StationMenu {
         addSlot(new FilteredSlot(slots, FermentingBarrelBlockEntity.SLOT_IN, IN_X, IN_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return open() && (FermentingBarrelBlockEntity.liquid(stack) || Pottery.drinkCapacity(stack) > 0);
+                return open() && (FermentingBarrelBlockEntity.liquid(stack) || Pottery.drinkCapacity(stack) > 0
+                        || Pottery.isWater(stack, 1));
             }
 
             @Override
@@ -72,7 +74,7 @@ public class FermentingBarrelMenu extends StationMenu {
         addSlot(new FilteredSlot(slots, FermentingBarrelBlockEntity.SLOT_FLAVOUR, FLAVOUR_X, FLAVOUR_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return open() && Brewing.flavour(stack) != null;
+                return open() && (Brewing.flavour(stack) != null || Alchemy.reagent(stack));
             }
 
             @Override
@@ -137,8 +139,9 @@ public class FermentingBarrelMenu extends StationMenu {
     protected boolean moveIntoStation(ItemStack stack) {
         boolean vesselOfMust = Pottery.drinkCapacity(stack) > 0 && stack.get(ModComponents.STORED.get()) != null
                 && FermentingBarrelBlockEntity.liquid(stack.get(ModComponents.STORED.get()).stack());
-        int slot = FermentingBarrelBlockEntity.liquid(stack) || vesselOfMust ? FermentingBarrelBlockEntity.SLOT_IN
-                : Brewing.flavour(stack) != null ? FermentingBarrelBlockEntity.SLOT_FLAVOUR
+        int slot = FermentingBarrelBlockEntity.liquid(stack) || vesselOfMust || stack.is(net.minecraft.world.item.Items.WATER_BUCKET)
+                ? FermentingBarrelBlockEntity.SLOT_IN
+                : Brewing.flavour(stack) != null || Alchemy.reagent(stack) ? FermentingBarrelBlockEntity.SLOT_FLAVOUR
                 : StillBlockEntity.vessel(stack) ? FermentingBarrelBlockEntity.SLOT_BOTTLES : -1;
         return slot >= 0 && open() && moveItemStackTo(stack, BARREL_START + slot, BARREL_START + slot + 1, false);
     }

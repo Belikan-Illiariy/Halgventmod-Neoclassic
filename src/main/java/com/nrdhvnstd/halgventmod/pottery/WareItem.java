@@ -52,15 +52,44 @@ import net.minecraft.world.phys.HitResult;
  * можно только опорожнить, Shift + ПКМ — разбить на черепки.
  */
 public class WareItem extends Item {
+    /**
+     * Из чего посуда: глина (обжигают в горне), металл (литая: пьютер, серебро — не трескается), стекло (выдувное:
+     * бьётся, как глина, разбитое — бой стекла; не отожжённое — хрупкое, как недожог).
+     */
+    public enum Material { CLAY, METAL, GLASS }
+
     private final VesselForm form;
+    private final Material material;
 
     public WareItem(Properties properties, VesselForm form) {
+        this(properties, form, Material.CLAY);
+    }
+
+    /** @param metal литая посуда (пьютер, серебро): служит так же, но не трескается и не обжигается. */
+    public WareItem(Properties properties, VesselForm form, boolean metal) {
+        this(properties, form, metal ? Material.METAL : Material.CLAY);
+    }
+
+    public WareItem(Properties properties, VesselForm form, Material material) {
         super(properties);
         this.form = form;
+        this.material = material;
     }
 
     public VesselForm form() {
         return form;
+    }
+
+    public Material material() {
+        return material;
+    }
+
+    public boolean metal() {
+        return material == Material.METAL;
+    }
+
+    public boolean glass() {
+        return material == Material.GLASS;
     }
 
     /** Корчага, кувшин и кружка держат питьё (склянками); кувшин и кружка — ещё и воду, но не вместе. */

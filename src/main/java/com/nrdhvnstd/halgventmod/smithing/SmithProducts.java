@@ -293,6 +293,12 @@ public final class SmithProducts {
                 .step(ForgeOp.UPSET).step(ForgeOp.PUNCH, 1).step(ForgeOp.QUENCH).step(ForgeOp.RIVET, 1);
         anvil(Tab.TOOLS, SmithingItems.DRAW_PLATE, 1).steel(1)
                 .step(ForgeOp.DRAW, ForgeShape.PLATE).step(ForgeOp.PUNCH, 5).step(ForgeOp.QUENCH);
+        // Стеклодувная трубка: железный пруток, свёрнутый и сваренный в трубку
+        anvil(Tab.TOOLS, com.nrdhvnstd.halgventmod.glass.GlassItems.BLOWPIPE, 1).iron(2)
+                .step(ForgeOp.DRAW, ForgeShape.STRIP).step(ForgeOp.BEND, ForgeShape.SOCKET).step(ForgeOp.WELD);
+        // Клеймо: стальной пруток, знак мастера выбивают пробойником (Hallmark.bind — при выдаче)
+        anvil(Tab.TOOLS, SmithingItems.SMITH_STAMP, 1).steel(1)
+                .step(ForgeOp.DRAW, ForgeShape.ROD).step(ForgeOp.PUNCH, 3).step(ForgeOp.QUENCH);
         anvil(Tab.TOOLS, ModItems.KNIFE, 1).iron(1).steel(1).wood(ModItems.TOOL_HANDLE, 1)
                 .step(ForgeOp.DRAW, ForgeShape.KNIFE).step(ForgeOp.WELD).step(ForgeOp.QUENCH).step(ForgeOp.TEMPER, 1)
                 .step(ForgeOp.GRIND).step(ForgeOp.RIVET, 2);
@@ -590,7 +596,7 @@ public final class SmithProducts {
         cast(Tab.CASTINGS, SmithingItems.BRONZE_CLASP, 4).melt(Metal.BRONZE, 1).plain().step(ForgeOp.POUR);
         cast(Tab.CASTINGS, SmithingItems.BRASS_BUCKLE, 4).melt(Metal.BRASS, 1).plain().step(ForgeOp.POUR);
         cast(Tab.CASTINGS, SmithingItems.BRASS_FITTINGS, 2).melt(Metal.BRASS, 1).plain().step(ForgeOp.POUR);
-        cast(Tab.CASTINGS, SmithingItems.PEWTER_TANKARD, 2).melt(Metal.PEWTER, 1).plain().step(ForgeOp.POUR);
+        cast(Tab.CASTINGS, SmithingItems.PEWTER_TANKARD, 1).melt(Metal.PEWTER, 1).plain().step(ForgeOp.POUR);
         cast(Tab.CASTINGS, SmithingItems.PEWTER_PLATE, 2).melt(Metal.PEWTER, 1).plain().step(ForgeOp.POUR);
         cast(Tab.CASTINGS, SmithingItems.PEWTER_SPOON, 6).melt(Metal.PEWTER, 1).plain().step(ForgeOp.POUR);
         cast(Tab.CASTINGS, SmithingItems.PILGRIM_BADGE, 12).melt(Metal.PEWTER, 1).plain().step(ForgeOp.POUR);

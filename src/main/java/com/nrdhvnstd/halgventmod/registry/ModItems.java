@@ -1608,11 +1608,13 @@ public final class ModItems {
                     "Firewood and a flint make a fire. A pot goes on top, or meat is grilled right on the coals. Shovel out the ash.")
             .kg(20)
             .register(properties -> new BlockItem(ModBlocks.HEARTH.get(), properties));
-    public static final DeferredItem<BlockItem> BAKING_OVEN = item("baking_oven", "Хлебная печь", "Baking oven", Gender.F)
+    public static final DeferredItem<BlockItem> BAKING_OVEN = item("baking_oven", "Печь", "Oven", Gender.F)
             .category(Category.TOOLS)
-            .lore("Дрова и огниво — растопить. E тестом или сырым пирогом — посадить, пустой рукой — вынуть.",
-                    "Firewood and a flint fire it up. E with dough or a raw pie to bake, an empty hand takes it out.")
-            .kg(60)
+            .lore("Большая печь 2×2×2: каменный под, кирпичный свод, дымоход. Дрова и огниво — растопить. E тестом или сырым "
+                            + "пирогом — посадить, пустой рукой — вынуть. Сушит и солод.",
+                    "A big 2×2×2 oven: stone hearth, brick vault, chimney. Firewood and a flint fire it up. E with dough or a raw "
+                            + "pie to bake, an empty hand takes it out. It also dries malt.")
+            .kg(800)
             .register(properties -> new BlockItem(ModBlocks.BAKING_OVEN.get(), properties));
     public static final DeferredItem<BlockItem> QUERN = item("quern", "Жёрнов", "Quern", Gender.M)
             .category(Category.TOOLS)
@@ -1749,8 +1751,8 @@ public final class ModItems {
             .stacksTo(16).grams(60).shelfLife(4).register();
     public static final DeferredItem<Item> GREEN_MALT = item("green_malt", "Пророщенное зерно", "Green malt", Gender.N)
             .traits(ModTraits.COMMON).category(Category.MATERIALS)
-            .lore("Высушите в хлебной печи: недолго — светлый солод, дольше — янтарный, ещё дольше — тёмный.",
-                    "Dry it in a baking oven: briefly for pale malt, longer for amber, longer still for dark.")
+            .lore("Высушите в печи: недолго — светлый солод, дольше — янтарный, ещё дольше — тёмный.",
+                    "Dry it in an oven: briefly for pale malt, longer for amber, longer still for dark.")
             .stacksTo(16).grams(50).shelfLife(4).register();
     public static final DeferredItem<Item> PALE_MALT = item("pale_malt", "Светлый солод", "Pale malt", Gender.M)
             .traits(ModTraits.COMMON).category(Category.MATERIALS)
@@ -1771,8 +1773,10 @@ public final class ModItems {
             .kg(40).register(properties -> new BlockItem(ModBlocks.WINE_PRESS.get(), properties));
     public static final DeferredItem<BlockItem> FERMENTING_BARREL = item("fermenting_barrel", "Бродильная бочка", "Fermenting barrel", Gender.F)
             .category(Category.TOOLS)
-            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Бродит запечатанной; передержите — уксус. ПКМ — окно бочки.",
-                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Ferments sealed; too long and it is vinegar. Right-click opens the barrel.")
+            .lore("Сусло — влить, мёд, травы, ягоды — добавки. Бродит несколько суток; готовое — склянкой. Бродит запечатанной; передержите — уксус. "
+                            + "Алхимия: крепкое, уксус или вода + реагент — бальзамы, териак, эссенции, краска, купорос (книга в окне). ПКМ — окно бочки.",
+                    "Pour in must; honey, herbs, berries are extras. Ferments for days; draw with a bottle. Ferments sealed; too long and it is vinegar. "
+                            + "Alchemy: spirit, vinegar or water + a reagent make balms, theriac, essences, paint, vitriol (see the book). Right-click opens the barrel.")
             .kg(15).register(properties -> new BlockItem(ModBlocks.FERMENTING_BARREL.get(), properties));
     public static final DeferredItem<BlockItem> STILL = item("still", "Перегонный куб", "Still", Gender.M)
             .category(Category.TOOLS)
@@ -1781,8 +1785,11 @@ public final class ModItems {
             .kg(30).register(properties -> new BlockItem(ModBlocks.STILL.get(), properties));
     public static final DeferredItem<BlockItem> AGING_CASK = item("aging_cask", "Бочка для выдержки", "Aging cask", Gender.F)
             .category(Category.TOOLS)
-            .lore("Вино, медовуха, сидр, крепкое и настойки становятся лучше с каждой неделей. В погребе — быстрее. ПКМ — окно.",
-                    "Wine, mead, cider, spirits and tinctures get better every week. Faster in a cellar. Right-click opens it.")
+            .lore("Влейте вино, медовуху, сидр, крепкое или настойку (до 16 склянок одного питья) — с каждой неделей оно лучше; "
+                            + "в погребе — быстрее. E склянкой или сосудом — влить, пустым — налить. ПКМ — окно. Сломаете — разольётся.",
+                    "Pour in wine, mead, cider, a spirit or a tincture (up to 16 bottles of one drink): it gets better every week, "
+                            + "faster in a cellar. E with a bottle or vessel pours in, with an empty one draws. Right-click opens it. "
+                            + "Break it and it spills.")
             .kg(25).register(properties -> new BlockItem(ModBlocks.AGING_CASK.get(), properties));
 
     // ----- Гончарное дело (pottery/*; станции — в ModBlocks) -----
@@ -1929,18 +1936,16 @@ public final class ModItems {
                     "E with greenware to set it drying. A day under a roof; faster under the sky but it cracks; rain soaks it.")
             .kg(6)
             .register(properties -> new BlockItem(ModBlocks.DRYING_SHELF.get(), properties));
-    public static final DeferredItem<BlockItem> SMALL_KILN = item("small_kiln", "Малый горн", "Small kiln", Gender.M)
+    public static final DeferredItem<BlockItem> DOME_KILN = item("dome_kiln", "Купольный горн", "Dome kiln", Gender.M)
             .category(Category.TOOLS)
-            .lore("Четыре сырца. ПКМ — окно горна: сырец, дрова, огниво; жар — тягой: первую минуту тяга 1, потом 3–4 (600–850°).",
-                    "Four pieces. Right-click opens the kiln: greenware, firewood, a flint; heat is set by draft: draft 1 for a minute, then 3–4 (600–850°).")
-            .kg(200)
-            .register(properties -> new BlockItem(ModBlocks.SMALL_KILN.get(), properties));
-    public static final DeferredItem<BlockItem> TALL_KILN = item("tall_kiln", "Большой горн", "Tall kiln", Gender.M)
-            .category(Category.TOOLS)
-            .lore("Десять сырцов. Обжиг — как в малом горне. Слабая тяга в жару — дым: залощённое выйдет чернолощёным.",
-                    "Ten pieces. Fires like the small kiln. Low draft while hot smokes burnished ware black.")
-            .kg(400)
-            .register(properties -> new BlockItem(ModBlocks.TALL_KILN.get(), properties));
+            .lore("Глиняный купол над топкой, 2×2×2 блока, топят через устье спереди. Десять сырцов. ПКМ — окно горна: сырец, "
+                            + "дрова, огниво; жар — тягой: первую минуту тяга 1, потом 3–4 (600–850°). Слабая тяга в жару — дым: залощённое "
+                            + "выйдет чернолощёным. Обжигает и руду, прокаливает свинец в пепел и кость в золу.",
+                    "A clay dome over a firebox, 2×2×2 blocks, stoked through the mouth in front. Ten pieces. Right-click opens the "
+                            + "kiln: greenware, firewood, a flint; heat is set by draft: draft 1 for a minute, then 3–4 (600–850°). Low draft "
+                            + "while hot smokes burnished ware black. It also roasts ore and calcines lead to ash and bone to bone ash.")
+            .kg(600)
+            .register(properties -> new BlockItem(ModBlocks.DOME_KILN.get(), properties));
 
     // ----- Ткачество (weaving/*): лён и шерсть → чесалка → кудель → веретено → пряжа → станок → ткань → шитейный стол -----
     public static final DeferredItem<ItemNameBlockItem> FLAX_SEEDS = item("flax_seeds", "Льняное семя", "Flaxseed", Gender.N)
@@ -2208,6 +2213,8 @@ public final class ModItems {
 
     public static void register(IEventBus modEventBus) {
         com.nrdhvnstd.halgventmod.smithing.SmithingItems.init(); // кузнечество — свои предметы в общем списке
+        com.nrdhvnstd.halgventmod.alchemy.AlchemyItems.init(); // алхимия — тоже
+        com.nrdhvnstd.halgventmod.glass.GlassItems.init(); // стекольное дело — тоже
         ITEMS.register(modEventBus);
         modEventBus.addListener(ModItems::setDefaultTraits);
     }

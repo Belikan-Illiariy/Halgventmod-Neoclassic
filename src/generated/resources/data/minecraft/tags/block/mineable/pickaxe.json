@@ -5,7 +5,8 @@
     "halgventmod:quern",
     "halgventmod:smoking_hook",
     "halgventmod:still",
-    "halgventmod:small_kiln",
-    "halgventmod:tall_kiln"
+    "halgventmod:retort",
+    "halgventmod:dome_kiln",
+    "halgventmod:glass_furnace"
   ]
 }

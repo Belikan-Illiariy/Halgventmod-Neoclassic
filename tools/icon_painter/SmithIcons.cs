@@ -258,6 +258,14 @@ public static class SmithIcons {
         s.Add(S.Torus(0, -4.8, 0, 3.2, 0.35), Gold);
         Save(s, "tools", "coin_die");
 
+        // клеймо: стальной пуансон, на торце — выпуклый знак мастера (крест в круге)
+        s = new Scene { Elev = 20, Yaw = 25, Roll = -35, Size = 29, Seed = 667 };
+        s.Add(S.Cap(0, -10, 0, 0, 7, 0, 1.6, 2.0), Steel);
+        s.Add(S.Cyl(0, 8, 0, 3.2, 1.4, 0.4), Steel);
+        s.Add(S.Torus(0, 9.5, 0, 2.2, 0.35), Iron);
+        s.Add(S.Box(0, 9.5, 0, 1.9, 0.35, 0.35), Iron).Add(S.Box(0, 9.5, 0, 0.35, 0.35, 1.9), Iron);
+        Save(s, "tools", "smith_stamp");
+
         // драгоценности
         s = new Scene { Elev = 50, Size = 22, Seed = 671 };
         s.Add(S.Torus(0, 0, 0, 5.5, 1.3), Silver); Save(s, "jewelry", "silver_ring");

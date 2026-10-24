@@ -47,15 +47,20 @@ public final class PotteryTooltip {
         if ((flags & Pottery.BLACK) == 0) {
             line(lines, flags, Pottery.BURNISHED, "burnished", ChatFormatting.GRAY);
         }
-        line(lines, flags, Pottery.UNDERFIRED, "underfired", ChatFormatting.GOLD);
+        line(lines, flags, Pottery.UNDERFIRED, Pottery.glass(stack) ? "unannealed" : "underfired", ChatFormatting.GOLD);
         line(lines, flags, Pottery.OVERFIRED, "overfired", ChatFormatting.GOLD);
+        String tint = stack.get(ModComponents.GLASS_TINT.get());
+        if (tint != null) {
+            lines.add(Component.translatable("tooltip.halgventmod.glass.tint", Component.translatable(
+                    com.nrdhvnstd.halgventmod.glass.Glassmaking.Tint.byId(tint).langKey())).withStyle(ChatFormatting.GRAY));
+        }
         if (!(stack.getItem() instanceof WareItem ware)) {
             servedIn(stack, lines);
             return;
         }
         if (Pottery.cracked(stack)) {
             lines.add(Component.translatable("tooltip.halgventmod.pottery.ware_cracked").withStyle(ChatFormatting.RED));
-        } else {
+        } else if (!ware.metal()) { // литая посуда не трескается
             // Шанс в тысячных — процентом, с десятыми, если они есть
             int permille = Pottery.wearChance(stack);
             String percent = permille % 10 == 0 ? String.valueOf(permille / 10)
@@ -98,8 +103,9 @@ public final class PotteryTooltip {
     }
 
     private static void servedIn(ItemStack stack, List<Component> lines) {
-        if (stack.has(ModComponents.SERVED_IN.get())) {
-            lines.add(Component.translatable("tooltip.halgventmod.pottery.served_in").withStyle(ChatFormatting.DARK_GRAY));
+        ItemStack bowl = stack.get(ModComponents.SERVED_IN.get());
+        if (bowl != null) {
+            lines.add(Component.translatable("tooltip.halgventmod.pottery.served_in", bowl.getHoverName()).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 }

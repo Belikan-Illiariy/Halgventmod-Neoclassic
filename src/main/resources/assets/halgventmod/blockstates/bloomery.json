@@ -1,12 +1,30 @@
 {
   "variants": {
-    "lit=false,facing=north": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood" },
-    "lit=false,facing=east": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 90 },
-    "lit=false,facing=south": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 180 },
-    "lit=false,facing=west": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood", "y": 270 },
-    "lit=true,facing=north": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals" },
-    "lit=true,facing=east": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 90 },
-    "lit=true,facing=south": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 180 },
-    "lit=true,facing=west": { "model": "halgventmod:block/smithing/cr_large_red_plastered_roman_oven_firewood_coals", "y": 270 }
+    "facing=north,lit=false,part=0": { "model": "halgventmod:block/smithing/bloomery_lower" },
+    "facing=north,lit=false,part=8": { "model": "halgventmod:block/smithing/bloomery_upper" },
+    "facing=north,lit=true,part=0": { "model": "halgventmod:block/smithing/bloomery_lower_lit" },
+    "facing=north,lit=true,part=8": { "model": "halgventmod:block/smithing/bloomery_upper_lit" },
+    "facing=east,lit=false,part=0": { "model": "halgventmod:block/smithing/bloomery_lower", "y": 90 },
+    "facing=east,lit=false,part=8": { "model": "halgventmod:block/smithing/bloomery_upper", "y": 90 },
+    "facing=east,lit=true,part=0": { "model": "halgventmod:block/smithing/bloomery_lower_lit", "y": 90 },
+    "facing=east,lit=true,part=8": { "model": "halgventmod:block/smithing/bloomery_upper_lit", "y": 90 },
+    "facing=south,lit=false,part=0": { "model": "halgventmod:block/smithing/bloomery_lower", "y": 180 },
+    "facing=south,lit=false,part=8": { "model": "halgventmod:block/smithing/bloomery_upper", "y": 180 },
+    "facing=south,lit=true,part=0": { "model": "halgventmod:block/smithing/bloomery_lower_lit", "y": 180 },
+    "facing=south,lit=true,part=8": { "model": "halgventmod:block/smithing/bloomery_upper_lit", "y": 180 },
+    "facing=west,lit=false,part=0": { "model": "halgventmod:block/smithing/bloomery_lower", "y": 270 },
+    "facing=west,lit=false,part=8": { "model": "halgventmod:block/smithing/bloomery_upper", "y": 270 },
+    "facing=west,lit=true,part=0": { "model": "halgventmod:block/smithing/bloomery_lower_lit", "y": 270 },
+    "facing=west,lit=true,part=8": { "model": "halgventmod:block/smithing/bloomery_upper_lit", "y": 270 },
+    "part=1": { "model": "halgventmod:block/empty" },
+    "part=2": { "model": "halgventmod:block/empty" },
+    "part=3": { "model": "halgventmod:block/empty" },
+    "part=4": { "model": "halgventmod:block/empty" },
+    "part=5": { "model": "halgventmod:block/empty" },
+    "part=6": { "model": "halgventmod:block/empty" },
+    "part=7": { "model": "halgventmod:block/empty" },
+    "part=9": { "model": "halgventmod:block/empty" },
+    "part=10": { "model": "halgventmod:block/empty" },
+    "part=11": { "model": "halgventmod:block/empty" }
   }
 }

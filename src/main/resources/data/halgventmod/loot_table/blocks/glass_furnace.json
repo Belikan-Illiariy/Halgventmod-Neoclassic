@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:glass_furnace" } ], "conditions": [ { "condition": "minecraft:survives_explosion" }, { "condition": "minecraft:block_state_property", "block": "halgventmod:glass_furnace", "properties": { "part": "0" } } ] } ],
+  "random_sequence": "halgventmod:blocks/glass_furnace"
+}

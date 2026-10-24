@@ -44,6 +44,8 @@ public final class InventoryOverride {
         event.register(ModMenus.STILL.get(), com.nrdhvnstd.halgventmod.client.brewing.StillScreen::new);
         event.register(ModMenus.AGING_CASK.get(), com.nrdhvnstd.halgventmod.client.brewing.AgingCaskScreen::new);
         event.register(ModMenus.FERMENTING_BARREL.get(), com.nrdhvnstd.halgventmod.client.brewing.FermentingBarrelScreen::new);
+        event.register(com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.RETORT_MENU.get(), com.nrdhvnstd.halgventmod.client.alchemy.RetortScreen::new);
+        event.register(com.nrdhvnstd.halgventmod.glass.GlassBlocks.GLASS_FURNACE_MENU.get(), com.nrdhvnstd.halgventmod.client.glass.GlassFurnaceScreen::new);
     }
 
     @SubscribeEvent

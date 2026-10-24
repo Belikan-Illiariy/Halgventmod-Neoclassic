@@ -228,6 +228,20 @@ public final class Intoxication {
         }
     }
 
+    /**
+     * Привести в чувство (нашатырь): хмель −amount. Был пьян — похмелье решится, как обычно, когда хмель выйдет
+     * (оставляем крупицу, чтобы до этого дошёл ежесекундный счёт).
+     */
+    public static void sober(Player player, float amount) {
+        Data data = data(player);
+        if (data.level() <= 0) {
+            return;
+        }
+        float level = Math.max(data.wasDrunk() ? 0.01F : 0, data.level() - amount);
+        player.setData(ModAttachments.INTOXICATION, new Data(level, data.wasDrunk(), data.hangoverUntil(), data.drunk(),
+                data.qualitySum()));
+    }
+
     // ---------------------------------------------------------------- чат
 
     /** Пьяная речь в местном чате: путаются и тянутся буквы. Трезвому — как есть. */

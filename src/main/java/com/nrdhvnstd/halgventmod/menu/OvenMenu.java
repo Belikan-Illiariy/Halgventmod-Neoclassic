@@ -18,7 +18,7 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Окно хлебной печи: жар и сколько гореть, {@link Fire#SLOTS} ячейки дров, «Разжечь» / «Затушить»; справа — три места
+ * Окно печи: жар и сколько гореть, {@link Fire#SLOTS} ячейки дров, «Разжечь» / «Затушить»; справа — три места
  * в печи: что печётся, насколько готово и сколько ждать. Вынутое из ячейки печи — уже выпечка (OvenBlockEntity).
  */
 public class OvenMenu extends StationMenu {

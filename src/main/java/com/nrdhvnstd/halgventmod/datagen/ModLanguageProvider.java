@@ -622,7 +622,244 @@ public class ModLanguageProvider extends LanguageProvider {
         weavingTranslations();
         carpentryTranslations();
         herbsTranslations();
+        alchemyTranslations();
+        glassTranslations();
+        recipeTabsTranslations();
         SmithingLang.add((key, ru, en) -> add(key, russian ? ru : en));
+    }
+
+    /** Алхимия (alchemy/*): реторта, реагенты бродильной бочки, порошки и эссенции трав, сулема, нашатырь. */
+    private void alchemyTranslations() {
+        // Порошок и эссенция каждой травы (Herb.mark: item.halgventmod.<предмет>.<трава>)
+        String[][] herbs = {
+                {"chamomile", "Ромашковый порошок", "Ромашковая эссенция", "Chamomile powder", "Chamomile essence"},
+                {"mint", "Мятный порошок", "Мятная эссенция", "Mint powder", "Mint essence"},
+                {"st_johns_wort", "Порошок зверобоя", "Эссенция зверобоя", "St John's wort powder", "St John's wort essence"},
+                {"yarrow", "Порошок тысячелистника", "Эссенция тысячелистника", "Yarrow powder", "Yarrow essence"},
+                {"wormwood", "Полынный порошок", "Полынная эссенция", "Wormwood powder", "Wormwood essence"},
+                {"nettle", "Крапивный порошок", "Крапивная эссенция", "Nettle powder", "Nettle essence"},
+                {"thyme", "Порошок чабреца", "Эссенция чабреца", "Thyme powder", "Thyme essence"},
+                {"lavender", "Лавандовый порошок", "Лавандовая эссенция", "Lavender powder", "Lavender essence"}};
+        for (String[] h : herbs) {
+            add("item.halgventmod.herb_powder." + h[0], russian ? h[1] : h[3]);
+            add("item.halgventmod.herb_essence." + h[0], russian ? h[2] : h[4]);
+        }
+        add("tooltip.halgventmod.herb.in_essence", russian ? "В эссенции: %s (в %s раза дольше)" : "In an essence: %s (%s times as long)");
+        add("tooltip.halgventmod.herb.essence_effect", russian ? "Действие: %s (в %s раза дольше)" : "Effect: %s (%s times as long)");
+        add("tooltip.halgventmod.alchemy.coat", russian ? "Намазан сулемой: отравит ещё %s ударов" : "Coated with sublimate: %s more poisoned blows");
+
+        // Реторта (RetortScreen)
+        gui("retort.title", "Реторта", "Retort");
+        gui("retort.in", "в колбу", "flask");
+        gui("retort.additive", "добавка", "additive");
+        gui("retort.out", "приёмник", "receiver");
+        gui("retort.residue", "остаток", "residue");
+        gui("retort.source_heat", "Под ретортой огонь: жар %s. Жар 3 — быстрее, но часть летучего уходит дымом.",
+                "Fire under the retort: heat %s. Heat 3 is faster, but some of the vapour goes up in smoke.");
+        gui("retort.source_none", "Под ретортой нет огня: поставьте её на очаг или над костром.",
+                "No fire under the retort: put it on a hearth or over a campfire.");
+        gui("retort.state_empty", "Положите в колбу то, что возгоняют (книга слева)", "Put in something to sublime (see the book)");
+        gui("retort.state_unknown", "Это не возгоняют", "That doesn't sublime");
+        gui("retort.state_needs_additive", "Нужна добавка: купорос к ртути", "Needs an additive: vitriol for quicksilver");
+        gui("retort.state_cold", "Холодно — нужен огонь", "Cold: it needs a fire");
+        gui("retort.state_full", "Приёмник или остаток полны — заберите", "The receiver or residue is full: take it");
+        gui("retort.state_working", "Возгоняется", "Subliming");
+        gui("retort.state_hot", "Возгоняется, но жар велик — часть уходит дымом", "Subliming, but too hot: some goes up in smoke");
+        gui("retort.book_hint", "Летучее оседает в приёмнике, остаток — в колбе.", "The vapour settles in the receiver, the rest stays in the flask.");
+        book("retort.book.pyrite", "Сера из колчедана", "Sulphur from pyrite",
+                "Медную руду (необожжённую) — в колбу, реторту — на огонь.", "Unroasted copper ore into the flask, the retort over a fire.",
+                "Сера в приёмнике, обожжённая руда в колбе.", "Sulphur in the receiver, roasted ore in the flask.");
+        book("retort.book.sulfur", "Серный цвет", "Flowers of sulphur",
+                "Серу — в колбу.", "Sulphur into the flask.",
+                "Серный цвет («дух серы») — для серного бальзама.", "Flowers of sulphur, for sulphur balm.");
+        book("retort.book.bone", "Нашатырь", "Sal ammoniac",
+                "Кость — в колбу.", "A bone into the flask.",
+                "Нашатырь в приёмнике, костяная зола в колбе.", "Sal ammoniac in the receiver, bone ash in the flask.");
+        book("retort.book.sublimate", "Сулема", "Corrosive sublimate",
+                "Ртуть — в колбу, купорос — в добавку.", "Quicksilver into the flask, vitriol as the additive.",
+                "Сулема — яд для клинка; склянка от ртути остаётся.", "Sublimate, a blade poison; the quicksilver vial is left.");
+
+        // Бродильная бочка: алхимия
+        gui("barrel.reagent", "реагент: %s (%s из %s)", "reagent: %s (%s of %s)");
+        gui("barrel.needs_reagent", "Нужен реагент — по одному на склянку (или к нему мёд)", "Needs a reagent, one per bottle (or honey with it)");
+        gui("barrel.steeping", "Выйдет %s к %s (ещё %s сут.)", "%s on %s (%s days left)");
+        gui("barrel.ready_solid", "Осело — выгребите пустой рукой (E)", "Settled: scoop it out with an empty hand (E)");
+        book("barrel.book.white_lead", "Белая краска", "White paint",
+                "Уксус + свинцовый пепел (по одному на склянку), запечатать на 2 сут.", "Vinegar + lead ash (one per bottle), seal for 2 days.",
+                "Свинцовые белила: 2 белой краски со склянки. Выгрести рукой.", "White lead: 2 white dye per bottle. Scoop out by hand.");
+        book("barrel.book.verdigris", "Ярь-медянка", "Verdigris",
+                "Уксус + медный слиток (по одному на склянку), 4 сут.", "Vinegar + a copper ingot (one per bottle), 4 days.",
+                "2 ярь-медянки со склянки. Выгрести рукой.", "2 verdigris per bottle. Scoop out by hand.");
+        book("barrel.book.vitriol", "Купорос", "Blue vitriol",
+                "Вода (ведро, кувшин, склянка) + обожжённая медная руда, 3 сут.", "Water (bucket, jug, bottle) + roasted copper ore, 3 days.",
+                "Купорос — для сулемы. Выгрести рукой.", "Vitriol, for sublimate. Scoop out by hand.");
+        book("barrel.book.wound_balm", "Ранозаживляющий бальзам", "Wound balm",
+                "Крепкое + ярь-медянка, 3 сут.", "Spirit + verdigris, 3 days.",
+                "+2 сердца и Регенерация I на 30 с.", "+2 hearts and Regeneration I for 30 s.");
+        book("barrel.book.sulfur_balm", "Серный бальзам", "Sulphur balm",
+                "Крепкое + серный цвет, 3 сут.", "Spirit + flowers of sulphur, 3 days.",
+                "Огнестойкость на 3 мин.", "Fire Resistance for 3 min.");
+        book("barrel.book.theriac", "Териак", "Theriac",
+                "Крепкое + мёд (добавка) + костяная зола, 5 сут.", "Spirit + honey (extra) + bone ash, 5 days.",
+                "Противоядие: снимает яд, иссушение, отравление.", "Antidote: clears poison, wither, food poisoning.");
+        book("barrel.book.essence", "Эссенция травы", "Herb essence",
+                "Крепкое + травяной порошок (из ступы), 3 сут.", "Spirit + herb powder (from a mortar), 3 days.",
+                "Как отвар этой травы, но втрое дольше.", "Like a tea of that herb, but three times as long.");
+        brewing("barrel_reagent_first", "Сначала влейте основу: крепкое, уксус или воду", "Pour in a base first: spirit, vinegar or water");
+        brewing("barrel_reagent_wrong", "С этой основой этот реагент ничего не даст", "This reagent does nothing with this base");
+        brewing("barrel_reagent_mixed", "Реагент уже другой — разные не кладут", "There is another reagent already: they don't mix");
+        brewing("barrel_reagent_enough", "Реагента хватает: по одному на склянку", "Enough reagent: one per bottle");
+        brewing("barrel_reagent_added", "Положено: %s (%s из %s)", "Added: %s (%s of %s)");
+        brewing("barrel_needs_reagent", "Налито %s, реагента %s: нужно по одному на склянку", "%s in, %s reagent: one per bottle is needed");
+        brewing("barrel_ready_solid", "Осело: %s склянок — распечатайте и выгребите пустой рукой", "Settled: %s bottles' worth, unseal and scoop out by hand");
+        brewing("barrel_solid", "Это не разливают — выгребите пустой рукой", "This isn't poured: scoop it out with an empty hand");
+        brewing("barrel_took_solid", "Выгребли: %s × %s", "Scooped out: %s × %s");
+
+        // Сообщения алхимии
+        add("message.halgventmod.alchemy.retort_other", russian ? "В реторте уже другое" : "Something else is in the retort");
+        add("message.halgventmod.alchemy.retort_full", russian ? "Больше не влезет" : "No more fits");
+        add("message.halgventmod.alchemy.retort_empty", russian ? "Реторта пуста: положите медную руду, серу, кость или ртуть"
+                : "The retort is empty: put in copper ore, sulphur, a bone or quicksilver");
+        add("message.halgventmod.alchemy.retort_unknown", russian ? "Это не возгоняют" : "That doesn't sublime");
+        add("message.halgventmod.alchemy.retort_needs_additive", russian ? "Нужна добавка: купорос" : "Needs an additive: vitriol");
+        add("message.halgventmod.alchemy.retort_take", russian ? "Приёмник полон — заберите пустой рукой" : "The receiver is full: take it with an empty hand");
+        add("message.halgventmod.alchemy.retort_cold", russian ? "Под ретортой нет огня" : "No fire under the retort");
+        add("message.halgventmod.alchemy.retort_working", russian ? "Возгоняется: %s%%" : "Subliming: %s%%");
+        add("message.halgventmod.alchemy.sniffed", russian ? "Резкий дух нашатыря — в голове прояснилось" : "The sharp smell of sal ammoniac clears your head");
+        add("message.halgventmod.alchemy.coated", russian ? "%s намазан сулемой: %s удара отравят" : "%s is coated with sublimate: %s blows will poison");
+        add("message.halgventmod.alchemy.coat_full", russian ? "Клинок уже намазан" : "The blade is already coated");
+        add("message.halgventmod.alchemy.coat_worn", russian ? "Яд на клинке стёрся" : "The poison on the blade has worn off");
+    }
+
+    /** Вкладки тем у списков рецептов (RecipeTabs): книга станций, шитейный стол, верстак, кухонный стол. */
+    private void recipeTabsTranslations() {
+        gui("recipes.group.brewing", "Брожение", "Brewing");
+        gui("recipes.group.sediment", "Осадки: краска, купорос, поташ", "Sediments: paint, vitriol, potash");
+        gui("recipes.group.remedy", "Снадобья", "Remedies");
+        gui("sewing_table.group.gear", "Снаряжение: ремни, сумки, колчан", "Gear: straps, bags, quiver");
+        gui("sewing_table.group.hands", "Варежки и перчатки", "Mittens and gloves");
+        gui("sewing_table.group.armor", "Поддоспешное и доспех", "Padding and armour");
+        gui("sewing_table.group.clothes", "Одежда: капюшоны, плащи, сюрко", "Clothes: hoods, cloaks, surcoats");
+        gui("carpenter_bench.group.weaving", "Для ткачества", "For weaving");
+        gui("carpenter_bench.group.household", "Утварь и снасть", "Household and gear");
+        gui("carpenter_bench.group.tools", "Инструмент плотника", "Carpenter's tools");
+        gui("carpenter_bench.group.parts", "Рукояти и древки для кузни", "Handles and shafts for the smith");
+        gui("kitchen.group.baking", "Тесто и выпечка", "Dough and baking");
+        gui("kitchen.group.dishes", "Блюда для печи", "Oven dishes");
+        gui("kitchen.group.other", "Прочее: морс, зерно, мёд", "Other: juice, grain, honey");
+    }
+
+    /** Стекольное дело (glass/*): печь, стеклодув, формы, цвета. */
+    private void glassTranslations() {
+        String[][] forms = {{"bottles", "Склянки", "Bottles"}, {"goblet", "Бокал", "Goblet"}, {"flask", "Бутыль", "Flask"},
+                {"window", "Оконное стекло", "Window glass"}};
+        for (String[] f : forms) {
+            add("glass.halgventmod.form." + f[0], russian ? f[1] : f[2]);
+        }
+        String[][] tints = {{"forest", "лесное, зеленоватое", "forest green"}, {"green", "зелёное", "green"},
+                {"crystal", "хрусталь", "crystal"}, {"milk", "молочное", "milk white"}, {"amber", "бурое", "amber brown"},
+                {"ruby", "рубиновое", "ruby"}};
+        for (String[] t : tints) {
+            add("glass.halgventmod.tint." + t[0], russian ? t[1] : t[2]);
+        }
+        add("tooltip.halgventmod.glass.tint", russian ? "Стекло: %s" : "Glass: %s");
+        add("tooltip.halgventmod.pottery.unannealed", russian ? "Не отожжено: хрупкое" : "Not annealed: brittle");
+
+        // Окно печи (GlassFurnaceScreen)
+        gui("glass.title", "Стекломасса", "Glass");
+        gui("glass.forms", "Выдувать", "Blow");
+        gui("glass.fire", "Огонь", "Fire");
+        gui("glass.blow_button", "Выдувать", "Blow");
+        gui("glass.take", "Забрать отожжённое", "Take annealed");
+        gui("glass.cost", "%s порц.", "%s port.");
+        gui("glass.no_pipe", "нет трубки при себе", "no blowpipe on you");
+        gui("glass.blow", "Выдувать: %s (%s)", "Blow: %s (%s)");
+        gui("glass.melting", "варится стекло", "melting glass");
+        gui("glass.workable", "можно выдувать", "workable");
+        gui("glass.cold", "варится от %s°", "melts from %s°");
+        gui("glass.batch_1", "песок %s · поташ %s", "sand %s · potash %s");
+        gui("glass.batch_2", "флюс %s · бой %s", "flux %s · cullet %s");
+        gui("glass.molten", "Стекломасса: %s из %s", "Glass: %s of %s");
+        gui("glass.tint", "цвет: %s", "colour: %s");
+        gui("glass.no_tint", "склянки не красят", "bottles aren't tinted");
+        gui("glass.lehr", "отжиг", "lehr");
+        book("glass.book.potash", "Поташ", "Potash",
+                "Зола из очага + вода в бродильной бочке, запечатать на 2 сут.", "Hearth ash + water in a fermenting barrel, sealed for 2 days.",
+                "Поташ — выгрести рукой.", "Potash: scoop it out by hand.");
+        book("glass.book.melt", "Стекломасса", "Glass",
+                "Песок ×2 + поташ (+ флюс — чище) в шихту, жар от 1100°.", "Sand ×2 + potash (+ flux for clearer glass) into the batch, heat from 1100°.",
+                "Порция за 30 с; бой стекла — порция вдвое быстрее.", "A portion in 30 s; cullet makes one twice as fast.");
+        book("glass.book.blow", "Выдувание", "Blowing",
+                "Выберите изделие кнопкой, E трубкой по печи от 1000°: набрать, выдуть, катать.",
+                "Choose the piece with the button, E with a blowpipe at the furnace from 1000°: gather, blow, marver.",
+                "Склянки ×4, бокал, бутыль, оконное стекло ×8. Плохо — лопнет в бой.",
+                "Bottles ×4, goblet, flask, window glass ×8. Badly done, it bursts into cullet.");
+        book("glass.book.anneal", "Отжиг", "Annealing",
+                "Выдутое само ложится в камеру отжига — минута. E пустой рукой — забрать отожжённое.",
+                "Blown work goes into the lehr by itself, a minute. E with an empty hand takes what is annealed.",
+                "Вынутое раньше хрупко: посуда бьётся чаще, склянки и окна — половина лопнет.",
+                "Taken out early it is brittle: ware breaks sooner, half the bottles and panes burst.");
+        book("glass.book.tint", "Цвет", "Colour",
+                "Добавка в ячейку цвета — по одной на изделие.", "A colourant in its slot, one per piece.",
+                "Ярь-медянка — зелёное, свинцовый пепел — хрусталь, костяная зола — молочное, болотная руда — бурое, "
+                        + "золотой песок — рубиновое.",
+                "Verdigris: green; lead ash: crystal; bone ash: milk white; bog ore: brown; gold dust: ruby.");
+        book("barrel.book.potash", "Поташ", "Potash",
+                "Вода + зола из очага (по одной на склянку), 2 сут.", "Water + hearth ash (one per bottle), 2 days.",
+                "Поташ — для стекла. Выгрести рукой.", "Potash, for glass. Scoop out by hand.");
+
+        // Стеклодув в окне кузни (SmithWorkScreen)
+        gui("smith_work.glass_title", "Стеклодув: %s", "Glassblowing: %s");
+        gui("smith_work.glass_in_furnace", "В окне печи… пробел — вынуть", "In the glory hole… space takes it out");
+        gui("smith_work.glass_furnace_hint", "%s Пробел — разогреть в окне печи.", "%s Space reheats it in the glory hole.");
+        gui("smith_work.glass_burnt", "Перегрели — стекло потекло!", "Overheated: the glass runs!");
+        gui("smith_work.glass_cold", "Остыло — трещина!", "Cooled: a crack!");
+        gui("smith_work.op.gather", "Набрать", "Gather");
+        gui("smith_work.op.blow", "Выдуть", "Blow");
+        gui("smith_work.op.spin", "Катать", "Marver");
+        gui("smith_work.op.spin_sheet", "Раскрутить лист", "Spin the sheet");
+        gui("smith_work.gather_status", "Капля: %s%%, стекло %s раз", "Gob: %s%%, dripped %s times");
+        gui("smith_work.gather_hint", "ЛКМ — набирать; всё время вращайте мышью влево-вправо; отпустите в зелёной зоне.",
+                "Hold left click to gather; keep turning with the mouse left and right; let go in the green zone.");
+        gui("smith_work.gather_drip", "Стекает — вращайте!", "It drips: keep turning!");
+        gui("smith_work.gather_more", "Мало — наберите ещё", "Too little: gather more");
+        gui("smith_work.blow_status", "Пузырь: %s%%, давление %s%%, лопнуло %s", "Bubble: %s%%, pressure %s%%, burst %s");
+        gui("smith_work.blow_hint", "ЛКМ — дуть, не выше красной черты; пузырь в зелёной зоне — ПКМ.",
+                "Hold left click to blow, below the red line; bubble in the green zone: right click.");
+        gui("smith_work.blow_burst", "Лопнуло!", "Burst!");
+        gui("smith_work.blow_more", "Мал ещё — дуйте", "Still small: blow");
+        gui("smith_work.spin_status", "Форма: %s%%, огрехи %s", "Shape: %s%%, flaws %s");
+        gui("smith_work.spin_hint", "Водите мышью влево-вправо: скорость — в зелёной зоне. Медленно — оседает, быстро — бьёт.",
+                "Move the mouse left and right: keep the speed in the green zone. Too slow it sags, too fast it wobbles.");
+        gui("smith_work.spin_sheet_hint", "Раскручивайте лист мышью влево-вправо: скорость — в зелёной зоне.",
+                "Spin the sheet with the mouse left and right: keep the speed in the green zone.");
+
+        // Сообщения
+        String[][] messages = {
+                {"already_lit", "Печь уже горит", "The furnace is already lit"},
+                {"no_fuel", "Нет дров", "No firewood"},
+                {"fuel_full", "Дров хватает", "Enough firewood"},
+                {"need_lighter", "Нужно огниво, огненный заряд или факел", "You need a flint and steel, a fire charge or a torch"},
+                {"colorant_other", "В ячейке цвета другая добавка", "Another colourant is in the slot"},
+                {"colorant_full", "Добавки хватает", "Enough colourant"},
+                {"too_cold", "Печь холодная: %s°, выдувать — от %s°", "The furnace is cold: %s°, blowing from %s°"},
+                {"not_enough", "Стекломассы %s, а на «%3$s» нужно %2$s", "%s glass, but «%3$s» needs %2$s"},
+                {"burst", "Изделие лопнуло — осталось в бой", "The piece burst: cullet is all that's left"},
+                {"annealing", "%s — в камере отжига", "%s is in the lehr"},
+                {"lehr_full", "Камера отжига полна — изделие не отожжено", "The lehr is full: the piece is not annealed"},
+                {"need_pipe", "Нужна стеклодувная трубка при себе", "You need a blowpipe on you"},
+        {"status", "Печь %s°. Шихта: песок %s, поташ %s, флюс %s, бой %s. Стекломасса %s из %s",
+                        "Furnace %s°. Batch: sand %s, potash %s, flux %s, cullet %s. Glass %s of %s"}};
+        for (String[] m : messages) {
+            add("message.halgventmod.glass." + m[0], russian ? m[1] : m[2]);
+        }
+    }
+
+    /** Строка книги станции: название, что делать (.how), что выйдет (.serve). */
+    private void book(String key, String ru, String en, String howRu, String howEn, String serveRu, String serveEn) {
+        gui(key, ru, en);
+        gui(key + ".how", howRu, howEn);
+        gui(key + ".serve", serveRu, serveEn);
     }
 
     /** Травы: кустики, виды, сушёные и отвары (herbs/*). */
@@ -887,13 +1124,22 @@ public class ModLanguageProvider extends LanguageProvider {
         brewingMessage("still_nothing_to_pour", "Крепкого ещё нет", "No spirit yet");
         brewingMessage("still_vessel_no", "Сюда не налить: сосуд треснул, запечатан, полон, с водой или в нём другое", "Can't pour here: the vessel is cracked, sealed, full, holds water or something else");
         gui("cask.title", "Выдержка", "Ageing");
+        gui("cask.into", "Влить", "Pour in");
+        gui("cask.in", "питьё", "drink");
+        gui("cask.empties", "пустое", "empties");
+        gui("cask.vessel", "склянки, сосуд", "bottles, vessel");
+        gui("cask.out", "налитое", "drawn");
+        gui("cask.pour_out", "Вылить", "Pour out");
+        gui("cask.measures", "налито %s из %s", "%s of %s in");
+        gui("cask.empty", "Пусто: влейте вино, медовуху, сидр, крепкое или настойку. Пиво не выдерживают. "
+                        + "Доливают то же питьё: качество смешивается.",
+                "Empty: pour in wine, mead, cider, a spirit or a tincture. Beer is not aged. Top up with the same drink: "
+                        + "the quality blends.");
         gui("cask.cellar", "Погреб: ступень качества за %s сут.", "Cellar: a quality step every %s days");
         gui("cask.house", "Под крышей: ступень за %s сут. (в погребе быстрее)", "Under a roof: a step every %s days (faster in a cellar)");
         gui("cask.exposed", "Под открытым небом: не выдерживается", "Under the open sky: nothing ages");
-        gui("cask.hint", "Вино, медовуха, сидр, крепкое, настойка; пиво не выдерживают. Даты — в подсказке к склянке.",
-                "Wine, mead, cider, spirit, tincture; beer is not aged. Hover a bottle for the dates.");
-        gui("cask.placed", "Заложена: %s", "Laid down: %s");
-        gui("cask.placed_today", "Заложена сегодня", "Laid down today");
+        gui("cask.placed", "Заложено: %s", "Laid down: %s");
+        gui("cask.placed_today", "Заложено сегодня", "Laid down today");
         gui("cask.steps", "Выдержка: +%s к качеству", "Aged: +%s quality");
         gui("cask.next", "Следующая ступень: %s", "Next step: %s");
         gui("cask.next_never", "Дальше не выдерживается", "Ages no further");
@@ -1106,13 +1352,19 @@ public class ModLanguageProvider extends LanguageProvider {
                 "Distilling. Poured: %s, spirit: %s (one from %s bottles)");
         brewing("still_hot", "Слишком жарко — крепкое выйдет хуже. Залито: %s, крепкого: %s (из %s — одна)",
                 "Too hot — the spirit will be worse. Poured: %s, spirit: %s (one from %s)");
-        brewing("cask_full", "В бочке нет места", "No room in the cask");
+        brewing("cask_full", "Бочка полна", "The cask is full");
         brewing("cask_no_beer", "Пиво не выдерживают — пейте свежим", "Beer isn't aged — drink it fresh");
-        brewing("cask_empty", "Положите вино, медовуху, сидр, крепкое или настойку", "Put in wine, mead, cider, a spirit or a tincture");
-        brewing("cask_cellar", "Погреб: %s склянок, качество растёт каждые %s сут.", "Cellar: %s bottles, quality rises every %s days");
-        brewing("cask_house", "%s склянок, качество растёт каждые %s сут. В погребе — быстрее",
-                "%s bottles, quality rises every %s days. Faster in a cellar");
-        brewing("cask_exposed", "Под открытым небом не выдерживается (%s склянок)", "Doesn't age under the open sky (%s bottles)");
+        brewing("cask_not_ageable", "Это не выдерживают: только вино, медовуху, сидр, крепкое, настойку",
+                "That isn't aged: only wine, mead, cider, spirits and tinctures");
+        brewing("cask_mixed", "В бочке другое питьё: разное не смешивают", "The cask holds another drink: they don't mix");
+        brewing("cask_empty", "Бочка пуста: влейте вино, медовуху, сидр, крепкое или настойку",
+                "The cask is empty: pour in wine, mead, cider, a spirit or a tincture");
+        brewing("cask_cellar", "Погреб: налито %s из %s, качество растёт каждые %s сут.", "Cellar: %s of %s in, quality rises every %s days");
+        brewing("cask_house", "Налито %s из %s, качество растёт каждые %s сут. В погребе — быстрее",
+                "%s of %s in, quality rises every %s days. Faster in a cellar");
+        brewing("cask_exposed", "Под открытым небом не выдерживается (налито %s из %s)", "Doesn't age under the open sky (%s of %s in)");
+        brewing("cask_poured_out", "Бочка вылита", "The cask is emptied");
+        brewing("cask_legacy", "Склянки из старой бочки — вам: теперь в бочке одно питьё", "Bottles from the old cask are yours: it now holds one drink");
         cooking("baked_malt", "Высушено: %s", "Dried: %s");
 
         drunk("tipsy", "Вы навеселе", "You are tipsy");
@@ -1198,7 +1450,7 @@ public class ModLanguageProvider extends LanguageProvider {
         potteryTip("pot_uses", "Варок: %s из %s", "Cooked in: %s of %s times");
         potteryTip("lamp_lit", "Горит, масла на %s мин.", "Burning, oil for %s min.");
         potteryTip("lamp_fuel", "Масла на %s мин.", "Oil for %s min.");
-        potteryTip("served_in", "В глиняной миске", "In a clay bowl");
+        potteryTip("served_in", "Подано: %s", "Served in: %s");
 
         // Посуда в инвентаре
         pottery("amphora_has_drink", "В корчаге питьё — воды не налить", "There is a drink in the amphora — no room for water");

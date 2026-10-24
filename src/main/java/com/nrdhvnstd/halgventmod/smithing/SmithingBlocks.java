@@ -41,9 +41,9 @@ public final class SmithingBlocks {
     // ----- Станции
     public static final DeferredBlock<CharcoalPileBlock> CHARCOAL_PILE = ModBlocks.BLOCKS.register("charcoal_pile",
             () -> new CharcoalPileBlock(earth().lightLevel(state -> state.getValue(SmithStationBlock.Lit.LIT) ? 4 : 0)));
-    public static final DeferredBlock<SmithStationBlock.Lit> BLOOMERY = ModBlocks.BLOCKS.register("bloomery",
-            () -> new SmithStationBlock.Lit(stone().lightLevel(state -> state.getValue(SmithStationBlock.Lit.LIT) ? 12 : 0),
-                    Block.box(1, 0, 1, 15, 16, 15), BloomeryBlockEntity::new, null));
+    public static final DeferredBlock<BloomeryBlock> BLOOMERY = ModBlocks.BLOCKS.register("bloomery",
+            () -> new BloomeryBlock(stone().lightLevel(state -> state.getValue(SmithStationBlock.Lit.LIT)
+                    && state.getValue(BloomeryBlock.PART) == 0 ? 13 : 0)));
     public static final DeferredBlock<SmithStationBlock.Lit> CUPEL = ModBlocks.BLOCKS.register("cupel",
             () -> new SmithStationBlock.Lit(stone().lightLevel(state -> state.getValue(SmithStationBlock.Lit.LIT) ? 10 : 0),
                     Block.box(2, 0, 2, 14, 9, 14), CupelBlockEntity::new, null));

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,full=false": { "model": "halgventmod:block/retort" },
+    "facing=north,full=true": { "model": "halgventmod:block/retort" },
+    "facing=east,full=false": { "model": "halgventmod:block/retort", "y": 90 },
+    "facing=east,full=true": { "model": "halgventmod:block/retort", "y": 90 },
+    "facing=south,full=false": { "model": "halgventmod:block/retort", "y": 180 },
+    "facing=south,full=true": { "model": "halgventmod:block/retort", "y": 180 },
+    "facing=west,full=false": { "model": "halgventmod:block/retort", "y": 270 },
+    "facing=west,full=true": { "model": "halgventmod:block/retort", "y": 270 }
+  }
+}
