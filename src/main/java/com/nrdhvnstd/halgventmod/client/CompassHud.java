@@ -155,7 +155,10 @@ public final class CompassHud {
                 marks.add(new Mark(waypoint.name, waypoint.x, waypoint.z, waypoint.cell()));
             }
         }
-        for (MapPoint point : PointShapes.here()) { // точки видны на компасе всегда
+        for (MapPoint point : PointShapes.here()) { // места видны на компасе всегда, точки появления — никогда
+            if (point.isSpawn()) {
+                continue;
+            }
             // Неоткрытая — значок до открытия или белый «?», без названия
             marks.add(PointShapes.discovered(point)
                     ? new Mark(point.name, point.x, point.z, PointShapes.cell(point))

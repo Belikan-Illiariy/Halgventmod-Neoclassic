@@ -1868,8 +1868,14 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.creation.error.spawn", russian ? "Такой точки появления больше нет: выберите другую." : "That starting point no longer exists: choose another.");
         add("gui.halgventmod.creation.error.name_length", russian ? "Имя должно быть от 2 до 32 знаков." : "The name must be 2 to 32 characters long.");
         add("gui.halgventmod.creation.error.name_characters", russian ? "В имени только кириллица, пробел и дефис между словами; римское число из I, V, X — после имени." : "Only Cyrillic letters, with spaces or hyphens between words; a Roman numeral of I, V, X may follow the name.");
-        add("gui.halgventmod.point.spawn", russian ? "Точка появления" : "Starting point");
-        add("gui.halgventmod.point.spawn.tooltip", russian ? "Новые персонажи смогут выбрать это место, чтобы начать игру здесь." : "New characters can pick this place to start the game here.");
+        add("gui.halgventmod.map.menu.add_spawn", russian ? "Поставить точку появления" : "Add Starting Point");
+        add("gui.halgventmod.map.menu.edit_spawn", russian ? "Изменить точку появления" : "Edit Starting Point");
+        add("gui.halgventmod.spawn.new", russian ? "Новая точка появления" : "New Starting Point");
+        add("gui.halgventmod.spawn.edit", russian ? "Точка появления" : "Starting Point");
+        add("gui.halgventmod.spawn.kind", russian ? "Точка появления" : "Starting point");
+        add("gui.halgventmod.spawn.visibility", russian ? "Видна только администрации; новые игроки выбирают её в окне создания персонажа" : "Only admins see it; new players pick it in character creation");
+        add("gui.halgventmod.spawn.here", russian ? "Где я стою" : "Where I Stand");
+        add("gui.halgventmod.spawn.description", russian ? "Описание в окне создания персонажа" : "Description in character creation");
         add("appearance.halgventmod.sex", russian ? "Пол" : "Sex");
         add("appearance.halgventmod.sex.male", russian ? "Мужской" : "Male");
         add("appearance.halgventmod.sex.female", russian ? "Женский" : "Female");

@@ -3,19 +3,24 @@ package com.nrdhvnstd.halgventmod.client.character;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.character.CharacterData;
 import com.nrdhvnstd.halgventmod.network.CharacterOpenPayload;
+import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
 /**
  * Создание персонажа на клиенте: окно открывает сервер (CharacterOpenPayload) и закрывает его ответ
  * (CharacterResultPayload). Пока персонаж не создан, окно возвращается, если его что-то закрыло
  * (экран смерти, чужое окно) — с уже выбранным.
+ * Кто создаёт персонажа, тот невидим для других целиком — с бронёй, вещами в руках и ником.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class CharacterClient {
@@ -51,6 +56,21 @@ public final class CharacterClient {
         if (pending != null && minecraft.screen == null && minecraft.player != null && minecraft.player.isAlive()) {
             minecraft.setScreen(pending);
         }
+    }
+
+    /** Сервер делает такого игрока невидимым (без тени, мобы не замечают), но броню и вещи в руках игра рисует и невидимому. */
+    @SubscribeEvent
+    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
+        Player player = event.getEntity();
+        if (player != Minecraft.getInstance().player && creating(player)) {
+            event.setCanceled(true);
+        }
+    }
+
+    /** Игрок ещё не создал персонажа (состояние приходит всем, кто его видит). */
+    public static boolean creating(Player player) {
+        CharacterData data = player.getExistingDataOrNull(ModAttachments.CHARACTER);
+        return data != null && !data.created();
     }
 
     @SubscribeEvent

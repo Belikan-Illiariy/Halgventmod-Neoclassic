@@ -41,10 +41,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * Окно создания персонажа (геймдок 3.1), шаг за шагом: Облик → Предыстория → Точка появления → Итог → Имя.
  * Кто уже играл до создания персонажа (или кому администратор открыл правку) — только Облик и Имя.
- * Слева — панель шага, справа — фигурка в выбранном облике (и в комплекте предыстории после её выбора).
+ * Каждый шаг — на весь экран, мир за окном не виден: слева панель шага, справа фигурка в выбранном облике
+ * (и в комплекте предыстории после её выбора); ширина фигурки — от высоты экрана, панели — всё остальное.
+ * На высоком экране строки облика и списков просторнее.
  * Закрыть окно нельзя: оно уходит, когда сервер принял персонажа (CharacterClient).
  * Оформление — как у окна «Персонаж»: тёмные панели с каймой, названия на свитках.
- * Не влезает в экран — масштаб интерфейса понижается на время окна, как у правки точки карты.
+ * Экран меньше наименьшего окна — масштаб интерфейса понижается на время окна, как у правки точки карты.
  */
 public class CharacterCreationScreen extends Screen {
     private enum Step {
@@ -63,15 +65,14 @@ public class CharacterCreationScreen extends Screen {
 
     // ===== Разметка =====
     private static final int PANEL_MIN_WIDTH = 230;
-    private static final int PANEL_MAX_WIDTH = 280;
-    private static final int PANEL_MAX_HEIGHT = 240;
     private static final int MIN_PANEL_HEIGHT = 170;
-    private static final int FIGURE_WIDTH = 110;
+    private static final int FIGURE_MIN_WIDTH = 110;
+    private static final float FIGURE_RATIO = 0.5F; // ширина фигурки от высоты панелей
     private static final int GAP = 6;
     private static final int TOP = 30;          // верх панелей: над ними строка шагов и свиток
     private static final int BOTTOM = 30;       // под панелями — кнопки
-    private static final int MARGIN = 8;        // от окна до края экрана
-    private static final int MIN_WIDTH = 2 * MARGIN + PANEL_MIN_WIDTH + GAP + FIGURE_WIDTH;
+    private static final int MARGIN = 8;        // от панелей до края экрана
+    private static final int MIN_WIDTH = 2 * MARGIN + PANEL_MIN_WIDTH + GAP + FIGURE_MIN_WIDTH;
     private static final int MIN_HEIGHT = TOP + MIN_PANEL_HEIGHT + BOTTOM;
     private static final int INNER = 8;         // внутри панели, за узорной каймой
     private static final int TITLE_H = 14;      // от верха панели до первой строки
@@ -81,7 +82,10 @@ public class CharacterCreationScreen extends Screen {
     private static final int LINE = 10;
     private static final int ARROW = 14;        // кнопки «<» и «>» у части облика
     private static final int PART_ROW = 24;     // подпись части + переключатель
+    private static final int PART_ROW_MAX = 36; // на высоком экране
     private static final int LIST_ROW = 15;     // кнопка списка 14 + просвет
+    private static final int LIST_ROW_TALL = 21; // кнопка 20, если хватает высоты
+    private static final int LIST_RESERVE = 110; // под списком: описание и комплект
     private static final int COLUMN_GAP = 8;
     private static final int CELL = 18;
     private static final int KIT_GAP = 6;       // между одеждой и вещами в строке комплекта
@@ -89,7 +93,8 @@ public class CharacterCreationScreen extends Screen {
     private static final float FIGURE_SCALE = 0.3F; // от высоты рамки; в окне «Персонаж» 60 при ~200
     private static final float FIGURE_Y_OFFSET = 0.0625F;
 
-    // ===== Цвета текста (ARGB), как в окне «Персонаж» =====
+    // ===== Цвета (ARGB), текст — как в окне «Персонаж» =====
+    private static final int COLOR_BACKDROP = 0xFF16110C;
     private static final int COLOR_TITLE = 0xFF3B2A1A;
     private static final int COLOR_TEXT = 0xFFE8DCC0;
     private static final int COLOR_DIM = 0xFFB8A888;
@@ -122,6 +127,8 @@ public class CharacterCreationScreen extends Screen {
     private int panelWidth;
     private int panelHeight;
     private int figureX;
+    private int figureWidth;
+    private int partRow;
     private final Map<Button, Backstory> backstoryButtons = new HashMap<>();
     private final Map<Button, CharacterOpenPayload.Spawn> spawnButtons = new HashMap<>();
     @Nullable
@@ -152,12 +159,16 @@ public class CharacterCreationScreen extends Screen {
     protected void init() {
         fitScale();
         minecraft.getToasts().clear(); // подсказка обучения («Move with WASD») закрывала строку шагов
-        panelWidth = Mth.clamp(width - 2 * MARGIN - GAP - FIGURE_WIDTH, PANEL_MIN_WIDTH, PANEL_MAX_WIDTH);
-        panelHeight = Mth.clamp(height - TOP - BOTTOM, MIN_PANEL_HEIGHT, PANEL_MAX_HEIGHT);
-        int total = panelWidth + GAP + FIGURE_WIDTH;
-        panelX = (width - total) / 2;
+        panelX = MARGIN;
         panelY = TOP;
+        panelHeight = Math.max(MIN_PANEL_HEIGHT, height - TOP - BOTTOM);
+        int inner = width - 2 * MARGIN - GAP;
+        figureWidth = Mth.clamp(Math.round(panelHeight * FIGURE_RATIO), FIGURE_MIN_WIDTH,
+                Math.max(FIGURE_MIN_WIDTH, inner - PANEL_MIN_WIDTH));
+        panelWidth = inner - figureWidth;
         figureX = panelX + panelWidth + GAP;
+        int partRows = (Appearance.Part.values().length + 1) / 2;
+        partRow = Mth.clamp((contentHeight() - LINE) / partRows, PART_ROW, PART_ROW_MAX);
 
         backstoryButtons.clear();
         spawnButtons.clear();
@@ -174,7 +185,7 @@ public class CharacterCreationScreen extends Screen {
 
         // Внизу: «Назад», посередине «Случайный облик» (на шаге облика), «Далее» или «Войти в мир»
         int buttonsY = panelY + panelHeight + 6;
-        int center = panelX + total / 2;
+        int center = width / 2;
         Button back = addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.creation.back"),
                         button -> go(-1))
                 .bounds(center - BUTTON_WIDTH / 2 - 4 - BUTTON_WIDTH, buttonsY, BUTTON_WIDTH, 20).build());
@@ -203,6 +214,15 @@ public class CharacterCreationScreen extends Screen {
         return panelWidth - 2 * INNER;
     }
 
+    private int contentHeight() {
+        return panelHeight - TITLE_H - INNER;
+    }
+
+    /** Высота строки списка в два столбца: кнопки повыше, если под списком ещё хватит места. */
+    private int listRow(int count) {
+        return (count + 1) / 2 * LIST_ROW_TALL + LIST_RESERVE <= contentHeight() ? LIST_ROW_TALL : LIST_ROW;
+    }
+
     private int columnWidth() {
         return (contentWidth() - COLUMN_GAP) / 2;
     }
@@ -215,7 +235,7 @@ public class CharacterCreationScreen extends Screen {
         for (int i = 0; i < parts.length; i++) {
             Appearance.Part part = parts[i];
             int cx = x + (i < rows ? 0 : columnWidth + COLUMN_GAP);
-            int cy = y + (i % rows) * PART_ROW + LINE;
+            int cy = y + (i % rows) * partRow + LINE;
             addRenderableWidget(Button.builder(Component.literal("<"), button -> cycle(part, -1))
                     .bounds(cx, cy, ARROW, ARROW).build());
             addRenderableWidget(Button.builder(Component.literal(">"), button -> cycle(part, 1))
@@ -225,32 +245,34 @@ public class CharacterCreationScreen extends Screen {
 
     private void initBackstories(int x, int y) {
         int rows = (backstories.size() + 1) / 2;
+        int row = listRow(backstories.size());
         int columnWidth = columnWidth();
         for (int i = 0; i < backstories.size(); i++) {
             Backstory each = backstories.get(i);
             int cx = x + (i < rows ? 0 : columnWidth + COLUMN_GAP);
-            int cy = y + (i % rows) * LIST_ROW;
+            int cy = y + (i % rows) * row;
             Button button = addRenderableWidget(Button.builder(each.title(), pressed -> {
                         backstory = each;
                         updateNext();
                     })
-                    .bounds(cx, cy, columnWidth, LIST_ROW - 1).build());
+                    .bounds(cx, cy, columnWidth, row - 1).build());
             backstoryButtons.put(button, each);
         }
     }
 
     private void initSpawns(int x, int y) {
         int rows = (spawns.size() + 1) / 2;
+        int row = listRow(spawns.size());
         int columnWidth = columnWidth();
         for (int i = 0; i < spawns.size(); i++) {
             CharacterOpenPayload.Spawn each = spawns.get(i);
             int cx = x + (i < rows ? 0 : columnWidth + COLUMN_GAP);
-            int cy = y + (i % rows) * LIST_ROW;
+            int cy = y + (i % rows) * row;
             Button button = addRenderableWidget(Button.builder(Component.literal(each.name()), pressed -> {
                         spawn = each;
                         updateNext();
                     })
-                    .bounds(cx, cy, columnWidth, LIST_ROW - 1).build());
+                    .bounds(cx, cy, columnWidth, row - 1).build());
             spawnButtons.put(button, each);
         }
     }
@@ -346,7 +368,7 @@ public class CharacterCreationScreen extends Screen {
 
     // ===== Масштаб =====
 
-    /** Наибольший масштаб интерфейса не крупнее выбранного, при котором окно целиком на экране (как PointEditScreen). */
+    /** Наибольший масштаб интерфейса не крупнее выбранного, при котором влезает наименьшее окно (как PointEditScreen). */
     private void fitScale() {
         Window window = minecraft.getWindow();
         double scale = window.getGuiScale();
@@ -373,28 +395,35 @@ public class CharacterCreationScreen extends Screen {
 
     // ===== Рисование =====
 
+    // Весь экран закрыт: мир за окном не виден
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.fill(0, 0, width, height, COLOR_BACKDROP);
         panel(graphics, panelX, panelY, panelWidth, panelHeight,
                 Component.translatable("gui.halgventmod.creation.step." + current().key()));
-        graphics.blitSprite(FIGURE_FRAME, figureX, panelY, FIGURE_WIDTH, panelHeight);
+        graphics.blitSprite(FIGURE_FRAME, figureX, panelY, figureWidth, panelHeight);
         LocalPlayer player = minecraft.player;
         if (player != null) {
             renderFigure(graphics, player, mouseX, mouseY);
         }
     }
 
-    /** Фигурка игрока в выбираемом облике и одежде: на время рисования подменяем облик и броню. */
+    /**
+     * Фигурка игрока в выбираемом облике и одежде: на время рисования подменяем облик и броню.
+     * Пока создаётся персонаж, сервер делает игрока невидимым — на фигурке невидимость тоже снимается.
+     */
     private void renderFigure(GuiGraphics graphics, LocalPlayer player, int mouseX, int mouseY) {
         ArmorInventory own = player.getExistingDataOrNull(ModAttachments.ARMOR);
+        boolean invisible = player.isInvisible();
         AppearanceSkins.setPreview(appearance);
         player.setData(ModAttachments.ARMOR, previewArmor());
+        player.setInvisible(false);
         try {
             InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, figureX + 1, panelY + 1,
-                    figureX + FIGURE_WIDTH - 1, panelY + panelHeight - 1, Math.round(panelHeight * FIGURE_SCALE),
+                    figureX + figureWidth - 1, panelY + panelHeight - 1, Math.round(panelHeight * FIGURE_SCALE),
                     FIGURE_Y_OFFSET, mouseX, mouseY, player);
         } finally {
+            player.setInvisible(invisible);
             if (own != null) {
                 player.setData(ModAttachments.ARMOR, own);
             } else {
@@ -482,7 +511,7 @@ public class CharacterCreationScreen extends Screen {
         for (int i = 0; i < parts.length; i++) {
             Appearance.Part part = parts[i];
             int cx = x + (i < rows ? 0 : columnWidth + COLUMN_GAP);
-            int cy = y + (i % rows) * PART_ROW;
+            int cy = y + (i % rows) * partRow;
             graphics.drawString(font, Component.translatable(part.langKey()), cx, cy, COLOR_DIM, false);
             String value = fit(Component.translatable(part.optionKey(Appearance.get(appearance, part))).getString(),
                     columnWidth - 2 * ARROW - 4);
@@ -496,7 +525,7 @@ public class CharacterCreationScreen extends Screen {
             text(graphics, Component.translatable("gui.halgventmod.creation.backstory.none"), x, y, COLOR_DIM);
             return ItemStack.EMPTY;
         }
-        int below = y + (backstories.size() + 1) / 2 * LIST_ROW + 4;
+        int below = y + (backstories.size() + 1) / 2 * listRow(backstories.size()) + 4;
         if (backstory == null) {
             text(graphics, Component.translatable("gui.halgventmod.creation.backstory.hint"), x, below, COLOR_DIM);
             return ItemStack.EMPTY;
@@ -511,7 +540,7 @@ public class CharacterCreationScreen extends Screen {
             text(graphics, Component.translatable("gui.halgventmod.creation.spawn.none"), x, y, COLOR_DIM);
             return;
         }
-        int below = y + (spawns.size() + 1) / 2 * LIST_ROW + 4;
+        int below = y + (spawns.size() + 1) / 2 * listRow(spawns.size()) + 4;
         if (spawn == null) {
             text(graphics, Component.translatable("gui.halgventmod.creation.spawn.hint"), x, below, COLOR_DIM);
         } else if (!spawn.description().isEmpty()) {

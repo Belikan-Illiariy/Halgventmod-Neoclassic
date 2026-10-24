@@ -2,8 +2,10 @@ package com.nrdhvnstd.halgventmod.point;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -32,9 +34,12 @@ import org.slf4j.Logger;
 
 /**
  * Точки карты (MapPoint) мира: хранятся в данных мира, при входе и после каждой правки рассылаются всем.
+ * Точки появления получает только администрация (seesSpawns): остальным они не нужны — новый игрок выбирает их
+ * в окне создания персонажа, куда сервер присылает их сам (CharacterCreation). Стал игрок администратором
+ * или перестал — точки пересылаются ему при ближайшей проверке.
  * Ставят, правят и удаляют только администраторы в творческом режиме (PointEditPayload, canEdit); они же видят границы.
- * Раз в CHECK_INTERVAL тиков у каждого игрока проверяется, не зашёл ли он в неоткрытую точку своего измерения;
- * зашёл — точка открыта для него навсегда, на экране «Открытая локация» и её название (Announcements).
+ * Раз в CHECK_INTERVAL тиков у каждого игрока проверяется, не зашёл ли он в неоткрытое место своего измерения;
+ * зашёл — место открыто для него навсегда, на экране «Открытая локация» и его название (Announcements).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public class MapPoints extends SavedData {
@@ -43,7 +48,7 @@ public class MapPoints extends SavedData {
     private static final Factory<MapPoints> FACTORY = new Factory<>(MapPoints::new, MapPoints::load, null);
     private static final int CHECK_INTERVAL = 10;
 
-    /** Точки на клиенте — все измерения; приходят с сервера (PointsSyncPayload). */
+    /** Точки на клиенте — все измерения; приходят с сервера (PointsSyncPayload). Точки появления — только у администрации. */
     public static List<MapPoint> clientPoints = List.of();
     /** Открытые этим игроком точки на клиенте (PointsDiscoveredPayload). */
     public static Set<Integer> clientDiscovered = Set.of();
@@ -55,8 +60,32 @@ public class MapPoints extends SavedData {
         return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
     }
 
+    // Кому последний раз ушли точки вместе с точками появления
+    private static final Set<UUID> SPAWN_VIEWERS = new HashSet<>();
+
     public List<MapPoint> all() {
         return Collections.unmodifiableList(points);
+    }
+
+    // ===== Рассылка =====
+
+    /** Точки появления на карте видит только администрация. */
+    public static boolean seesSpawns(ServerPlayer player) {
+        return Permissions.isAdmin(player);
+    }
+
+    /** Послать игроку точки, которые он может видеть. */
+    private static void sync(ServerPlayer player) {
+        boolean spawns = seesSpawns(player);
+        if (spawns) {
+            SPAWN_VIEWERS.add(player.getUUID());
+        } else {
+            SPAWN_VIEWERS.remove(player.getUUID());
+        }
+        List<MapPoint> visible = get(player.server).points.stream()
+                .filter(point -> spawns || !point.isSpawn())
+                .toList();
+        PacketDistributor.sendToPlayer(player, new PointsSyncPayload(visible));
     }
 
     // ===== Правка администратором =====
@@ -85,15 +114,16 @@ public class MapPoints extends SavedData {
                 }
                 point.id = data.nextId++;
                 data.points.add(point);
-                LOGGER.info("{} поставил точку «{}» #{} в {} {} {}", player.getGameProfile().getName(), point.name, point.id,
-                        point.x, point.y, point.z);
+                LOGGER.info("{} поставил {} «{}» #{} в {} {} {}", player.getGameProfile().getName(),
+                        point.isSpawn() ? "точку появления" : "точку", point.name, point.id, point.x, point.y, point.z);
             }
             case UPDATE -> {
                 int index = data.indexOf(point.id);
                 if (index < 0) {
                     return;
                 }
-                point.dimension = data.points.get(index).dimension; // измерение не меняется
+                point.dimension = data.points.get(index).dimension; // измерение и тип не меняются
+                point.kind = data.points.get(index).kind;
                 if (!point.valid()) {
                     return;
                 }
@@ -109,7 +139,9 @@ public class MapPoints extends SavedData {
             }
         }
         data.setDirty();
-        PacketDistributor.sendToAllPlayers(new PointsSyncPayload(data.points));
+        for (ServerPlayer each : player.server.getPlayerList().getPlayers()) {
+            sync(each);
+        }
     }
 
     private int indexOf(int id) {
@@ -125,15 +157,21 @@ public class MapPoints extends SavedData {
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player.isSpectator()
-                || player.tickCount % CHECK_INTERVAL != 0) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player.tickCount % CHECK_INTERVAL != 0) {
+            return;
+        }
+        if (seesSpawns(player) != SPAWN_VIEWERS.contains(player.getUUID())) {
+            sync(player); // выдали или сняли права администратора
+        }
+        if (player.isSpectator()) {
             return;
         }
         String dimension = player.level().dimension().location().toString();
         PointDiscovery discovery = player.getData(ModAttachments.POINT_DISCOVERY);
         int discovered = 0;
         for (MapPoint point : get(player.server).points) {
-            if (!discovery.has(point.id) && point.dimension.equals(dimension) && point.contains(player.getX(), player.getZ())) {
+            if (!point.isSpawn() && !discovery.has(point.id) && point.dimension.equals(dimension)
+                    && point.contains(player.getX(), player.getZ())) {
                 discovery.add(point.id);
                 discovered = point.id;
             }
@@ -147,10 +185,15 @@ public class MapPoints extends SavedData {
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PacketDistributor.sendToPlayer(player, new PointsSyncPayload(get(player.server).points));
+            sync(player);
             PacketDistributor.sendToPlayer(player,
                     new PointsDiscoveredPayload(Set.copyOf(player.getData(ModAttachments.POINT_DISCOVERY).ids()), 0));
         }
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        SPAWN_VIEWERS.remove(event.getEntity().getUUID());
     }
 
     // ===== Сохранение =====
