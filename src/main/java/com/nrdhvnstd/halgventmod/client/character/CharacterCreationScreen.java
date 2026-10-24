@@ -151,6 +151,7 @@ public class CharacterCreationScreen extends Screen {
     @Override
     protected void init() {
         fitScale();
+        minecraft.getToasts().clear(); // подсказка обучения («Move with WASD») закрывала строку шагов
         panelWidth = Mth.clamp(width - 2 * MARGIN - GAP - FIGURE_WIDTH, PANEL_MIN_WIDTH, PANEL_MAX_WIDTH);
         panelHeight = Mth.clamp(height - TOP - BOTTOM, MIN_PANEL_HEIGHT, PANEL_MAX_HEIGHT);
         int total = panelWidth + GAP + FIGURE_WIDTH;
