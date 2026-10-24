@@ -22,6 +22,7 @@ import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -30,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -37,6 +39,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -50,9 +53,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Окно — на клиенте (client/character/CharacterCreationScreen), здесь — сервер: кому открыть окно,
  * «прихожая» на время выбора и проверка выбранного.
  *
- * Прихожая: пока окно открыто, игрок стоит на месте, его нельзя ранить, сам он ничего не трогает.
+ * Прихожая: пока окно открыто, игрок стоит на месте, невидим (его не рисуют другим — CharacterClient),
+ * неуязвим и мобы его не замечают; сам он ничего не трогает.
  * Кто играл до появления создания персонажа, выбирает только облик и имя: снаряжение и место у него свои.
- * Точки появления — точки карты с галочкой «Точка появления»; пока их нет, персонаж начинает там, где стоит.
+ * Точки появления — отдельный тип точек карты (MapPoint.Kind.SPAWN): на карте их видит только администрация,
+ * а новый игрок — списком в окне. Пока их нет, персонаж начинает там, где стоит.
  *
  * /character reset <игроки> — создать персонажа заново, весь путь с комплектом (администрация)
  * /character edit <игроки>  — заново выбрать облик и имя (администрация)
@@ -99,10 +104,10 @@ public final class CharacterCreation {
         CharacterData data = player.getData(ModAttachments.CHARACTER);
         boolean full = data.state() == CharacterData.State.NEW;
         ANCHORS.put(player.getUUID(), player.position());
+        player.setInvisible(true);
         List<CharacterOpenPayload.Spawn> spawns = full
                 ? spawnPoints(player.server).stream()
-                        .map(point -> new CharacterOpenPayload.Spawn(point.id, point.name,
-                                point.description.isEmpty() ? point.hoverText : point.description))
+                        .map(point -> new CharacterOpenPayload.Spawn(point.id, point.name, point.description))
                         .toList()
                 : List.of();
         PacketDistributor.sendToPlayer(player, new CharacterOpenPayload(full, data.appearance(), RpNames.get(player),
@@ -110,7 +115,7 @@ public final class CharacterCreation {
     }
 
     private static List<MapPoint> spawnPoints(MinecraftServer server) {
-        return MapPoints.get(server).all().stream().filter(point -> point.spawn).toList();
+        return MapPoints.get(server).all().stream().filter(MapPoint::isSpawn).toList();
     }
 
     // ===== Прихожая =====
@@ -121,8 +126,23 @@ public final class CharacterCreation {
             return;
         }
         Vec3 anchor = ANCHORS.get(player.getUUID());
-        if (anchor != null && player.position().distanceToSqr(anchor) > ANCHOR_SLACK_SQR) {
+        if (anchor == null) {
+            return;
+        }
+        if (player.position().distanceToSqr(anchor) > ANCHOR_SLACK_SQR) {
             player.connection.teleport(anchor.x, anchor.y, anchor.z, player.getYRot(), player.getXRot());
+        }
+        // Каждый тик: невидимость сбрасывается сама, когда у игрока меняются эффекты
+        if (!player.isInvisible()) {
+            player.setInvisible(true);
+        }
+    }
+
+    /** Мобы не замечают того, кто создаёт персонажа. */
+    @SubscribeEvent
+    public static void onChangeTarget(LivingChangeTargetEvent event) {
+        if (event.getNewAboutToBeSetTarget() instanceof ServerPlayer player && creating(player)) {
+            event.setCanceled(true);
         }
     }
 
@@ -210,6 +230,7 @@ public final class CharacterCreation {
         player.setData(ModAttachments.CHARACTER, new CharacterData(CharacterData.State.CREATED, appearance, backstoryId));
         player.syncData(ModAttachments.CHARACTER);
         ANCHORS.remove(player.getUUID());
+        player.setInvisible(player.hasEffect(MobEffects.INVISIBILITY)); // зелье невидимости, если было, остаётся
         RpNames.apply(player, name);
         if (backstory != null) {
             giveKit(player, backstory);
@@ -263,7 +284,7 @@ public final class CharacterCreation {
         }
     }
 
-    /** На поверхность у середины точки — как телепорт по карте. */
+    /** Ровно в точку, если там можно стоять; иначе на поверхность — как телепорт по карте. */
     private static void moveTo(ServerPlayer player, MapPoint point) {
         ResourceLocation dimension = ResourceLocation.tryParse(point.dimension);
         ServerLevel level = dimension == null ? null
@@ -272,11 +293,24 @@ public final class CharacterCreation {
             HalgventMod.LOGGER.warn("Точка появления «{}»: нет измерения {}", point.name, point.dimension);
             return;
         }
-        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, point.x, point.z); // загрузит чанк
-        if (y <= level.getMinBuildHeight()) {
-            y = point.y;
+        BlockPos feet = new BlockPos(point.x, point.y, point.z);
+        int y = point.y;
+        if (!canStand(level, feet)) { // загрузит чанк
+            y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, point.x, point.z);
+            if (y <= level.getMinBuildHeight()) {
+                y = point.y;
+            }
         }
         player.teleportTo(level, point.x + 0.5, y, point.z + 0.5, player.getYRot(), player.getXRot());
+    }
+
+    /** Ноги и голова — в пустоте, под ногами — опора. */
+    private static boolean canStand(ServerLevel level, BlockPos feet) {
+        return empty(level, feet) && empty(level, feet.above()) && !empty(level, feet.below());
+    }
+
+    private static boolean empty(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).getCollisionShape(level, pos).isEmpty();
     }
 
     // ===== Команда =====

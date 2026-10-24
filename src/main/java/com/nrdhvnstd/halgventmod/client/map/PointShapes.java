@@ -29,10 +29,12 @@ public final class PointShapes {
     public static final int COLOR_UNKNOWN = 0xFFFFFFFF;
     /** «Клетка» знака вопроса — в атласе такой нет. */
     public static final int UNKNOWN_CELL = -1;
+    /** Значок точки появления на карте администрации — у всех один. */
+    public static final MapIcon SPAWN_ICON = MapIcon.GATHERING;
 
     private PointShapes() {}
 
-    /** Точки измерения, в котором сейчас игрок. */
+    /** Точки измерения, в котором сейчас игрок (с точками появления — только у администрации). */
     public static List<MapPoint> here() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) {

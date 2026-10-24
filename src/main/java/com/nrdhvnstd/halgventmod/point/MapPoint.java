@@ -12,13 +12,17 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Точка карты: общая для всех игроков, ставит её администратор. Видна всем на карте и на компасе;
- * у каждого игрока она либо открыта (он побывал внутри её границы), либо нет.
+ * Точка карты: общая для всех игроков, ставит её администратор. Два типа (Kind):
+ * место (LOCATION) видно всем на карте и на компасе; у каждого игрока оно либо открыто (он побывал внутри
+ * его границы), либо нет. Точка появления (SPAWN) — где новый персонаж начинает игру (CharacterCreation):
+ * её видят только администрация на карте и новые игроки в окне создания персонажа; не открывается, без границы.
  * Граница — круг радиусом radius вокруг (x; z) или многоугольник по вершинам (xs; zs) в блоках мира.
  * Поля открыты: их правят редактор границы и окно точки на клиенте, проверяет сервер (MapPoints).
  */
 public final class MapPoint {
     public enum Shape { CIRCLE, POLYGON }
+
+    public enum Kind { LOCATION, SPAWN }
 
     public static final int NAME_MAX = 32;
     public static final int ICON_MAX = 32;
@@ -56,8 +60,8 @@ public final class MapPoint {
     public String description = "";
     /** Нижний блок «Сведения»; строка «Слово: текст» рисует слово тусклым. */
     public String info = "";
-    /** Точка появления: новый персонаж может начать здесь (CharacterCreation). */
-    public boolean spawn;
+    /** Тип точки; меняется только при создании (MapPoints.edit). */
+    public Kind kind = Kind.LOCATION;
     public Shape shape = Shape.CIRCLE;
     public int radius = DEFAULT_SIZE;
     public List<Integer> xs = new ArrayList<>();
@@ -79,12 +83,16 @@ public final class MapPoint {
         copy.banner = banner;
         copy.description = description;
         copy.info = info;
-        copy.spawn = spawn;
+        copy.kind = kind;
         copy.shape = shape;
         copy.radius = radius;
         copy.xs = new ArrayList<>(xs);
         copy.zs = new ArrayList<>(zs);
         return copy;
+    }
+
+    public boolean isSpawn() {
+        return kind == Kind.SPAWN;
     }
 
     /** Многоугольник по умолчанию — квадрат вокруг середины. */
@@ -167,7 +175,7 @@ public final class MapPoint {
         buf.writeUtf(banner, BannerEntry.ID_MAX);
         buf.writeUtf(description, DESCRIPTION_MAX * 4);
         buf.writeUtf(info, INFO_MAX * 4);
-        buf.writeBoolean(spawn);
+        buf.writeEnum(kind);
         buf.writeEnum(shape);
         buf.writeVarInt(radius);
         int count = Math.min(xs.size(), MAX_VERTICES);
@@ -194,7 +202,7 @@ public final class MapPoint {
         point.banner = buf.readUtf(BannerEntry.ID_MAX);
         point.description = buf.readUtf(DESCRIPTION_MAX * 4);
         point.info = buf.readUtf(INFO_MAX * 4);
-        point.spawn = buf.readBoolean();
+        point.kind = buf.readEnum(Kind.class);
         point.shape = buf.readEnum(Shape.class);
         point.radius = buf.readVarInt();
         int count = Math.min(buf.readVarInt(), MAX_VERTICES);
@@ -221,7 +229,7 @@ public final class MapPoint {
         tag.putString("banner", banner);
         tag.putString("description", description);
         tag.putString("info", info);
-        tag.putBoolean("spawn", spawn);
+        tag.putString("kind", kind.name());
         tag.putString("shape", shape.name());
         tag.putInt("radius", radius);
         tag.put("xs", new IntArrayTag(xs.stream().mapToInt(Integer::intValue).toArray()));
@@ -249,7 +257,8 @@ public final class MapPoint {
         point.banner = tag.getString("banner");
         point.description = tag.getString("description");
         point.info = tag.getString("info");
-        point.spawn = tag.getBoolean("spawn");
+        // Точка с галочкой «Точка появления» (до отдельного типа) — теперь точка появления
+        point.kind = "SPAWN".equals(tag.getString("kind")) || tag.getBoolean("spawn") ? Kind.SPAWN : Kind.LOCATION;
         point.shape = "POLYGON".equals(tag.getString("shape")) ? Shape.POLYGON : Shape.CIRCLE;
         point.radius = tag.getInt("radius");
         for (int value : tag.getIntArray("xs")) {

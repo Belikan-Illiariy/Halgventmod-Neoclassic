@@ -52,6 +52,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * кнопки «Круг» / «Многоугольник» / «Далее» / «Отмена» вверху), потом окно точки (PointEditScreen).
  * Неоткрытая точка под курсором подсвечивается, у курсора — окно с текстом администрации (MapTooltipBox).
  * Открытая точка с описанием кликается: слева панель со знаменем, описанием и сведениями (PointInfoPanel).
+ * Точки появления (MapPoint.Kind.SPAWN) приходят только администрации: значок на зелёном свечении и название под ним;
+ * ставятся из меню «Поставить точку появления» сразу окном точки (SpawnPointEditScreen), без границы.
  */
 public class MapScreen extends Screen implements MenuTabScreen {
     // Масштаб — в пикселях интерфейса на блок; «настоящий» масштаб — в пикселях монитора (× масштаб интерфейса).
@@ -68,6 +70,11 @@ public class MapScreen extends Screen implements MenuTabScreen {
     private static final int GLOW_TEXTURE = 32;
     private static final float GLOW_SCALE = 1.6F;  // ⚠️ от размера значка
     private static final float GLOW_ALPHA = 0.6F;  // ⚠️
+    // Точка появления: свечение под значком — зелёное, название — тем же цветом
+    private static final float SPAWN_GLOW_R = 0.45F;
+    private static final float SPAWN_GLOW_G = 1.0F;
+    private static final float SPAWN_GLOW_B = 0.5F;
+    private static final int COLOR_SPAWN = 0xFF8CF09C;
     private static final int CLICK_SLOP = 3;       // ⚠️ сдвиг мыши, при котором нажатие ещё клик, а не перетаскивание
     // Товарищи по отряду: курсор, окрашенный в зелёный, и имя тем же цветом
     private static final float SQUAD_TINT_R = 0.45F;
@@ -543,7 +550,7 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
         RenderSystem.enableBlend();
         for (MapPoint point : PointShapes.here()) {
-            if (!editingBounds(point)) {
+            if (!point.isSpawn() && !editingBounds(point)) { // у точки появления границы нет
                 boolean open = PointShapes.discovered(point);
                 PointShapes.draw(graphics, view, point, open ? PointShapes.FILL_OPEN : PointShapes.FILL_HIDDEN,
                         open ? PointShapes.LINE_OPEN : PointShapes.LINE_HIDDEN);
@@ -562,6 +569,10 @@ public class MapScreen extends Screen implements MenuTabScreen {
             }
             int x = Math.round(screenX(point.x + 0.5));
             int y = Math.round(screenY(point.z + 0.5));
+            if (point.isSpawn()) {
+                renderSpawnPoint(graphics, point, x, y);
+                continue;
+            }
             boolean open = PointShapes.discovered(point);
             boolean glow = point == hovered && (!open || point.described);
             if (glow) {
@@ -579,6 +590,18 @@ public class MapScreen extends Screen implements MenuTabScreen {
             }
         }
         RenderSystem.disableBlend();
+    }
+
+    /** Точка появления: значок «место сбора» на зелёном свечении и название под ним — их видит только администрация. */
+    private void renderSpawnPoint(GuiGraphics graphics, MapPoint point, int x, int y) {
+        int size = Math.round(ICON_SIZE * GLOW_SCALE);
+        graphics.setColor(SPAWN_GLOW_R, SPAWN_GLOW_G, SPAWN_GLOW_B, GLOW_ALPHA);
+        graphics.blit(GLOW, x - size / 2, y - size / 2, size, size, 0, 0, GLOW_TEXTURE, GLOW_TEXTURE,
+                GLOW_TEXTURE, GLOW_TEXTURE);
+        graphics.setColor(1, 1, 1, 1);
+        MapIcon.draw(graphics, PointShapes.SPAWN_ICON.cell(PointShapes.dye(point)), x - ICON_SIZE / 2, y - ICON_SIZE / 2,
+                ICON_SIZE);
+        graphics.drawCenteredString(font, point.name, x, y + ICON_SIZE / 2 + 1, COLOR_SPAWN);
     }
 
     /** Точка под курсором, если сейчас её можно навести: не правится граница, нет меню, курсор над картой. */
@@ -808,6 +831,16 @@ public class MapScreen extends Screen implements MenuTabScreen {
             Component coords = Component.translatable("gui.halgventmod.waypoint.coords",
                     hoveredPoint.x, hoveredPoint.y, hoveredPoint.z);
             Component away = Component.translatable("gui.halgventmod.waypoint.distance", distance);
+            if (hoveredPoint.isSpawn()) {
+                graphics.renderComponentTooltip(font, List.of(
+                        Component.literal(hoveredPoint.name),
+                        Component.translatable("gui.halgventmod.spawn.kind").withStyle(ChatFormatting.GREEN),
+                        coords.copy().withStyle(ChatFormatting.GRAY),
+                        away.copy().withStyle(ChatFormatting.GRAY),
+                        Component.translatable("gui.halgventmod.spawn.visibility").withStyle(ChatFormatting.DARK_GRAY)),
+                        mouseX, mouseY);
+                return;
+            }
             if (!open) {
                 // Неоткрытая — своё окно: «Неизвестное место» и текст администрации; администрация в творческом
                 // видит вместо заголовка имя и «не открыта», чтобы проверить текст
@@ -881,13 +914,18 @@ public class MapScreen extends Screen implements MenuTabScreen {
         }
         if (MapPoints.canEdit(minecraft.player)) { // администрация в творческом режиме
             MapPoint point = pointAt(mouseX, mouseY);
-            if (point != null) {
+            if (point != null && point.isSpawn()) {
+                items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.edit_spawn"),
+                        () -> minecraft.setScreen(new SpawnPointEditScreen(this, point.copy()))));
+            } else if (point != null) {
                 items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.edit_point"),
                         () -> minecraft.setScreen(new PointEditScreen(this, point.copy(), () -> {}))));
                 items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.edit_point_bounds"),
                         () -> startBounds(point.copy())));
             } else {
                 items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.add_point"), () -> startPoint(x, z)));
+                items.add(new MenuItem(Component.translatable("gui.halgventmod.map.menu.add_spawn"),
+                        () -> minecraft.setScreen(SpawnPointEditScreen.create(this, x, standingY(x, z), z))));
             }
         }
         if (items.isEmpty()) {
