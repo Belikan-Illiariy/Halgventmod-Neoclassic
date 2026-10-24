@@ -116,7 +116,7 @@ public final class Pottery {
      * @return треснула ли сейчас
      */
     public static boolean wear(ItemStack ware, Player player) {
-        if (player.level().isClientSide || player.hasInfiniteMaterials() || !isWare(ware) || has(ware, CRACKED)
+        if (player.level().isClientSide || player.hasInfiniteMaterials() || !isWare(ware) || metal(ware) || has(ware, CRACKED)
                 || player.getRandom().nextInt(1000) >= wearChance(ware)) {
             return false;
         }
@@ -150,6 +150,21 @@ public final class Pottery {
 
     public static boolean isWare(ItemStack stack) {
         return stack.getItem() instanceof WareItem;
+    }
+
+    /** Литая посуда (пьютер, серебро): служит как глиняная, но не трескается. */
+    public static boolean metal(ItemStack stack) {
+        return stack.getItem() instanceof WareItem ware && ware.metal();
+    }
+
+    /** Выдувная стеклянная посуда: бьётся, как глиняная, разбитая — бой стекла. */
+    public static boolean glass(ItemStack stack) {
+        return stack.getItem() instanceof WareItem ware && ware.glass();
+    }
+
+    /** Миска или блюдо: в них черпают из горшка, после еды остаются в руке. */
+    public static boolean isBowl(ItemStack stack) {
+        return isWare(stack) && form(stack) == VesselForm.BOWL;
     }
 
     /** Форма сырца или посудины; null — не посуда. */
@@ -193,6 +208,9 @@ public final class Pottery {
 
     /** Черепки от разбитой вещи. */
     public static ItemStack sherds(ItemStack stack) {
+        if (glass(stack)) {
+            return new ItemStack(com.nrdhvnstd.halgventmod.glass.GlassItems.CULLET.get(), lumps(stack)); // стекло — в бой
+        }
         return new ItemStack(ModItems.SHERDS.get(), lumps(stack));
     }
 

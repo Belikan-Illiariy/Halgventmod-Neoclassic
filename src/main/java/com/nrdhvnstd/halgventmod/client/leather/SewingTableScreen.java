@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.client.ConquestUi;
+import com.nrdhvnstd.halgventmod.client.RecipeTabs;
 import com.nrdhvnstd.halgventmod.client.TextFit;
 import com.nrdhvnstd.halgventmod.leather.LeatherPatterns;
 import com.nrdhvnstd.halgventmod.leather.LeatherTableBlockEntity;
@@ -41,6 +42,9 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
     private record Ghost(ItemStack stack, int count, boolean have) {}
 
     private final List<LeatherPatterns.Pattern> patterns = LeatherPatterns.all();
+    private final List<LeatherPatterns.Group> groups = new ArrayList<>();
+    private final List<Integer> visible = new ArrayList<>();
+    private final RecipeTabs tabs;
     private int scroll;
     private Button cutButton;
     private Button sewButton;
@@ -49,12 +53,21 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
         super(menu, inventory, title);
         this.imageWidth = SewingTableMenu.WIDTH;
         this.imageHeight = SewingTableMenu.HEIGHT;
+        List<RecipeTabs.Tab> list = new ArrayList<>();
+        for (LeatherPatterns.Pattern pattern : patterns) {
+            if (!groups.contains(pattern.group())) {
+                groups.add(pattern.group());
+                list.add(new RecipeTabs.Tab(pattern.result(), pattern.group().langKey()));
+            }
+        }
+        this.tabs = new RecipeTabs(list);
     }
 
     @Override
     protected void init() {
         super.init();
         topPos = Math.max(topPos, font.lineHeight + TITLE_GAP);
+        leftPos = Math.max(leftPos, tabs.width());
         int bx = leftPos + SewingTableMenu.GRID_X - 1;
         int by = topPos + SewingTableMenu.BUTTONS_Y;
         cutButton = addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.sewing_table.cut"),
@@ -63,8 +76,25 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
                 button -> click(SewingTableMenu.BUTTON_SEW)).bounds(bx + 66, by, 62, 16).build());
         int selected = menu.pattern();
         if (selected >= 0) {
-            scroll = Mth.clamp(selected / SewingTableMenu.PATTERN_COLUMNS - SewingTableMenu.PATTERN_ROWS + 1, 0, maxScroll());
+            tabs.select(groups.indexOf(patterns.get(selected).group()));
         }
+        refresh();
+        int at = visible.indexOf(selected);
+        if (at >= 0) {
+            scroll = Mth.clamp(at / SewingTableMenu.PATTERN_COLUMNS - SewingTableMenu.PATTERN_ROWS + 1, 0, maxScroll());
+        }
+    }
+
+    /** Выкройки выбранной темы. */
+    private void refresh() {
+        visible.clear();
+        LeatherPatterns.Group group = groups.isEmpty() ? null : groups.get(tabs.selected());
+        for (int i = 0; i < patterns.size(); i++) {
+            if (patterns.get(i).group() == group) {
+                visible.add(i);
+            }
+        }
+        scroll = Mth.clamp(scroll, 0, maxScroll());
     }
 
     private void click(int id) {
@@ -74,7 +104,8 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
     }
 
     private int maxScroll() {
-        return Math.max(0, Mth.positiveCeilDiv(patterns.size(), SewingTableMenu.PATTERN_COLUMNS) - SewingTableMenu.PATTERN_ROWS);
+        return Math.max(0, Mth.positiveCeilDiv(visible.size(), SewingTableMenu.PATTERN_COLUMNS)
+                - SewingTableMenu.PATTERN_ROWS);
     }
 
     @Override
@@ -94,7 +125,7 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
             return -1;
         }
         int index = ((int) ry / SewingTableMenu.STEP + scroll) * SewingTableMenu.PATTERN_COLUMNS + (int) rx / SewingTableMenu.STEP;
-        return index < patterns.size() ? index : -1;
+        return index < visible.size() ? visible.get(index) : -1;
     }
 
     // ---------------------------------------------------------------- что нужно
@@ -138,6 +169,9 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
         super.render(g, mouseX, mouseY, partialTick);
         g.drawString(font, title, leftPos, topPos - font.lineHeight - TITLE_GAP, 0xFFFFFF, true);
         ItemStack hovered = hoveredGhost(mouseX, mouseY);
+        if (menu.getCarried().isEmpty() && tabs.tooltip(g, font, mouseX, mouseY, leftPos, topPos)) {
+            return;
+        }
         if (!hovered.isEmpty() && menu.getCarried().isEmpty()) {
             g.renderTooltip(font, hovered, mouseX, mouseY);
         } else {
@@ -195,10 +229,12 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
+        tabs.render(g, x, y);
         ConquestUi.window(g, x, y, x + imageWidth, y + imageHeight);
         ConquestUi.inset(g, x + 4, y + 4, x + 105, y + 112);
         ConquestUi.inset(g, x + 106, y + 4, x + 252, y + 126);
-        plaque(g, Component.translatable("gui.halgventmod.pattern.title"), 8, 6, 100);
+        plaque(g, Component.translatable(tabs.shown() ? tabs.current().langKey() : "gui.halgventmod.pattern.title"),
+                8, 6, 100);
         plaque(g, Component.translatable("gui.halgventmod.sewing_table.on_table"), 110, 6, 248);
         for (Slot slot : menu.slots) {
             if (slot.isActive()) {
@@ -211,13 +247,14 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
         int selected = menu.pattern();
         for (int row = 0; row < SewingTableMenu.PATTERN_ROWS; row++) {
             for (int col = 0; col < SewingTableMenu.PATTERN_COLUMNS; col++) {
-                int index = (row + scroll) * SewingTableMenu.PATTERN_COLUMNS + col;
+                int at = (row + scroll) * SewingTableMenu.PATTERN_COLUMNS + col;
                 int ix = x + SewingTableMenu.PATTERNS_X + col * SewingTableMenu.STEP + 1;
                 int iy = y + SewingTableMenu.PATTERNS_Y + row * SewingTableMenu.STEP + 1;
-                ConquestUi.slot(g, ix, iy, index >= patterns.size());
-                if (index >= patterns.size()) {
+                ConquestUi.slot(g, ix, iy, at >= visible.size());
+                if (at >= visible.size()) {
                     continue;
                 }
+                int index = visible.get(at);
                 if (index == selected) {
                     g.renderOutline(ix - 1, iy - 1, 18, 18, SELECTED);
                 } else if (index == hovered) {
@@ -282,6 +319,11 @@ public class SewingTableScreen extends AbstractContainerScreen<SewingTableMenu> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (tabs.click(mouseX, mouseY, button, leftPos, topPos)) {
+            scroll = 0;
+            refresh();
+            return true;
+        }
         int index = patternAt(mouseX, mouseY);
         if (index >= 0 && button == 0) {
             click(index);

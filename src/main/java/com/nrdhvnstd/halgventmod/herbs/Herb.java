@@ -73,11 +73,14 @@ public enum Herb {
         return byId(stack.get(ModComponents.HERB.get()));
     }
 
-    /** Пометить сушёную траву или отвар видом: компонент и название («Сушёная мята», «Мятный отвар»). */
+    /**
+     * Пометить сушёную траву, отвар, травяной порошок или эссенцию видом: компонент и название
+     * («Сушёная мята», «Мятный отвар», «Мятный порошок») — item.halgventmod.&lt;предмет&gt;.&lt;трава&gt;.
+     */
     public ItemStack mark(ItemStack stack) {
         stack.set(ModComponents.HERB.get(), id);
-        String key = stack.is(ModItems.DRIED_HERBS.get()) ? "item.halgventmod.dried_herbs." + id
-                : "item.halgventmod.herbal_tea." + id;
+        String key = "item.halgventmod." + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath()
+                + "." + id;
         stack.set(DataComponents.ITEM_NAME, Component.translatable(key));
         return stack;
     }
@@ -89,30 +92,36 @@ public enum Herb {
 
     /** Выпили отвар этой травы. */
     public void steep(LivingEntity drinker) {
+        steep(drinker, 1);
+    }
+
+    /** Выпили отвар или эссенцию: действие длится в times раз дольше. */
+    public void steep(LivingEntity drinker, int times) {
+        int brief = SHORT * times, medium = MEDIUM * times, lasting = LONG * times;
         switch (this) {
             case CHAMOMILE -> {
                 drinker.removeEffect(MobEffects.CONFUSION);
                 drinker.removeEffect(ModEffects.POISONING);
-                drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, SHORT, 0));
+                drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, brief, 0));
             }
             case MINT -> {
                 drinker.removeEffect(MobEffects.CONFUSION);
-                drinker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, LONG / 2, 0));
+                drinker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, lasting / 2, 0));
             }
-            case ST_JOHNS_WORT -> drinker.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, LONG, 0));
-            case YARROW -> drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, MEDIUM, 0));
+            case ST_JOHNS_WORT -> drinker.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, lasting, 0));
+            case YARROW -> drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, medium, 0));
             case WORMWOOD -> {
                 drinker.removeEffect(ModEffects.POISONING);
                 drinker.removeEffect(MobEffects.HUNGER);
                 drinker.removeEffect(MobEffects.POISON);
             }
-            case NETTLE -> drinker.addEffect(new MobEffectInstance(ModEffects.VIGOR, LONG, 0));
-            case THYME -> drinker.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, LONG, 0));
+            case NETTLE -> drinker.addEffect(new MobEffectInstance(ModEffects.VIGOR, lasting, 0));
+            case THYME -> drinker.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, lasting, 0));
             case LAVENDER -> {
                 drinker.removeEffect(MobEffects.CONFUSION);
                 drinker.removeEffect(MobEffects.BLINDNESS);
                 drinker.removeEffect(MobEffects.DARKNESS);
-                drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, SHORT / 2, 0));
+                drinker.addEffect(new MobEffectInstance(MobEffects.REGENERATION, brief / 2, 0));
             }
         }
     }

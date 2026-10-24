@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Купель. На E: тигель с жидким свинцом с серебром (из сыродутного горна) — слить, или слиток — положить (до
  * {@link #CAPACITY}), древесный уголь — подложить, огниво —
- * разжечь: окно купели (CupelStep) — держите жар, пока свинец выгорает в глёт, и снимите серебро, когда оно
- * вспыхнет каплей. Рано — серебро с примесью свинца (хуже), поздно — часть серебра ушла в глёт.
+ * разжечь: окно купели (CupelStep) — мехами держите жар, пока свинец выгорает в глёт, и сгоняйте глёт к краю чаши;
+ * запёкшийся глёт и перегрев уносят серебро (хуже счёт). Свинец выгорел — серебро вспыхивает каплей.
  * Серебра в свинце мало ({@link #SILVER_PER_LEAD} слитка на кусок): что не набралось на слиток, остаётся в купели
  * каплей до следующего раза. Свинца остаётся много ({@link #LEAD_BACK}).
  */
@@ -29,6 +29,7 @@ public class CupelBlockEntity extends StationBlockEntity implements Minigame.Hos
     public static final float SILVER_PER_LEAD = 0.3F;  // ⚠️
     public static final float LEAD_BACK = 0.75F;       // ⚠️ свинца остаётся от свинца с серебром
     public static final float LATE_LOSS = 0.5F;        // поздно сняли — столько серебра пропало
+    public static final float LOSS_PER_SLIP = 0.08F;   // ⚠️ серебра уходит с каждым запёкшимся глётом и брызгами
     public static final int MIN_TICKS = 400;
     // Итог окна (второе число): когда сняли
     public static final int ON_TIME = 0, EARLY = 1, LATE = 2;
@@ -47,6 +48,11 @@ public class CupelBlockEntity extends StationBlockEntity implements Minigame.Hos
 
     public ItemStack lead() {
         return lead;
+    }
+
+    /** Угля подложено (для отрисовки). */
+    public int fuel() {
+        return fuel;
     }
 
     @Override
@@ -156,7 +162,8 @@ public class CupelBlockEntity extends StationBlockEntity implements Minigame.Hos
         int timing = Minigame.value(data, 1, ON_TIME);
         int quality = Smithing.quality(lead) + Smithing.workDelta(score) + (timing == EARLY ? -2 : 0);
         float silver = count * SILVER_PER_LEAD * (timing == LATE ? 1 - LATE_LOSS : 1)
-                * (score < Smithing.SCORE_POOR ? 0.6F : 1);
+                * (score < Smithing.SCORE_POOR ? 0.6F : 1)
+                * Math.max(0.4F, 1 - LOSS_PER_SLIP * Minigame.value(data, 2, 0)); // запёкшийся глёт и брызги
         bead += silver;
         int ingots = (int) bead;
         bead -= ingots;

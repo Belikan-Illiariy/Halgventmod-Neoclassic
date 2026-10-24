@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,11 +17,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -34,6 +38,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Замки на дверях и сундуках. Рисуются плоской картинкой поверх блока:
@@ -61,6 +66,8 @@ public final class LockRenderer {
     private static final double RENDER_DISTANCE = 48;
 
     private static final Map<ResourceLocation, ResourceLocation> RESOLVED = new HashMap<>();
+    // Створка по модели: от и до вдоль оси двери. Ключ — модель: после перезагрузки ресурсов посчитается заново
+    private static final Map<BakedModel, float[]> PLATES = new WeakHashMap<>();
 
     private LockRenderer() {}
 
@@ -101,7 +108,8 @@ public final class LockRenderer {
         buffers.endBatch();
     }
 
-    // Закрытая дверь — пластина толщиной 3/16 у края блока, противоположного направлению двери
+    // Закрытая дверь — пластина поперёк оси двери; где она и какой толщины — по модели (у ванильной 3/16 у края,
+    // у дверей Conquest бывает толще или посередине)
     private static void renderDoor(PoseStack poseStack, MultiBufferSource buffers, ClientLevel level, BlockPos pos,
                                    BlockState state, LockData lock) {
         if (state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER || state.getValue(DoorBlock.OPEN)) {
@@ -120,19 +128,52 @@ public final class LockRenderer {
 
         float x = 0.5F + handleSide.getStepX() * along;
         float z = 0.5F + handleSide.getStepZ() * along;
-        boolean positive = facing.getAxisDirection() == Direction.AxisDirection.POSITIVE;
-        float back = positive ? 0F : 1F;                  // сторона у края блока
-        float front = positive ? 3F / 16F : 13F / 16F;    // сторона внутри блока
+        Direction.Axis axis = facing.getAxis();
+        float[] plate = plate(state, axis);
+        Direction toEnd = Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
 
         ResourceLocation texture = texture(lock);
         float size = lock.mortise() ? MORTISE_SIZE : PADLOCK_SIZE;
         // Замок виден с обеих сторон двери
         quad(poseStack, buffers, level, pos, texture, size,
-                facing.getAxis() == Direction.Axis.X ? back : x, DOOR_HEIGHT,
-                facing.getAxis() == Direction.Axis.Z ? back : z, facing.getOpposite());
+                axis == Direction.Axis.X ? plate[0] : x, DOOR_HEIGHT,
+                axis == Direction.Axis.Z ? plate[0] : z, toEnd.getOpposite());
         quad(poseStack, buffers, level, pos, texture, size,
-                facing.getAxis() == Direction.Axis.X ? front : x, DOOR_HEIGHT,
-                facing.getAxis() == Direction.Axis.Z ? front : z, facing);
+                axis == Direction.Axis.X ? plate[1] : x, DOOR_HEIGHT,
+                axis == Direction.Axis.Z ? plate[1] : z, toEnd);
+    }
+
+    // Где створка вдоль оси: самые дальние вершины модели закрытой нижней половины. Без модели — как у ванильной
+    private static float[] plate(BlockState state, Direction.Axis axis) {
+        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        float[] bounds = PLATES.computeIfAbsent(model, key -> bounds(key, state));
+        if (bounds.length == 0) {
+            boolean positive = state.getValue(DoorBlock.FACING).getAxisDirection() == Direction.AxisDirection.POSITIVE;
+            return positive ? new float[] {0F, 3F / 16F} : new float[] {13F / 16F, 1F};
+        }
+        return axis == Direction.Axis.X ? new float[] {bounds[0], bounds[1]} : new float[] {bounds[2], bounds[3]};
+    }
+
+    // Пределы вершин модели по x и по z: {от x, до x, от z, до z}; пусто — у модели нет граней
+    private static float[] bounds(BakedModel model, BlockState state) {
+        float[] bounds = {Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE};
+        RandomSource random = RandomSource.create(42L);
+        Direction[] sides = {null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
+        for (Direction side : sides) {
+            for (BakedQuad quad : model.getQuads(state, side, random, ModelData.EMPTY, null)) {
+                int[] vertices = quad.getVertices();
+                int stride = vertices.length / 4; // x, y, z — первые три числа вершины
+                for (int i = 0; i < 4; i++) {
+                    float x = Float.intBitsToFloat(vertices[i * stride]);
+                    float z = Float.intBitsToFloat(vertices[i * stride + 2]);
+                    bounds[0] = Math.min(bounds[0], x);
+                    bounds[1] = Math.max(bounds[1], x);
+                    bounds[2] = Math.min(bounds[2], z);
+                    bounds[3] = Math.max(bounds[3], z);
+                }
+            }
+        }
+        return bounds[0] > bounds[1] ? new float[0] : bounds;
     }
 
     // Передняя стенка сундука — на 1/16 внутрь от края блока; у двойного сундука замок посередине

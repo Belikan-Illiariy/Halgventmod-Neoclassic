@@ -370,7 +370,7 @@ public abstract class WorkshopBlockEntity extends StationBlockEntity implements 
             crackCrucible(player, crucible);
         }
         Component name = result.getHoverName();
-        give(player, result);
+        give(player, Hallmark.bind(result, player)); // клеймо — со знаком того, кто выковал
         Smithing.tell(player, "made", name);
         Smithing.say(player, current.kind() == SmithProducts.Result.PLAIN || current.kind() == SmithProducts.Result.REPAIR
                 || delta == 0 ? "worked" : delta > 0 ? "worked_clean" : "worked_rough", average);

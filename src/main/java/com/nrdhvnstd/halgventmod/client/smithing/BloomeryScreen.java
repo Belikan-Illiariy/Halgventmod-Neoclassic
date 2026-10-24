@@ -86,15 +86,15 @@ public class BloomeryScreen extends StationScreen<BloomeryMenu> {
                 ? BloomeryBlockEntity.Smelt.values()[smeltIndex] : null;
 
         // Закладка: подписи и сколько в горне
-        small(g, Component.translatable("gui.halgventmod.bloomery.ore"), x + 32, y + 20, TEXT_DIM);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.ore"), x + 32, y + 20, 46, TEXT_DIM);
         small(g, Component.literal(ore + " / " + BloomeryBlockEntity.MAX_ORE), x + 32, y + 28, ore > 0 ? TEXT : TEXT_DIM);
-        small(g, Component.translatable("gui.halgventmod.bloomery.fuel"), x + 32, y + 40, TEXT_DIM);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.fuel"), x + 32, y + 40, 46, TEXT_DIM);
         small(g, Component.literal((charcoal + coal) + " / " + BloomeryBlockEntity.MAX_FUEL), x + 32, y + 48,
                 coal > 0 ? WARN : charcoal > 0 ? TEXT : TEXT_DIM);
-        small(g, Component.translatable("gui.halgventmod.bloomery.flux"), x + 32, y + 60, TEXT_DIM);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.flux"), x + 32, y + 60, 46, TEXT_DIM);
         small(g, Component.literal(flux + " / " + BloomeryBlockEntity.MAX_FLUX), x + 32, y + 68, flux > 0 ? TEXT : TEXT_DIM);
-        small(g, Component.translatable("gui.halgventmod.bloomery.crucible"), x + 32, y + 82, TEXT_DIM);
-        small(g, Component.translatable("gui.halgventmod.bloomery.crucible_for"), x + 32, y + 90, TEXT_DIM);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.crucible"), x + 32, y + 82, 46, TEXT_DIM);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.crucible_for"), x + 32, y + 90, 46, TEXT_DIM);
 
         // Плавка
         int px = x + 86;
@@ -104,9 +104,9 @@ public class BloomeryScreen extends StationScreen<BloomeryMenu> {
             return;
         }
         g.renderItem(new ItemStack(smelt.ore()), px, y + 18);
-        fit(g, new ItemStack(smelt.ore()).getHoverName(), px + 19, y + 22, 88, TEXT);
-        small(g, Component.translatable("gui.halgventmod.bloomery.per_batch", smelt.perBatch(),
-                BloomeryBlockEntity.FUEL_PER_BATCH), px, y + 37, TEXT_DIM);
+        fit(g, new ItemStack(smelt.ore()).getHoverName(), px + 19, y + 22, 86, TEXT);
+        smallFit(g, Component.translatable("gui.halgventmod.bloomery.per_batch", smelt.perBatch(),
+                BloomeryBlockEntity.FUEL_PER_BATCH), px, y + 37, 106, TEXT_DIM);
         // Что выйдет
         g.blitSprite(ARROW, px + 4, y + 47, 24, 16);
         ItemStack result = new ItemStack(smelt.result(), Math.max(1, batches));
@@ -144,8 +144,7 @@ public class BloomeryScreen extends StationScreen<BloomeryMenu> {
             colors.add(WARN);
         }
         for (int i = 0; i < notes.size() && line < y + 100; i++) {
-            smallWrap(g, notes.get(i), px, line, 106, y + 104, colors.get(i));
-            line += 9;
+            line = smallWrap(g, notes.get(i), px, line, 106, y + 104, colors.get(i)) + 1;
         }
     }
 }

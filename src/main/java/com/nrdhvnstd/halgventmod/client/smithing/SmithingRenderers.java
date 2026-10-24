@@ -7,6 +7,7 @@ import com.mojang.math.Axis;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.leather.StationBlock;
 import com.nrdhvnstd.halgventmod.smithing.CupelBlockEntity;
+import com.nrdhvnstd.halgventmod.smithing.SmithStationBlock;
 import com.nrdhvnstd.halgventmod.smithing.MortarBlockEntity;
 import com.nrdhvnstd.halgventmod.smithing.SmithingBlocks;
 import com.nrdhvnstd.halgventmod.smithing.WorkshopBlockEntity;
@@ -37,7 +38,7 @@ public final class SmithingRenderers {
         event.registerBlockEntityRenderer(SmithingBlocks.ANVIL_ENTITY.get(), context -> new LaidRenderer<>(context, 1.0F, 0.28F, true));
         event.registerBlockEntityRenderer(SmithingBlocks.CASTING_ENTITY.get(), context -> new LaidRenderer<>(context, 1.0F, 0.34F, false));
         event.registerBlockEntityRenderer(SmithingBlocks.MORTAR_ENTITY.get(), Inside::new);
-        event.registerBlockEntityRenderer(SmithingBlocks.CUPEL_ENTITY.get(), Inside::new);
+        event.registerBlockEntityRenderer(SmithingBlocks.CUPEL_ENTITY.get(), OnCupel::new);
         event.registerBlockEntityRenderer(SmithingBlocks.FORGE_ENTITY.get(), OnForge::new);
     }
 
@@ -80,7 +81,7 @@ public final class SmithingRenderers {
         }
     }
 
-    /** Ступа и купель: что внутри — горкой посередине. */
+    /** Ступа: что внутри — горкой посередине. */
     static final class Inside implements BlockEntityRenderer<BlockEntity> {
         private final ItemRenderer items;
 
@@ -91,18 +92,51 @@ public final class SmithingRenderers {
         @Override
         public void render(BlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight,
                            int packedOverlay) {
-            ItemStack inside = be instanceof MortarBlockEntity mortar ? mortar.inside()
-                    : be instanceof CupelBlockEntity cupel ? cupel.lead() : ItemStack.EMPTY;
+            ItemStack inside = be instanceof MortarBlockEntity mortar ? mortar.inside() : ItemStack.EMPTY;
             if (inside.isEmpty()) {
                 return;
             }
-            float top = be instanceof MortarBlockEntity ? 0.42F : 0.58F;
+            float top = 0.42F;
             int light = lightAbove(be);
             for (int i = 0; i < Math.min(4, inside.getCount()); i++) {
                 pose.pushPose();
                 pose.translate(0.5F + (i % 2 - 0.5F) * 0.1F, top + i * 0.02F, 0.5F + (i / 2 - 0.5F) * 0.1F);
                 pose.mulPose(Axis.YP.rotationDegrees(i * 67));
                 lying(items, inside, pose, buffers, light, be.getLevel(), 0.28F, i);
+                pose.popPose();
+            }
+        }
+    }
+
+    /** Купель: на дне чаши — уголь (сколько подложено), на нём — куски свинца с серебром. */
+    static final class OnCupel implements BlockEntityRenderer<CupelBlockEntity> {
+        private static final float FLOOR = 0.26F; // дно чаши горелки, блоки
+        private static final ItemStack CHARCOAL = new ItemStack(net.minecraft.world.item.Items.CHARCOAL);
+        private final ItemRenderer items;
+
+        OnCupel(BlockEntityRendererProvider.Context context) {
+            this.items = context.getItemRenderer();
+        }
+
+        @Override
+        public void render(CupelBlockEntity cupel, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight,
+                           int packedOverlay) {
+            int light = cupel.getBlockState().getValue(SmithStationBlock.Lit.LIT) ? 0xF000F0 : lightAbove(cupel);
+            int fuel = Math.min(4, cupel.fuel());
+            for (int i = 0; i < fuel; i++) {
+                pose.pushPose();
+                pose.translate(0.5F + (i % 2 - 0.5F) * 0.16F, FLOOR, 0.5F + (i / 2 - 0.5F) * 0.16F);
+                pose.mulPose(Axis.YP.rotationDegrees(i * 97 + 20));
+                lying(items, CHARCOAL, pose, buffers, light, cupel.getLevel(), 0.3F, 10 + i);
+                pose.popPose();
+            }
+            ItemStack lead = cupel.lead();
+            float top = FLOOR + (fuel > 0 ? 0.035F : 0);
+            for (int i = 0; i < Math.min(4, lead.getCount()); i++) {
+                pose.pushPose();
+                pose.translate(0.5F + (i % 2 - 0.5F) * 0.1F, top + i * 0.015F, 0.5F + (i / 2 - 0.5F) * 0.1F);
+                pose.mulPose(Axis.YP.rotationDegrees(i * 67));
+                lying(items, lead, pose, buffers, light, cupel.getLevel(), 0.26F, i);
                 pose.popPose();
             }
         }

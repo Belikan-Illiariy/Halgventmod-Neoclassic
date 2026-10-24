@@ -279,6 +279,27 @@ public final class ModComponents {
                     .networkSynchronized(ItemStack.STREAM_CODEC)
                     .build());
 
+    // Сулема на клинке: сколько ударов ещё отравят (alchemy/Alchemy)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> POISON_COAT =
+            COMPONENTS.register("poison_coat", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
+    // Клеймо мастера (smithing/Hallmark): у клейма — чей знак выбит, у вещи — чьим клеймом помечена
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> HALLMARK =
+            COMPONENTS.register("hallmark", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
+    // Цвет выдувного стекла (glass/Glassmaking.Tint): у бокала, бутыли
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> GLASS_TINT =
+            COMPONENTS.register("glass_tint", () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                    .build());
+
     private ModComponents() {}
 
     public static void register(IEventBus modEventBus) {

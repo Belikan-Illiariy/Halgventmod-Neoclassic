@@ -1,8 +1,7 @@
 {
   "variants": {
-    "facing=north": { "model": "conquest:block/barrel_of_clay" },
-    "facing=east": { "model": "conquest:block/barrel_of_clay" },
-    "facing=south": { "model": "conquest:block/barrel_of_clay" },
-    "facing=west": { "model": "conquest:block/barrel_of_clay" }
+    "fill=0": { "model": "conquest:block/empty_barrel" },
+    "fill=1": { "model": "conquest:block/empty_barrel_level3" },
+    "fill=2": { "model": "conquest:block/barrel_of_clay" }
   }
 }

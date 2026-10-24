@@ -41,7 +41,7 @@ public final class ModMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<CarpenterBenchMenu>> CARPENTER_BENCH =
             MENUS.register("carpenter_bench", () -> IMenuTypeExtension.create(CarpenterBenchMenu::fromNetwork));
 
-    // Огонь и печи: очаг и костёр (с горшком), хлебная печь, горн
+    // Огонь и печи: очаг и костёр (с горшком), печь, горн
     public static final DeferredHolder<MenuType<?>, MenuType<HearthMenu>> HEARTH =
             MENUS.register("hearth", () -> IMenuTypeExtension.create(HearthMenu::fromNetwork));
     public static final DeferredHolder<MenuType<?>, MenuType<OvenMenu>> OVEN =
@@ -59,6 +59,8 @@ public final class ModMenus {
 
     public static void register(IEventBus modEventBus) {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initMenus();
+        com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.initMenus();
+        com.nrdhvnstd.halgventmod.glass.GlassBlocks.initMenus();
         MENUS.register(modEventBus);
     }
 }

@@ -110,7 +110,7 @@ public final class ModBlockEntities {
                     .of(DryingShelfBlockEntity::new, ModBlocks.DRYING_SHELF.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<KilnBlockEntity>> KILN =
             BLOCK_ENTITIES.register("kiln", () -> BlockEntityType.Builder
-                    .of(KilnBlockEntity::new, ModBlocks.SMALL_KILN.get(), ModBlocks.TALL_KILN.get()).build(null));
+                    .of(KilnBlockEntity::new, ModBlocks.DOME_KILN.get()).build(null));
 
     // Плотничество: колода для колки, пильные козлы, верстак плотника
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChoppingBlockEntity>> CHOPPING_BLOCK =
@@ -127,6 +127,8 @@ public final class ModBlockEntities {
 
     public static void register(IEventBus modEventBus) {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initEntities();
+        com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.initEntities();
+        com.nrdhvnstd.halgventmod.glass.GlassBlocks.initEntities();
         BLOCK_ENTITIES.register(modEventBus);
     }
 }

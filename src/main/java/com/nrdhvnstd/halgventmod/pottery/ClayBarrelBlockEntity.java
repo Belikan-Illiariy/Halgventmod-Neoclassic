@@ -74,6 +74,25 @@ public class ClayBarrelBlockEntity extends StationBlockEntity {
         return all;
     }
 
+    /** Что видно в бочке: пусто, только вода или глина (ClayBarrelBlock.FILL). */
+    private int look() {
+        if (clay > 0 || recycled > 0 || sand > 0 || grog > 0 || lumps > 0) {
+            return ClayBarrelBlock.CLAY;
+        }
+        return water ? ClayBarrelBlock.WATER : ClayBarrelBlock.EMPTY;
+    }
+
+    /** Сохранить, разослать и поменять вид бочки по содержимому. */
+    @Override
+    protected void changed() {
+        BlockState state = getBlockState();
+        if (level != null && !level.isClientSide && state.hasProperty(ClayBarrelBlock.FILL)
+                && state.getValue(ClayBarrelBlock.FILL) != look()) {
+            level.setBlock(worldPosition, state.setValue(ClayBarrelBlock.FILL, look()), 3);
+        }
+        super.changed();
+    }
+
     private static void add(List<ItemStack> list, ItemStack stack) {
         if (!stack.isEmpty()) {
             list.add(stack);

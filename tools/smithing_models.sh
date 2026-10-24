@@ -82,8 +82,7 @@ for lit in false true; do
   pile+=("lit=$lit,pile=3" "$(cr pile_of_coal)")
 done
 station charcoal_pile "$(cr stack_of_firewood_half1_1)" "${pile[@]}"
-station bloomery "$(cr roman_ovens/large_red_plastered_roman_oven_firewood)" \
-  "lit=false" "$(cr roman_ovens/large_red_plastered_roman_oven_firewood)" "lit=true" "$(cr roman_ovens/large_red_plastered_roman_oven_firewood_coals)"
+# Сыродутный горн 2×2×3 — блокстейт, модели и добычу пишет tools/bloomery_models.sh
 station cupel "$(cr cooking_brazier)" "lit=false" "$(cr cooking_brazier)" "lit=true" "$(cr cooking_brazier)"
 station smithy_forge halgventmod:block/smithing/smithy_forge "lit=false" halgventmod:block/smithing/smithy_forge "lit=true" halgventmod:block/smithing/smithy_forge_lit
 station smith_anvil "$(cr anvil_on_log)" "" "$(cr anvil_on_log)"

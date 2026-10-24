@@ -193,8 +193,12 @@ final class SmithingLang {
                 "In the box: ingots %s / %s, charcoal %s (needs %s). A clay ball seals it");
         // Ступа и желоб
         m(s, "mortar_full", "Ступа полна (до %s одного рода)", "The mortar is full (up to %s of one kind)");
-        m(s, "mortar_empty", "Ступа пуста: положите золотую руду или киноварь", "The mortar is empty: put in gold ore or cinnabar");
+        m(s, "mortar_empty", "Ступа пуста: положите золотую руду, киноварь, сушёную траву или кость",
+                "The mortar is empty: put in gold ore, cinnabar, a dried herb or a bone");
         m(s, "mortar_done", "Истолчено: %s", "Pounded: %s");
+        // Клеймо мастера
+        m(s, "hallmark_set", "%s: поставлено клеймо «%s»", "%s: stamped with the mark «%s»");
+        m(s, "hallmark_already", "Уже заклеймено: «%s»", "Already marked: «%s»");
         m(s, "mortar_spilled", "Истолчено: %s, просыпалось: %s", "Pounded: %s, spilled: %s");
         m(s, "sluice_full", "Желоб полон (до %s)", "The sluice is full (up to %s)");
         m(s, "sluice_empty", "В желобе нет толчёной руды", "There is no crushed ore in the sluice");
@@ -344,8 +348,12 @@ final class SmithingLang {
                 "Coal in the furnace: the metal will be worse. Left click bellows, right click charcoal.");
         w(s, "bellows_hint_noflux", "Флюса мало — шлак останется. ЛКМ — мехи, ПКМ — уголь.",
                 "Short of flux: slag will stay. Left click bellows, right click charcoal.");
-        w(s, "cupel_status", "Свинец выгорел на %s%%", "Lead burnt off %s%%");
-        w(s, "cupel_hint", "ЛКМ — мехи. Когда серебро вспыхнет — ПКМ, снять.", "Left click works the bellows. When the silver flashes, right click to take it off.");
+        w(s, "cupel_status", "Свинец выгорел на %s%%, глёт снят %s, запёкся %s", "Lead burnt off %s%%, litharge skimmed %s, baked %s");
+        w(s, "cupel_hint", "Пробел — мехи, жар в полосе. Держите ЛКМ и сгоняйте глёт к краю чаши, пока не запёкся.",
+                "Space works the bellows: keep the heat in the band. Hold left click and push the litharge to the rim before it bakes.");
+        w(s, "cupel_spatter", "Перегрели — серебро брызжет!", "Too hot: the silver spits!");
+        w(s, "cupel_baked", "Глёт запёкся — унёс серебро", "The litharge baked: it took silver with it");
+        w(s, "cupel_flash", "Серебро вспыхнуло — готово!", "The silver flashes: done!");
         w(s, "cupel_early", "Рано!", "Too early!");
         w(s, "cupel_late", "Поздно — серебро выгорает", "Too late: the silver burns away");
         w(s, "cupel_on_time", "В самый раз", "Just right");
@@ -490,6 +498,9 @@ final class SmithingLang {
         s.add("hud.halgventmod.use.need_shovel", "Нужна лопата", "Needs a shovel");
         s.add("hud.halgventmod.use.vein_empty", "Выработано", "Worked out");
         s.add("tooltip.halgventmod.roasted", "Обожжена", "Roasted");
+        s.add("tooltip.halgventmod.hallmark", "Клеймо: %s", "Maker's mark: %s");
+        s.add("tooltip.halgventmod.hallmark.stamp", "Знак: %s", "Mark: %s");
+        s.add("tooltip.halgventmod.hallmark.blank", "Знак не выбит: выбьется знак того, кто клеймит первым", "No mark yet: the first to use it strikes their own");
         crucible(s);
     }
 

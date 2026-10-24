@@ -34,6 +34,30 @@ public final class LeatherPatterns {
         LEATHER, CLOTH
     }
 
+    /** Тема выкройки — вкладка в окне стола; берётся из того, что кроят. */
+    public enum Group {
+        GEAR("gear"), HANDS("hands"), ARMOR("armor"), CLOTHES("clothes");
+
+        private final String id;
+
+        Group(String id) {
+            this.id = id;
+        }
+
+        public String langKey() {
+            return "gui.halgventmod.sewing_table.group." + id;
+        }
+
+        static Group of(CutShape shape) {
+            return switch (shape) {
+                case STRAP, BELT, POUCH, BAG, QUIVER -> GEAR;
+                case MITTEN -> HANDS;
+                case BODY -> ARMOR;
+                case VEST, HOOD, CLOAK -> CLOTHES;
+            };
+        }
+    }
+
     public static final class Pattern {
         private final Supplier<? extends Item> result;
         private final int resultCount;
@@ -82,6 +106,10 @@ public final class LeatherPatterns {
 
         public CutShape shape() {
             return shape;
+        }
+
+        public Group group() {
+            return Group.of(shape);
         }
 
         /** Что кроят (кожа, ткань). */

@@ -1,5 +1,5 @@
 {
   "type": "minecraft:block",
-  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:baking_oven" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:baking_oven" } ], "conditions": [ { "condition": "minecraft:survives_explosion" }, { "condition": "minecraft:block_state_property", "block": "halgventmod:baking_oven", "properties": { "part": "0" } } ] } ],
   "random_sequence": "halgventmod:blocks/baking_oven"
 }

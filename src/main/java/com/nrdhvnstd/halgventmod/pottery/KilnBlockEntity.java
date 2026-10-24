@@ -362,7 +362,7 @@ public class KilnBlockEntity extends StationBlockEntity {
         boolean greenware = Pottery.isGreenware(stack);
         boolean brick = Pottery.isRawClay(stack);
         if (!greenware && !brick) {
-            if (Pottery.isWare(stack)) {
+            if (Pottery.isWare(stack) && !Pottery.metal(stack) && !Pottery.glass(stack)) {
                 Pottery.say(player, "kiln_already_fired");
                 return true;
             }

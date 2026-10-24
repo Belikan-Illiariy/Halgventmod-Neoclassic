@@ -38,6 +38,21 @@ public final class BenchProducts {
     /** Этап изделия: операция, разметка и сколько (дыр, гвоздей). */
     public record Step(Operation operation, WorkShape shape, int amount) {}
 
+    /** Тема изделия — вкладка в окне верстака. */
+    public enum Group {
+        WEAVING("weaving"), HOUSEHOLD("household"), TOOLS("tools"), PARTS("parts");
+
+        private final String id;
+
+        Group(String id) {
+            this.id = id;
+        }
+
+        public String langKey() {
+            return "gui.halgventmod.carpenter_bench.group." + id;
+        }
+    }
+
     public static final class Product {
         private final Supplier<? extends Item> result;
         private final int count;
@@ -45,6 +60,7 @@ public final class BenchProducts {
         private final List<Need> needs = new ArrayList<>();
         private final List<Step> steps = new ArrayList<>();
         private boolean plain;
+        private final Group group = currentGroup;
 
         private Product(Supplier<? extends Item> result, int count, int knots) {
             this.result = result;
@@ -92,6 +108,10 @@ public final class BenchProducts {
             return !plain;
         }
 
+        public Group group() {
+            return group;
+        }
+
         public int knots() {
             return knots;
         }
@@ -131,9 +151,11 @@ public final class BenchProducts {
     }
 
     private static final List<Product> ALL = new ArrayList<>();
+    private static Group currentGroup = Group.HOUSEHOLD; // тема, в которую ложатся изделия ниже
 
     static {
         // Ткачество
+        currentGroup = Group.WEAVING;
         product(ModItems.SHUTTLE, 1, 1).planks(1)
                 .step(Operation.WHITTLE, WorkShape.SHUTTLE).step(Operation.CHISEL, WorkShape.CAVITY);
         product(ModItems.SPINDLE, 1, 0).planks(1)
@@ -141,6 +163,7 @@ public final class BenchProducts {
         product(ModItems.CARDING_COMB, 1, 1).planks(1).need(SmithingItems.NAILS, 4)
                 .step(Operation.PLANE).step(Operation.DRILL, 4).step(Operation.NAIL, 4);
         // Кухня, кожевник, гончар
+        currentGroup = Group.HOUSEHOLD;
         product(ModItems.LADLE, 1, 1).planks(1)
                 .step(Operation.CHISEL, WorkShape.BOWL).step(Operation.WHITTLE, WorkShape.LADLE_HANDLE);
         product(() -> Items.BOWL, 2, 0).planks(1).plain()
@@ -152,6 +175,7 @@ public final class BenchProducts {
         product(ModItems.BRICK_MOULD, 1, 2).planks(4).need(SmithingItems.NAILS, 4)
                 .step(Operation.PLANE).step(Operation.NAIL, 4);
         // Инструмент плотника
+        currentGroup = Group.TOOLS;
         product(ModItems.SAW, 1, 1).planks(1).need(SmithingItems.IRON_INGOT, 2)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.DRILL, 2).step(Operation.NAIL, 2);
         product(ModItems.PLANE, 1, 2).planks(2).need(SmithingItems.IRON_INGOT, 1)
@@ -163,6 +187,7 @@ public final class BenchProducts {
         product(ModItems.HAMMER, 1, 0).planks(1).need(SmithingItems.IRON_INGOT, 1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE).step(Operation.NAIL, 1);
         // Задел для кузни: деревянные части, на которые кузнец насадит железо (качество дерева пойдёт в вещь)
+        currentGroup = Group.PARTS;
         product(ModItems.TOOL_HANDLE, 2, 0).planks(1)
                 .step(Operation.WHITTLE, WorkShape.HANDLE);
         product(ModItems.AXE_HANDLE, 1, 1).planks(1)

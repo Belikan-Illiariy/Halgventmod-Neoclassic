@@ -30,6 +30,7 @@ public final class Minigame {
     public static final int SHARPEN = 7;     // подточить на точиле
     public static final int STRIKER = 8;     // молотобоец у наковальни
     public static final int FORGE_MELT = 9;  // плавка в тигле на кузнечном горне (product — Metal)
+    public static final int GLASS = 10;      // стеклодув у печи (product — Glassmaking.Form, info — жар печи)
 
     /** Кто принимает итог: блок-сущность станции или сам блок (россыпь, точило). */
     public interface Host {

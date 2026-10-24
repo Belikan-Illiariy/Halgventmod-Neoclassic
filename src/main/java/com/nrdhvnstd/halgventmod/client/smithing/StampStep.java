@@ -19,7 +19,10 @@ final class StampStep extends SmithStep {
 
     private final long start = System.currentTimeMillis();
     private final int count;
-    private final boolean gold;
+    /** Что толкут (MortarBlockEntity.GOLD, CINNABAR, HERBS, BONE): цвет в ступе — целое и истолчённое. */
+    private static final int[][] STUFF = {{0xFFE8E4D8, 0xFFC8B060}, {0xFFA02018, 0xFFE03A20}, {0xFF4A6A2A, 0xFF8AA050},
+            {0xFFE8E0C8, 0xFFF4F0E4}};
+    private final int what;
     private int current;
     private float crushed;
     private int onBeat;
@@ -28,7 +31,7 @@ final class StampStep extends SmithStep {
 
     StampStep(SmithWorkScreen screen, Random random, int what, int count) {
         super(screen, random);
-        this.gold = what == 0;
+        this.what = Math.clamp(what, 0, STUFF.length - 1);
         this.count = Math.max(1, count);
     }
 
@@ -65,7 +68,7 @@ final class StampStep extends SmithStep {
         int bottom = y + h - 16;
         g.fill(cx - 30, bottom - 40, cx + 30, bottom, 0xFFA07038);
         g.fill(cx - 22, bottom - 36, cx + 22, bottom - 8, 0xFF3A2A18);
-        int stuff = gold ? mix(0xFFE8E4D8, 0xFFC8B060, crushed) : mix(0xFFA02018, 0xFFE03A20, crushed);
+        int stuff = mix(STUFF[what][0], STUFF[what][1], crushed);
         g.fill(cx - 20, bottom - 18, cx + 20, bottom - 8, stuff);
         double phase = ((now - start) % BEAT_MS) / (double) BEAT_MS;
         int lift = (int) Math.round((1 - Math.cos(phase * Math.PI * 2)) / 2 * 40);

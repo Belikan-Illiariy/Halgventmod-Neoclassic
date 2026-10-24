@@ -5,6 +5,8 @@ import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.pottery.VesselForm;
+import com.nrdhvnstd.halgventmod.pottery.WareItem;
 import com.nrdhvnstd.halgventmod.weight.ModWeights;
 
 import net.minecraft.world.item.BlockItem;
@@ -308,21 +310,25 @@ public final class SmithingItems {
             .register();
 
     // ----- Изделия из пьютера, серебра и золота -----
-    public static final DeferredItem<Item> PEWTER_TANKARD = item("pewter_tankard", "Пьютеровая кружка", "Pewter tankard", Gender.F)
+    // Кружка и кубок — как глиняная кружка, блюдо — как миска (WareItem), но металл не трескается
+    public static final DeferredItem<WareItem> PEWTER_TANKARD = item("pewter_tankard", "Пьютеровая кружка", "Pewter tankard", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
-            .lore("Литая кружка с крышкой — посуда горожанина. Не бьётся, как глиняная.",
-                    "A cast lidded tankard, a townsman's tableware. It doesn't break like clay.")
-            .stacksTo(16)
+            .lore("Литая кружка с крышкой — посуда горожанина. Мера воды или питья: ПКМ по воде — набрать, ПКМ — пить; "
+                            + "налить можно из кувшина, корчаги, бочки. Не бьётся, как глиняная.",
+                    "A cast lidded tankard, a townsman's tableware. One measure of water or a drink: right-click water to fill, "
+                            + "right-click to drink; fill it from a jug, amphora or cask. It doesn't break like clay.")
+            .stacksTo(1)
             .grams(450)
-            .register();
-    public static final DeferredItem<Item> PEWTER_PLATE = item("pewter_plate", "Пьютеровое блюдо", "Pewter plate", Gender.N)
+            .register(properties -> new WareItem(properties, VesselForm.CUP, true));
+    public static final DeferredItem<WareItem> PEWTER_PLATE = item("pewter_plate", "Пьютеровое блюдо", "Pewter plate", Gender.N)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
-            .lore("Плоское литое блюдо для стола горожанина.", "A flat cast plate for a townsman's table.")
+            .lore("Плоское литое блюдо для стола горожанина. E по горшку с готовым — положить порцию; после еды остаётся в руке.",
+                    "A flat cast plate for a townsman's table. E at a pot of cooked food to serve a portion; stays in hand after eating.")
             .stacksTo(16)
             .grams(500)
-            .register();
+            .register(properties -> new WareItem(properties, VesselForm.BOWL, true));
     public static final DeferredItem<Item> PEWTER_SPOON = item("pewter_spoon", "Пьютеровая ложка", "Pewter spoon", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.POTTERY)
@@ -350,13 +356,16 @@ public final class SmithingItems {
             .stacksTo(16)
             .grams(8)
             .register();
-    public static final DeferredItem<Item> SILVER_GOBLET = item("silver_goblet", "Серебряный кубок", "Silver goblet", Gender.M)
+    public static final DeferredItem<WareItem> SILVER_GOBLET = item("silver_goblet", "Серебряный кубок", "Silver goblet", Gender.M)
             .traits(ModTraits.RARE)
             .category(Category.JEWELRY)
-            .lore("Литой кубок на ножке — посуда знати.", "A cast footed goblet, tableware of the nobility.")
+            .lore("Литой кубок на ножке — посуда знати. Мера воды или питья: ПКМ по воде — набрать, ПКМ — пить; налить можно "
+                            + "из кувшина, корчаги, бочки. Не бьётся.",
+                    "A cast footed goblet, tableware of the nobility. One measure of water or a drink: right-click water to fill, "
+                            + "right-click to drink; fill it from a jug, amphora or cask. It doesn't break.")
             .stacksTo(1)
             .grams(350)
-            .register();
+            .register(properties -> new WareItem(properties, VesselForm.CUP, true));
 
     // ----- Инструменты -----
     public static final DeferredItem<Item> TONGS = item("tongs", "Клещи", "Tongs", Gender.PL)
@@ -410,6 +419,17 @@ public final class SmithingItems {
             .grams(800)
             .draw(DrawType.TOOL)
             .register();
+    public static final DeferredItem<SmithStampItem> SMITH_STAMP = item("smith_stamp", "Клеймо", "Maker's stamp", Gender.N)
+            .traits(ModTraits.UNCOMMON)
+            .category(Category.TOOLS)
+            .lore("Стальной пуансон с личным знаком мастера — его выбивают, когда клеймо куют. В инвентаре ПКМ клеймом по "
+                            + "металлической вещи — поставить знак: в подсказке будет видно, чья работа.",
+                    "A steel punch bearing the maker's own mark, struck when the stamp is forged. In your inventory, right-click it "
+                            + "onto a metal piece to mark it: the tooltip will show whose work it is.")
+            .durability(200)
+            .grams(250)
+            .draw(DrawType.TOOL)
+            .register(SmithStampItem::new);
     public static final DeferredItem<Item> COIN_DIE = item("coin_die", "Штемпель", "Coin die", Gender.M)
             .traits(ModTraits.UNIQUE)
             .category(Category.TOOLS)
@@ -465,9 +485,9 @@ public final class SmithingItems {
             .register(properties -> new BlockItem(SmithingBlocks.CHARCOAL_PILE.get(), properties));
     public static final DeferredItem<BlockItem> BLOOMERY = item("bloomery", "Сыродутный горн", "Bloomery", Gender.M)
             .category(Category.TOOLS)
-            .lore("Глиняная печь для плавки руды. E пустой рукой — окно: руда, древесный уголь, флюс и «Плавить»; "
+            .lore("Массивная глиняная шахта для плавки руды: 2×2 в основании, 3 блока высотой. E пустой рукой — окно: руда, древесный уголь, флюс и «Плавить»; "
                             + "или E рудой, углём, флюсом — заложить, огнивом — начать плавку: качайте мехи и держите жар. Выйдет крица, а медь, олово, серебро и свинец с серебром стекают расплавом в тигель (поставьте его в окно).",
-                    "A clay furnace to smelt ore. E with an empty hand opens it (ore, charcoal, flux, \"Smelt\"), or E with ore, charcoal and flux to charge it, a flint and steel to start: "
+                    "A massive clay shaft furnace to smelt ore: 2×2 at the base, 3 blocks high. E with an empty hand opens it (ore, charcoal, flux, \"Smelt\"), or E with ore, charcoal and flux to charge it, a flint and steel to start: "
                             + "work the bellows and hold the heat. Out comes a bloom; copper, tin, silver and silver-bearing lead run molten into a crucible (put one in the window).")
             .kg(120)
             .register(properties -> new BlockItem(SmithingBlocks.BLOOMERY.get(), properties));
@@ -524,10 +544,10 @@ public final class SmithingItems {
             .register(properties -> new BlockItem(SmithingBlocks.CASTING_TABLE.get(), properties));
     public static final DeferredItem<BlockItem> MORTAR = item("mortar", "Ступа", "Mortar", Gender.F)
             .category(Category.TOOLS)
-            .lore("Тяжёлая бронзовая ступа с пестом. E золотой рудой или киноварью — положить (до 4), пустой рукой — "
-                            + "толочь в ритм. Выходит толчёная руда или красная краска.",
-                    "A heavy bronze mortar and pestle. E with gold ore or cinnabar to put it in (up to 4), an empty hand to "
-                            + "pound in rhythm. You get crushed ore or red paint.")
+            .lore("Тяжёлая бронзовая ступа с пестом. E золотой рудой, киноварью, сушёной травой или костью — положить (до 4), "
+                            + "пустой рукой — толочь в ритм. Выходит толчёная руда, красная краска, травяной порошок или костная мука.",
+                    "A heavy bronze mortar and pestle. E with gold ore, cinnabar, a dried herb or a bone to put it in (up to 4), "
+                            + "an empty hand to pound in rhythm. You get crushed ore, red paint, herb powder or bone meal.")
             .kg(30)
             .register(properties -> new BlockItem(SmithingBlocks.MORTAR.get(), properties));
     public static final DeferredItem<BlockItem> SLUICE = item("sluice", "Промывочный желоб", "Sluice", Gender.M)

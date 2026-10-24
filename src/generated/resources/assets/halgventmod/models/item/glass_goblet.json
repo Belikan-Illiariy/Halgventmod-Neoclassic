@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:item/generated",
+  "overrides": [
+    {
+      "model": "halgventmod:item/glass/glass_goblet_green",
+      "predicate": {
+        "halgventmod:tint": 1.0
+      }
+    },
+    {
+      "model": "halgventmod:item/glass/glass_goblet_crystal",
+      "predicate": {
+        "halgventmod:tint": 2.0
+      }
+    },
+    {
+      "model": "halgventmod:item/glass/glass_goblet_milk",
+      "predicate": {
+        "halgventmod:tint": 3.0
+      }
+    },
+    {
+      "model": "halgventmod:item/glass/glass_goblet_amber",
+      "predicate": {
+        "halgventmod:tint": 4.0
+      }
+    },
+    {
+      "model": "halgventmod:item/glass/glass_goblet_ruby",
+      "predicate": {
+        "halgventmod:tint": 5.0
+      }
+    }
+  ],
+  "textures": {
+    "layer0": "halgventmod:item/glass/glass_goblet"
+  }
+}

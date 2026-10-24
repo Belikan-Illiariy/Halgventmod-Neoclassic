@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 /**
- * Гончарный горн (модели Conquest Reforged): малый — на {@link #capacity()} вещей поменьше, большой — побольше.
+ * Гончарный горн: на {@link #capacity()} вещей (сейчас один — купольный, DomeKilnBlock).
  * Горит — светится и дымит (при закрытой заслонке — чёрным дымом). Износился — разваливается (BROKEN), чинят кирпичом.
  */
 public class KilnBlock extends StationBlock {

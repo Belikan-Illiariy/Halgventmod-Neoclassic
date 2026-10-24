@@ -100,7 +100,8 @@ public final class ModBlocks {
     public static final DeferredBlock<FirePitBlock> FIRE_PIT = BLOCKS.register("fire_pit",
             () -> new FirePitBlock(wood().lightLevel(state -> state.getValue(HearthBlock.LIT) ? 14 : 0)));
     public static final DeferredBlock<OvenBlock> BAKING_OVEN = BLOCKS.register("baking_oven",
-            () -> new OvenBlock(stone().lightLevel(state -> state.getValue(OvenBlock.LIT) ? 12 : 0)));
+            () -> new OvenBlock(stone().lightLevel(state -> state.getValue(OvenBlock.LIT)
+                    && state.getValue(OvenBlock.PART) == 0 ? 12 : 0)));
     public static final DeferredBlock<QuernBlock> QUERN = BLOCKS.register("quern",
             () -> new QuernBlock(stone()));
     public static final DeferredBlock<KitchenTableBlock> KITCHEN_TABLE = BLOCKS.register("kitchen_table",
@@ -179,10 +180,9 @@ public final class ModBlocks {
             () -> new PotteryWheelBlock(wood()));
     public static final DeferredBlock<DryingShelfBlock> DRYING_SHELF = BLOCKS.register("drying_shelf",
             () -> new DryingShelfBlock(wood()));
-    public static final DeferredBlock<KilnBlock> SMALL_KILN = BLOCKS.register("small_kiln",
-            () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 11 : 0), 4, 1.32F));
-    public static final DeferredBlock<KilnBlock> TALL_KILN = BLOCKS.register("tall_kiln",
-            () -> new KilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT) ? 12 : 0), 10, 1.7F));
+    public static final DeferredBlock<com.nrdhvnstd.halgventmod.pottery.DomeKilnBlock> DOME_KILN = BLOCKS.register("dome_kiln",
+            () -> new com.nrdhvnstd.halgventmod.pottery.DomeKilnBlock(stone().lightLevel(state -> state.getValue(KilnBlock.LIT)
+                    && state.getValue(com.nrdhvnstd.halgventmod.pottery.DomeKilnBlock.PART) == 0 ? 13 : 0)));
 
     // Ткачество (weaving/*). Модели — из Conquest Reforged
     public static final DeferredBlock<LoomBlock> LOOM = BLOCKS.register("loom", () -> new LoomBlock(wood()));
@@ -216,6 +216,8 @@ public final class ModBlocks {
 
     public static void register(IEventBus modEventBus) {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.init();
+        com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.init();
+        com.nrdhvnstd.halgventmod.glass.GlassBlocks.init();
         BLOCKS.register(modEventBus);
     }
 }

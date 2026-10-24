@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.client.smithing;
 import java.util.List;
 import java.util.Random;
 
+import com.nrdhvnstd.halgventmod.glass.Glassmaking;
 import com.nrdhvnstd.halgventmod.network.SmithOpenPayload;
 import com.nrdhvnstd.halgventmod.smithing.BloomeryBlockEntity;
 import com.nrdhvnstd.halgventmod.smithing.CupelBlockEntity;
@@ -84,6 +85,20 @@ public final class SmithScreens {
                         p.info(), 0, false);
                 screen.add(new MeltStep(screen, random, metal, p.extra())
                         .named(Component.translatable("gui.halgventmod.smith_work.op.melt")));
+            }
+            case Minigame.GLASS -> {
+                // Стеклодув: набрать, выдуть, катать (окно — раскрутить лист); жар — от печи
+                Glassmaking.Form form = Glassmaking.Form.byIndex(p.product());
+                screen = new SmithWorkScreen(p.pos(), p.kind(), Component.translatable("gui.halgventmod.smith_work.glass_title",
+                        Component.translatable(form.langKey())), Glassmaking.WORK_MIN_TICKS, p.info(), p.extra(), form.ware());
+                screen.glass();
+                int gob = form == Glassmaking.Form.FLASK || form == Glassmaking.Form.WINDOW ? 2 : 0;
+                int bubble = form == Glassmaking.Form.FLASK ? 2 : form == Glassmaking.Form.BOTTLES ? 0 : 1;
+                screen.add(new GatherStep(screen, random, gob).named(Component.translatable("gui.halgventmod.smith_work.op.gather")));
+                screen.add(new BlowStep(screen, random, bubble).named(Component.translatable("gui.halgventmod.smith_work.op.blow")));
+                boolean sheet = form == Glassmaking.Form.WINDOW;
+                screen.add(new SpinStep(screen, random, sheet).named(Component.translatable(sheet
+                        ? "gui.halgventmod.smith_work.op.spin_sheet" : "gui.halgventmod.smith_work.op.spin")));
             }
             case Minigame.SHARPEN -> {
                 screen = new SmithWorkScreen(p.pos(), p.kind(), Component.translatable("gui.halgventmod.smith_work.sharpen_title"),

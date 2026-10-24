@@ -62,6 +62,7 @@ public class SmithWorkScreen extends Screen {
     private final boolean coal;
     private final int baseQuality;
     private final boolean showQuality;
+    private boolean glass;
     private int current;
     private int done;
     private int doneAverage;
@@ -104,6 +105,11 @@ public class SmithWorkScreen extends Screen {
     void resume(int count, int average) {
         this.done = count;
         this.doneAverage = average;
+    }
+
+    /** Стеклодув: заготовка греется в рабочем окне печи — свои подписи (печь, «стекло потекло», «остыло»). */
+    void glass() {
+        this.glass = true;
     }
 
     void add(SmithStep step) {
@@ -170,7 +176,7 @@ public class SmithWorkScreen extends Screen {
         if (heat < minHeat - 0.04F) {
             int crack = Math.round((minHeat - heat) * 60);
             step.penalize(Math.max(3, crack));
-            show("cracked_cold", SmithStep.BAD);
+            show(glass ? "glass_cold" : "cracked_cold", SmithStep.BAD);
             sound(SoundEvents.ANVIL_LAND, 1.8F);
         }
         heat = Math.max(0, heat - 0.008F);
@@ -289,7 +295,7 @@ public class SmithWorkScreen extends Screen {
                 if (burnTimer >= BURN_SECONDS) {
                     burnTimer = 0;
                     step().penalize(10);
-                    show("burnt", SmithStep.BAD);
+                    show(glass ? "glass_burnt" : "burnt", SmithStep.BAD);
                     sound(SoundEvents.FIRE_EXTINGUISH, 0.8F);
                 }
             } else {
@@ -387,14 +393,16 @@ public class SmithWorkScreen extends Screen {
             if (inForge) {
                 g.fill(fx, fy, fx + fw, fy + FIELD_HEIGHT, 0x80200800);
                 TextFit.drawCentered(g, font, Component.translatable(copper ? "gui.halgventmod.smith_work.annealing"
-                        : "gui.halgventmod.smith_work.in_forge"), fx + fw / 2, fy + FIELD_HEIGHT / 2 - 4, fw - 20,
+                        : glass ? "gui.halgventmod.smith_work.glass_in_furnace" : "gui.halgventmod.smith_work.in_forge"),
+                        fx + fw / 2, fy + FIELD_HEIGHT / 2 - 4, fw - 20,
                         SmithStep.WARN);
             }
             g.disableScissor();
             TextFit.draw(g, font, step().status(), x + 14, y + HEIGHT - 50, WIDTH - 28, SmithStep.TEXT);
             Component hint = step().hint();
             if (step().hot()) {
-                hint = Component.translatable("gui.halgventmod.smith_work.forge_hint", hint);
+                hint = Component.translatable(glass ? "gui.halgventmod.smith_work.glass_furnace_hint"
+                        : "gui.halgventmod.smith_work.forge_hint", hint);
             }
             TextFit.draw(g, font, hint, x + 14, y + HEIGHT - 39, WIDTH - 28, SmithStep.TEXT_DIM);
         }

@@ -37,12 +37,18 @@ public class FermentingBarrelScreen extends StationScreen<FermentingBarrelMenu> 
 
     @Override
     protected java.util.List<BookEntry> book() {
-        return java.util.List.of(
-                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.BEER.get()), "gui.halgventmod.barrel.book.beer"),
-                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.CIDER.get()), "gui.halgventmod.barrel.book.cider"),
-                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.WINE.get()), "gui.halgventmod.barrel.book.wine"),
-                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.MEAD.get()), "gui.halgventmod.barrel.book.mead"),
-                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.TINCTURE.get()), "gui.halgventmod.barrel.book.tincture"));
+        java.util.List<BookEntry> entries = new java.util.ArrayList<>(java.util.List.of(
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.BEER.get()), "gui.halgventmod.barrel.book.beer", "brewing"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.CIDER.get()), "gui.halgventmod.barrel.book.cider", "brewing"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.WINE.get()), "gui.halgventmod.barrel.book.wine", "brewing"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.MEAD.get()), "gui.halgventmod.barrel.book.mead", "brewing"),
+                new BookEntry(new net.minecraft.world.item.ItemStack(com.nrdhvnstd.halgventmod.registry.ModItems.TINCTURE.get()), "gui.halgventmod.barrel.book.tincture", "brewing")));
+        // Алхимия: осадки (краска, ярь-медянка, купорос, поташ) и снадобья — своими вкладками
+        for (com.nrdhvnstd.halgventmod.alchemy.Alchemy.Steep steep : com.nrdhvnstd.halgventmod.alchemy.Alchemy.steeps()) {
+            entries.add(new BookEntry(steep.icon(), "gui.halgventmod.barrel.book." + steep.id(),
+                    steep.solid() ? "sediment" : "remedy"));
+        }
+        return entries;
     }
 
     @Override
@@ -89,7 +95,12 @@ public class FermentingBarrelScreen extends StationScreen<FermentingBarrelMenu> 
             for (String flavour : barrel.flavours()) {
                 flavours.append(Component.translatable("drink.halgventmod.flag." + flavour));
             }
-            if (!barrel.flavours().isEmpty()) {
+            if (!barrel.reagent().isEmpty()) {
+                // Алхимия: реагент (сколько положено из нужного) и добавки
+                MutableComponent line = Component.translatable("gui.halgventmod.barrel.reagent", barrel.reagent().getHoverName(),
+                        menu.get(FermentingBarrelBlockEntity.D_REAGENTS), portions);
+                smallWrap(g, barrel.flavours().isEmpty() ? line : line.append(" ").append(flavours), px, y + 37, 108, y + 48, GOOD);
+            } else if (!barrel.flavours().isEmpty()) {
                 smallWrap(g, Component.translatable("gui.halgventmod.barrel.with").append(flavours), px, y + 37, 108, y + 48, GOOD);
             }
         } else {
@@ -103,16 +114,23 @@ public class FermentingBarrelScreen extends StationScreen<FermentingBarrelMenu> 
         Component line;
         int color;
         switch (state) {
+            case FermentingBarrelBlockEntity.STATE_NEEDS_REAGENT -> {
+                line = Component.translatable("gui.halgventmod.barrel.needs_reagent");
+                color = WARN;
+            }
             case FermentingBarrelBlockEntity.STATE_NEEDS_FLAVOUR -> {
                 line = Component.translatable("gui.halgventmod.barrel.needs_flavour");
                 color = WARN;
             }
             case FermentingBarrelBlockEntity.STATE_FERMENTING -> {
-                line = Component.translatable("gui.halgventmod.barrel.fermenting", date, left);
+                line = barrel != null && !barrel.steepResult().isEmpty()
+                        ? Component.translatable("gui.halgventmod.barrel.steeping", barrel.steepResult().getHoverName(), date, left)
+                        : Component.translatable("gui.halgventmod.barrel.fermenting", date, left);
                 color = TEXT;
             }
             case FermentingBarrelBlockEntity.STATE_READY -> {
-                line = left == FermentingBarrelBlockEntity.NO_DAY ? Component.translatable("gui.halgventmod.barrel.ready_tincture")
+                line = barrel != null && barrel.solid() ? Component.translatable("gui.halgventmod.barrel.ready_solid")
+                        : left == FermentingBarrelBlockEntity.NO_DAY ? Component.translatable("gui.halgventmod.barrel.ready_tincture")
                         : menu.open() ? Component.translatable("gui.halgventmod.barrel.ready_open")
                         : Component.translatable("gui.halgventmod.barrel.ready", date);
                 color = GOOD;

@@ -116,10 +116,13 @@ public final class Smithing {
         return Boolean.TRUE.equals(stack.get(ModComponents.ROASTED.get()));
     }
 
-    /** Обжигают в гончарном горне: болотная и медная руда (ещё не обожжённые), киноварь — в ртуть. */
+    /**
+     * Обжигают в гончарном горне: болотная и медная руда (ещё не обожжённые), киноварь — в ртуть; прокаливают —
+     * свинец и кость (Alchemy.calcinable).
+     */
     public static boolean roastable(ItemStack stack) {
         return (stack.is(SmithingItems.BOG_IRON_ORE.get()) || stack.is(SmithingItems.COPPER_ORE.get())) && !roasted(stack)
-                || stack.is(SmithingItems.CINNABAR.get());
+                || stack.is(SmithingItems.CINNABAR.get()) || com.nrdhvnstd.halgventmod.alchemy.Alchemy.calcinable(stack);
     }
 
     /** Руды в горне за раз в одной ячейке. */
@@ -132,6 +135,9 @@ public final class Smithing {
         }
         if (raw.is(SmithingItems.CINNABAR.get())) {
             return new ItemStack(SmithingItems.MERCURY.get(), raw.getCount());
+        }
+        if (com.nrdhvnstd.halgventmod.alchemy.Alchemy.calcinable(raw)) {
+            return com.nrdhvnstd.halgventmod.alchemy.Alchemy.calcine(raw);
         }
         ItemStack roasted = raw.copy();
         roasted.set(ModComponents.ROASTED.get(), true);

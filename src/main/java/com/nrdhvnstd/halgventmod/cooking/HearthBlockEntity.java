@@ -594,8 +594,8 @@ public class HearthBlockEntity extends StationBlockEntity {
         }
         if (portions > 0) {
             Cookery.Result result = resultOfPortion();
-            // В глиняную миску тоже черпают: она запоминается в порции и вернётся после еды
-            boolean clayBowl = result != null && result.container() == Items.BOWL && stack.is(ModItems.CLAY_BOWL.get());
+            // В глиняную миску и пьютеровое блюдо тоже черпают: посудина запоминается в порции и вернётся после еды
+            boolean clayBowl = result != null && result.container() == Items.BOWL && Pottery.isBowl(stack);
             if (clayBowl && Pottery.cracked(stack)) {
                 Pottery.say(player, "ware_cracked_use");
                 return true;
@@ -618,7 +618,7 @@ public class HearthBlockEntity extends StationBlockEntity {
                 changed();
                 return true;
             }
-            if (stack.is(Items.BOWL) || stack.is(Items.GLASS_BOTTLE) || stack.is(ModItems.CLAY_BOWL.get())) {
+            if (stack.is(Items.BOWL) || stack.is(Items.GLASS_BOTTLE) || Pottery.isBowl(stack)) {
                 tell(player, result == Cookery.Result.HERBAL_TEA ? "need_bottle" : "need_bowl");
                 return true;
             }
