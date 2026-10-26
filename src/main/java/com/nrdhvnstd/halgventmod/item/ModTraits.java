@@ -45,6 +45,8 @@ public final class ModTraits {
 
     // ===== Состояния =====
     public static final Trait RAW = trait("raw", "Сырой", "Сырая", "Сырое", "Сырые", "Raw", 0xffffff);
+    /** Оружие затупилось: урон ниже (Dullness). */
+    public static final Trait DULL = trait("dull", "Затуплен", "Затуплена", "Затуплено", "Затуплены", "Dull", 0x9A9488);
 
     private ModTraits() {}
 

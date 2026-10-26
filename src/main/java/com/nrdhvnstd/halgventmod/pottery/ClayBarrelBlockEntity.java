@@ -134,7 +134,8 @@ public class ClayBarrelBlockEntity extends StationBlockEntity {
         int clayIn = stack.is(Items.CLAY_BALL) ? 1 : stack.is(Items.CLAY) ? 4 : 0;
         // Сырец (треснувший или неудачный) и кирпич-сырец размачивают обратно: глина не пропадает
         boolean recycle = Pottery.isGreenware(stack) || Pottery.isRawClay(stack);
-        boolean temper = stack.is(Items.SAND) || stack.is(Items.RED_SAND) || stack.is(ModItems.GROG.get());
+        boolean temper = stack.is(Items.SAND) || stack.is(Items.RED_SAND) || stack.is(ModItems.SAND_LUMP.get())
+                || stack.is(ModItems.GROG.get());
         if (clayIn == 0 && !recycle && !temper) {
             return false;
         }

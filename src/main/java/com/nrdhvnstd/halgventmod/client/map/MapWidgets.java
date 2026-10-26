@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -19,10 +20,11 @@ final class MapWidgets {
     private static final int COLOR_SELECTED = 0xFFFFE8A0;
     private static final int COLOR_HOVER = 0xFFB8A888;
     private static final int COLOR_TOOL_BACK = 0xC0181410;
+    private static final int COLOR_DISABLED = 0xA0181410; // поверх серой кнопки
 
     private MapWidgets() {}
 
-    /** Кнопка инструмента справа: значок-предмет, выбранная — в светлой рамке. */
+    /** Кнопка инструмента внизу: значок-предмет, выбранная — в светлой рамке, недоступная — серая с подсказкой. */
     static final class ToolButton extends AbstractButton {
         private final ItemStack icon;
         private final boolean selected;
@@ -47,6 +49,17 @@ final class MapWidgets {
             graphics.fill(getX(), getY(), getX() + width, getY() + height, frame);
             graphics.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, COLOR_TOOL_BACK);
             graphics.renderItem(icon, getX() + (width - 16) / 2, getY() + (height - 16) / 2);
+            if (!active) {
+                graphics.pose().pushPose();
+                graphics.pose().translate(0, 0, 200); // поверх значка-предмета
+                graphics.fill(getX() + 1, getY() + 1, getX() + width - 1, getY() + height - 1, COLOR_DISABLED);
+                graphics.pose().popPose();
+            }
+        }
+
+        /** Подсказка недоступной кнопки — под названием. */
+        void setDisabledHint(Component hint) {
+            setTooltip(Tooltip.create(getMessage().copy().append(CommonComponents.NEW_LINE).append(hint)));
         }
 
         @Override

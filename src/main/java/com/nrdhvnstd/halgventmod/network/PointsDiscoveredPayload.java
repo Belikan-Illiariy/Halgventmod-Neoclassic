@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.map.LocationMapCache;
+import com.nrdhvnstd.halgventmod.client.map.MapScreens;
 import com.nrdhvnstd.halgventmod.point.MapPoint;
 import com.nrdhvnstd.halgventmod.point.MapPoints;
 import com.nrdhvnstd.halgventmod.world.Announcements;
@@ -37,6 +39,10 @@ public record PointsDiscoveredPayload(Set<Integer> ids, int announce) implements
     public static void handle(PointsDiscoveredPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             MapPoints.clientDiscovered = Set.copyOf(payload.ids());
+            if (payload.announce() != 0) {
+                MapScreens.discovered(payload.announce());
+            }
+            LocationMapCache.pointsChanged(); // только что открытое место — сразу попросить его снимок
             for (MapPoint point : MapPoints.clientPoints) {
                 if (payload.announce() != 0 && point.id == payload.announce()) {
                     Announcements.location(point.name);

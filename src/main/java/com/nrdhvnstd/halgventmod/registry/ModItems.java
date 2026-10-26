@@ -43,10 +43,13 @@ import com.nrdhvnstd.halgventmod.weight.ModWeights;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
@@ -170,6 +173,16 @@ public final class ModItems {
             .grams(300)
             .draw(DrawType.TOOL)
             .register(HarvestToolItem::sickle);
+    public static final DeferredItem<Item> WHETSTONE = item("whetstone", "Точильный камень", "Whetstone", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("На верстаке с затупленным оружием — заточить: снимает «Затуплен», но оружие теряет 5% прочности. "
+                            + "Камень остаётся, понемногу стираясь.",
+                    "With a dull weapon on a crafting table: sharpens it, removing «Dull», but the weapon loses 5% of its "
+                            + "durability. The stone stays, slowly wearing down.")
+            .durability(4)
+            .grams(300)
+            .register(Item::new);
     public static final DeferredItem<HarvestToolItem> SCYTHE = item("scythe", "Коса", "Scythe", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
@@ -179,6 +192,26 @@ public final class ModItems {
             .kg(2.5)
             .draw(DrawType.HEAVY)
             .register(HarvestToolItem::scythe);
+    // Ванильные лопата и топор во всём остальном (зола, ил, куча углежога, колода для колки);
+    // копка песка и глины, рубка брёвен — ToolGathering
+    public static final DeferredItem<AxeItem> AXE = item("axe", "Топор", "Axe", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("ПКМ по дереву — нарубить бревно. На колоде колет брёвна на дрова.",
+                    "Right-click a tree to chop a log. Splits logs into firewood on a chopping block.")
+            .kg(1.5)
+            .draw(DrawType.TOOL)
+            .register(properties -> new AxeItem(Tiers.IRON,
+                    properties.attributes(AxeItem.createAttributes(Tiers.IRON, 6.0F, -3.1F))));
+    public static final DeferredItem<ShovelItem> SHOVEL = item("shovel", "Лопата", "Shovel", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("ПКМ по песку или глине — вскопать комок. Выгребает золу из костра и очага, копает болотный ил.",
+                    "Right-click sand or clay to dig a lump. Shovels ash out of a campfire or hearth and digs bog silt.")
+            .kg(1.5)
+            .draw(DrawType.TOOL)
+            .register(properties -> new ShovelItem(Tiers.IRON,
+                    properties.attributes(ShovelItem.createAttributes(Tiers.IRON, 1.5F, -3.0F))));
 
 
 
@@ -1168,11 +1201,18 @@ public final class ModItems {
                     "Right-click a burning campfire with a shovel. Three handfuls in a water vat make lye for liming.")
             .grams(100)
             .register();
-    public static final DeferredItem<Item> BARK = item("bark", "Кора", "Bark", Gender.F)
+    public static final DeferredItem<Item> SAND_LUMP = item("sand_lump", "Комок песка", "Lump of sand", Gender.M)
+            .traits(ModTraits.COMMON)
+            .category(Category.MINERALS)
+            .lore("ПКМ лопатой по песку. Идёт в стекольную шихту и отощителем в бочку с глиной — как песок.",
+                    "Right-click sand with a shovel. Goes into a glass batch and into a clay barrel as temper, like sand.")
+            .grams(250)
+            .register();
+    public static final DeferredItem<Item> BARK =item("bark", "Кора", "Bark", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.MATERIALS)
-            .lore("ПКМ топором по бревну. Четыре куска в чан с водой — корьевой раствор для дубления.",
-                    "Right-click a log with an axe. Four pieces in a water vat make the tanning liquor.")
+            .lore("Отходит, когда колют неокорённое бревно на колоде. Четыре куска в чан с водой — корьевой раствор для дубления.",
+                    "Comes off when an unbarked log is split on a chopping block. Four pieces in a water vat make the tanning liquor.")
             .grams(200)
             .register();
     public static final DeferredItem<Item> ALUM = item("alum", "Квасцы", "Alum", Gender.PL)

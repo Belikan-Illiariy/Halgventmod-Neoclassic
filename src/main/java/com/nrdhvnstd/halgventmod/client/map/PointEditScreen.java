@@ -30,7 +30,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Окно точки карты у администрации (после правки границы на карте). Две колонки, помещается в 640 × 360:
- * слева — название и координаты, значок до открытия («?» или любой) и после, цвет флага, текст при наведении;
+ * слева — название и координаты, значок до открытия («?» или любой) и после, цвет флага, текст при наведении,
+ * место на глобальной карте (GlobalMapScreen.pick; под кнопкой — регион, куда попала точка) и галочка «Главная локация»;
  * справа — галочка «С описанием», знамя из реестра (ряд последних внесённых, «—», «Весь реестр»), описание, сведения.
  * Галочка выключена — правая колонка неактивна, но её значения не стираются. Сохраняет и удаляет сервер (PointEditPayload).
  * Не влезает при крупном масштабе интерфейса — на время окна масштаб понижается до влезающего (fitScale).
@@ -56,7 +57,9 @@ public class PointEditScreen extends Screen {
     private static final int DYE_SWATCH = 11;
     private static final int DYE_STEP = 12;
     private static final int HOVER_TOP = 198;
-    private static final int TEXT_HEIGHT_LEFT = 100;
+    private static final int TEXT_HEIGHT_LEFT = 58;
+    private static final int GLOBAL_TOP = 262;
+    private static final int GLOBAL_BUTTON_WIDTH = 130;
 
     // Правая колонка
     private static final int BANNER_ROW_TOP = 58;
@@ -92,6 +95,8 @@ public class PointEditScreen extends Screen {
     private MapIcon hiddenIcon;          // null — «?»
     private DyeColor dye;
     private String banner;
+    private int globalX;
+    private int globalY;
 
     private int left;
     private int top;
@@ -104,6 +109,7 @@ public class PointEditScreen extends Screen {
     private MultiLineEditBox descriptionBox;
     private MultiLineEditBox infoBox;
     private Button registryButton;
+    private Checkbox majorBox;
     private boolean scaled;              // масштаб интерфейса понижен этим окном — при закрытии вернуть
 
     /**
@@ -119,6 +125,8 @@ public class PointEditScreen extends Screen {
         this.hiddenIcon = MapIcon.find(draft.hiddenIcon);
         this.dye = draft.dye.isEmpty() ? lastDye : PointShapes.dye(draft);
         this.banner = draft.banner;
+        this.globalX = draft.globalX;
+        this.globalY = draft.globalY;
     }
 
     @Override
@@ -138,6 +146,18 @@ public class PointEditScreen extends Screen {
         zBox = coordinate(zBox, coordX + 2 * (COORD_WIDTH + FIELD_GAP), point.z);
         hoverBox = multiline(hoverBox, x, top + HOVER_TOP, TEXT_HEIGHT_LEFT, MapPoint.HOVER_TEXT_MAX, point.hoverText,
                 "gui.halgventmod.point.hover_text");
+        // Место на глобальной карте и «главная»: окно выбора возвращает сюда же, значения полей сохраняются
+        addRenderableWidget(Button.builder(Component.translatable("gui.halgventmod.point.global_place"),
+                        button -> minecraft.setScreen(GlobalMapScreen.pick(this, globalX, globalY, (gx, gy) -> {
+                            globalX = gx;
+                            globalY = gy;
+                        })))
+                .bounds(x, top + GLOBAL_TOP, GLOBAL_BUTTON_WIDTH, 20).build());
+        boolean major = majorBox != null ? majorBox.selected() : point.major;
+        majorBox = addRenderableWidget(Checkbox.builder(Component.translatable("gui.halgventmod.point.major"), font)
+                .pos(x + GLOBAL_BUTTON_WIDTH + 8, top + GLOBAL_TOP + 2)
+                .selected(major)
+                .build());
 
         // Справа: галочка, знамя, описание, сведения
         boolean described = describedBox != null ? describedBox.selected() : point.described;
@@ -253,6 +273,9 @@ public class PointEditScreen extends Screen {
         point.banner = banner;
         point.description = descriptionBox.getValue().strip();
         point.info = infoBox.getValue().strip();
+        point.globalX = globalX;
+        point.globalY = globalY;
+        point.major = majorBox.selected();
         PacketDistributor.sendToServer(new PointEditPayload(point.id == 0 ? MapPoints.Action.CREATE
                 : MapPoints.Action.UPDATE, point));
         onDone.run();
@@ -427,6 +450,8 @@ public class PointEditScreen extends Screen {
         }
         graphics.drawString(font, Component.translatable("gui.halgventmod.point.hover_text"), x, top + HOVER_TOP - 10,
                 COLOR_DIM, false);
+        graphics.drawString(font, Component.translatable("gui.halgventmod.point.global_region",
+                GlobalMapScreen.regionName(globalX, globalY)), x, top + GLOBAL_TOP + 24, COLOR_DIM, false);
 
         // Правая колонка
         BannerEntry chosen = BannerRegistry.client(banner);

@@ -285,6 +285,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("key.halgventmod.calendar", russian ? "Календарь" : "Calendar");
         add("key.halgventmod.character", russian ? "Персонаж" : "Character");
         add("key.halgventmod.map", russian ? "Карта" : "Map");
+        add("key.halgventmod.mappa", russian ? "Маппа (администрация)" : "Mappa (admins)");
         add("key.halgventmod.squad", russian ? "Отряд" : "Squad");
         add("key.halgventmod.codex", russian ? "Кодекс" : "Codex");
 
@@ -292,6 +293,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.tab.inventory", russian ? "Инвентарь" : "Inventory");
         add("gui.halgventmod.tab.character", russian ? "Персонаж" : "Character");
         add("gui.halgventmod.tab.map", russian ? "Карта" : "Map");
+        add("gui.halgventmod.tab.mappa", russian ? "Маппа" : "Mappa");
         add("gui.halgventmod.tab.squad", russian ? "Отряд" : "Squad");
         add("gui.halgventmod.tab.codex", russian ? "Кодекс" : "Codex");
         add("gui.halgventmod.tab.hint", "%s (%s)");
@@ -299,62 +301,88 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // Окно «Карта»
         add("gui.halgventmod.map.cursor", "X: %s   Z: %s");
-        // Меню правого клика по карте
-        add("gui.halgventmod.map.menu.add_waypoint", russian ? "Поставить метку" : "Add Waypoint");
-        add("gui.halgventmod.map.menu.edit_waypoint", russian ? "Изменить метку" : "Edit Waypoint");
-        add("gui.halgventmod.map.menu.add_text", russian ? "Добавить надпись" : "Add Inscription");
-        add("gui.halgventmod.map.menu.edit_text", russian ? "Изменить надпись" : "Edit Inscription");
-        add("gui.halgventmod.map.menu.delete_text", russian ? "Удалить надпись" : "Delete Inscription");
-        add("gui.halgventmod.map.menu.teleport", russian ? "Телепортация" : "Teleport");
-        // Окно надписи на карте
-        add("gui.halgventmod.map.text.new", russian ? "Новая надпись" : "New Inscription");
-        add("gui.halgventmod.map.text.edit", russian ? "Надпись" : "Inscription");
-        add("gui.halgventmod.map.text.text", russian ? "Текст" : "Text");
-        add("gui.halgventmod.map.text.size", russian ? "Размер: %s" : "Size: %s");
-        add("gui.halgventmod.map.text.color", russian ? "Цвет" : "Color");
         add("gui.halgventmod.map.tool.move", russian ? "Рука" : "Hand");
         add("gui.halgventmod.map.tool.draw", russian ? "Карандаш" : "Pencil");
-        add("gui.halgventmod.map.tool.style", russian ? "Стиль" : "Style");
+        add("gui.halgventmod.map.tool.waypoint", russian ? "Метка" : "Waypoint");
+        add("gui.halgventmod.map.tool.point", russian ? "Точка" : "Point");
+        add("gui.halgventmod.map.tool.route", russian ? "Маршрут" : "Route");
+        add("gui.halgventmod.map.layer.drawing", russian ? "Карандаш" : "Pencil");
+        add("gui.halgventmod.map.layer.waypoints", russian ? "Метки" : "Waypoints");
+        add("gui.halgventmod.map.layer.points", russian ? "Точки" : "Points");
+        add("gui.halgventmod.map.layer.routes", russian ? "Маршруты" : "Routes");
+        add("gui.halgventmod.map.layer.npc", russian ? "НПС" : "NPCs");
+        add("gui.halgventmod.map.layer.biomes", russian ? "Биомы" : "Biomes");
+        add("gui.halgventmod.map.layer.squad", russian ? "Отряд" : "Squad");
+        add("gui.halgventmod.waypoint.unnamed", russian ? "Без названия" : "Unnamed");
+
+        // Карта локации
+        add("gui.halgventmod.location_map.title", russian ? "Карта локации" : "Location Map");
+        add("gui.halgventmod.location_map.halgvent", russian ? "Хальгвент" : "Halgvent");
+        add("gui.halgventmod.location_map.unexplored", russian ? "Локация неизведана" : "Location unexplored");
+
+        // Техническая карта (администрация)
+        add("gui.halgventmod.tech_map.title", russian ? "Техническая карта" : "Technical Map");
+        add("gui.halgventmod.tech_map.need_creative", russian ? "Нужен творческий режим" : "Requires Creative mode");
+        add("gui.halgventmod.tech_map.search", russian ? "Название локации" : "Location name");
+        add("gui.halgventmod.tech_map.capture", russian ? "Снять карту локации" : "Capture Location Map");
+        add("gui.halgventmod.tech_map.player_view", russian ? "Как видит игрок" : "Player's View");
+        add("gui.halgventmod.route.new", russian ? "Новый маршрут" : "New Route");
+        add("gui.halgventmod.route.edit", russian ? "Маршрут" : "Route");
+        add("gui.halgventmod.route.name", russian ? "Название" : "Name");
+        add("gui.halgventmod.route.color", russian ? "Цвет" : "Color");
+        add("gui.halgventmod.route.delete", russian ? "Удалить маршрут" : "Delete Route");
+        add("gui.halgventmod.route.delete_confirm", russian
+                ? "Маршрут «%s» пропадёт у всей администрации. Отменить будет нельзя."
+                : "Route «%s» will be removed for all admins. This cannot be undone.");
+        add("gui.halgventmod.route.hint", russian
+                ? "ЛКМ — точка маршрута, Enter — завершить, ПКМ или Esc — отменить"
+                : "LMB — route point, Enter — finish, RMB or Esc — cancel");
+        add("message.halgventmod.location_map.prefix", russian ? "[Карта]" : "[Map]");
+        add("message.halgventmod.location_map.no_point", russian ? "Нет места с номером %s" : "No place with id %s");
+        add("message.halgventmod.location_map.busy", russian ? "Уже идёт снимок «%s»" : "Already capturing «%s»");
+        add("message.halgventmod.location_map.no_dimension", russian ? "Нет измерения %s" : "No dimension %s");
+        add("message.halgventmod.location_map.too_big", russian
+                ? "Локация слишком большая для снимка (больше %s блоков)"
+                : "The location is too big to capture (over %s blocks)");
+        add("message.halgventmod.location_map.started", russian ? "Снимаю «%s»…" : "Capturing «%s»…");
+        add("message.halgventmod.location_map.write_failed", russian
+                ? "Не удалось записать снимок «%s»" : "Could not save the capture of «%s»");
+        add("message.halgventmod.location_map.done", russian ? "Снимок «%s» готов" : "Capture of «%s» is ready");
+
+        // Глобальная карта
+        add("gui.halgventmod.global_map.title", russian ? "Глобальная карта" : "World Map");
+        add("gui.halgventmod.global_map.whole", russian ? "Весь Хальгвент" : "All of Halgvent");
+        add("gui.halgventmod.global_map.missing", russian ? "Глобальная карта не загружена" : "The world map is not loaded");
+        add("gui.halgventmod.global_map.open_map", russian ? "Открыть карту" : "Open Map");
+        add("gui.halgventmod.global_map.pick", russian
+                ? "Место на глобальной карте: ЛКМ — поставить, Enter — готово, Esc — отмена"
+                : "Place on the world map: LMB — set, Enter — done, Esc — cancel");
+        add("gui.halgventmod.global_map.pick_done", russian ? "Готово" : "Done");
+        add("gui.halgventmod.global_map.not_on_map", russian ? "не на карте" : "not on the map");
+        add("gui.halgventmod.point.global_place", russian ? "На глобальной карте…" : "On the World Map…");
+        add("gui.halgventmod.point.major", russian ? "Главная локация" : "Major location");
+        add("gui.halgventmod.point.global_region", russian ? "Регион: %s" : "Region: %s");
+        String[][] regions = {
+                {"vessen", "Вессен", "Vessen"}, {"pereval", "Перевал", "Pereval"},
+                {"wallenburg", "Валленбург", "Wallenburg"}, {"treveron", "Треверон", "Treveron"},
+                {"rosenmair", "Розенмайр", "Rosenmair"}, {"lebenskap", "Лебенскап", "Lebenskap"}};
+        for (String[] region : regions) {
+            add("region.halgventmod." + region[0], russian ? region[1] : region[2]);
+            add("region.halgventmod." + region[0] + ".description", russian
+                    ? "Описание появится позже." : "Description coming later.");
+        }
 
         // Карта: рисование
         add("gui.halgventmod.map.draw.color", russian ? "Цвет" : "Color");
         add("gui.halgventmod.map.draw.brush", russian ? "Кисть" : "Brush");
         add("gui.halgventmod.map.draw.brush_size", russian ? "%s бл." : "%s blocks");
-        add("gui.halgventmod.map.draw.hint.draw", russian ? "ЛКМ: рисовать" : "LMB: draw");
-        add("gui.halgventmod.map.draw.hint.erase", russian ? "ПКМ: стирать" : "RMB: erase");
-        add("gui.halgventmod.map.draw.hint.pan", russian ? "СКМ: двигать карту" : "MMB: move the map");
-        add("gui.halgventmod.map.draw.hint.undo", russian ? "Ctrl+Z: отменить штрих" : "Ctrl+Z: undo a stroke");
         add("gui.halgventmod.map.draw.clear", russian ? "Удалить все пометки" : "Erase All Drawings");
         add("gui.halgventmod.map.draw.clear_confirm", russian
                 ? "Все рисунки на карте этого мира и измерения пропадут. Отменить будет нельзя."
                 : "All drawings on the map of this world and dimension will be lost. This cannot be undone.");
 
-        // Карта: стиль
-        add("gui.halgventmod.map.style.base", russian ? "Основа" : "Base");
-        add("gui.halgventmod.map.style.base.vanilla", russian ? "Ваниль" : "Vanilla");
-        add("gui.halgventmod.map.style.base.parchment", russian ? "Пергамент" : "Parchment");
-        add("gui.halgventmod.map.style.base.engraving", russian ? "Гравюра" : "Engraving");
-        add("gui.halgventmod.map.style.base.atlas", russian ? "Атлас" : "Atlas");
-        add("gui.halgventmod.map.style.group.color", russian ? "Цвет" : "Color");
-        add("gui.halgventmod.map.style.group.relief", russian ? "Рельеф" : "Relief");
-        add("gui.halgventmod.map.style.group.paper", russian ? "Бумага" : "Paper");
-        add("gui.halgventmod.map.style.saturation", russian ? "Насыщенность" : "Saturation");
-        add("gui.halgventmod.map.style.contrast", russian ? "Контраст" : "Contrast");
-        add("gui.halgventmod.map.style.brightness", russian ? "Яркость" : "Brightness");
-        add("gui.halgventmod.map.style.sepia", russian ? "Сепия" : "Sepia");
-        add("gui.halgventmod.map.style.hue", russian ? "Оттенок" : "Hue");
-        add("gui.halgventmod.map.style.biome_color", russian ? "Цвет биомов" : "Biome Color");
-        add("gui.halgventmod.map.style.green_mute", russian ? "Приглушение зелени" : "Mute Greens");
-        add("gui.halgventmod.map.style.slopes", russian ? "Склоны" : "Slopes");
-        add("gui.halgventmod.map.style.heights", russian ? "Светотень высот" : "Elevation Shading");
-        add("gui.halgventmod.map.style.grain", russian ? "Зерно" : "Grain");
-        add("gui.halgventmod.map.style.percent", "%s: %s%%");
-        add("gui.halgventmod.map.style.degrees", "%s: %s°");
-        add("gui.halgventmod.map.style.biome_labels", russian ? "Названия биомов" : "Biome Names");
-        add("gui.halgventmod.map.style.reset", russian ? "Сброс к основе" : "Reset to Base");
 
         // Метки
-        add("key.halgventmod.waypoint", russian ? "Поставить метку" : "Add Waypoint");
         add("key.halgventmod.pickup", russian ? "Подобрать / использовать" : "Pick Up / Use");
         add("key.halgventmod.visor", russian ? "Поднять/опустить забрало" : "Raise/Lower Visor");
         add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
@@ -384,10 +412,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("hud.halgventmod.use.close", russian ? "Закрыть: %s" : "Close: %s");
         add("hud.halgventmod.use.use", russian ? "Использовать: %s" : "Use: %s");
         add("tooltip.halgventmod.arrows", russian ? "Стрел: %s из %s" : "Arrows: %s of %s");
-        add("gui.halgventmod.waypoint.new", russian ? "Новая метка" : "New Waypoint");
-        add("gui.halgventmod.waypoint.edit", russian ? "Метка" : "Waypoint");
         add("gui.halgventmod.waypoint.name", russian ? "Название" : "Name");
-        add("gui.halgventmod.waypoint.color", russian ? "Цвет" : "Color");
         add("gui.halgventmod.waypoint.save", russian ? "Сохранить" : "Save");
         add("gui.halgventmod.waypoint.delete", russian ? "Удалить" : "Delete");
         add("gui.halgventmod.waypoint.icon", russian ? "Значок: %s" : "Icon: %s");
@@ -395,9 +420,6 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.waypoint.compass", russian ? "Видимость на компасе" : "Show on compass");
 
         // Точки карты (ставит администрация, видны всем)
-        add("gui.halgventmod.map.menu.add_point", russian ? "Поставить точку" : "Add Point");
-        add("gui.halgventmod.map.menu.edit_point", russian ? "Изменить точку" : "Edit Point");
-        add("gui.halgventmod.map.menu.edit_point_bounds", russian ? "Изменить границы точки" : "Edit Point Bounds");
         add("gui.halgventmod.point.new", russian ? "Новая точка" : "New Point");
         add("gui.halgventmod.point.edit", russian ? "Точка" : "Point");
         add("gui.halgventmod.point.shape.circle", russian ? "Круг" : "Circle");
@@ -1868,8 +1890,6 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.creation.error.spawn", russian ? "Такой точки появления больше нет: выберите другую." : "That starting point no longer exists: choose another.");
         add("gui.halgventmod.creation.error.name_length", russian ? "Имя должно быть от 2 до 32 знаков." : "The name must be 2 to 32 characters long.");
         add("gui.halgventmod.creation.error.name_characters", russian ? "В имени только кириллица, пробел и дефис между словами; римское число из I, V, X — после имени." : "Only Cyrillic letters, with spaces or hyphens between words; a Roman numeral of I, V, X may follow the name.");
-        add("gui.halgventmod.map.menu.add_spawn", russian ? "Поставить точку появления" : "Add Starting Point");
-        add("gui.halgventmod.map.menu.edit_spawn", russian ? "Изменить точку появления" : "Edit Starting Point");
         add("gui.halgventmod.spawn.new", russian ? "Новая точка появления" : "New Starting Point");
         add("gui.halgventmod.spawn.edit", russian ? "Точка появления" : "Starting Point");
         add("gui.halgventmod.spawn.kind", russian ? "Точка появления" : "Starting point");

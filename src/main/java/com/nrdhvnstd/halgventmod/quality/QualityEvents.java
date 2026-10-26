@@ -38,8 +38,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 /**
  * Как качество снаряжения работает в игре (таблица — GearQuality.Grade):
  * <ul>
- *   <li>урон оружия ближнего боя — множитель к атрибуту «Урон атаки» вещи (видно и в подсказке); стрелы — по качеству
- *       лука или арбалета, из которого выпущены;</li>
+ *   <li>урон оружия ближнего боя — множитель к атрибуту «Урон атаки» вещи (видно и в подсказке), вместе с затуплением
+ *       (Dullness); стрелы — по качеству лука или арбалета, из которого выпущены;</li>
  *   <li>пробитие — удар оружием гасится бронёй цели слабее на долю пробития;</li>
  *   <li>защита — множитель к броне и твёрдости вещи (броня мода — в ModArmor, ванильная — к её атрибутам);</li>
  *   <li>стойкость — надетая броня дополнительно гасит урон своего типа: сумма стойкости вещей
@@ -62,13 +62,17 @@ public final class QualityEvents {
     @SubscribeEvent
     public static void onItemAttributes(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
-        if (!GearQuality.has(stack)) {
+        boolean quality = GearQuality.has(stack);
+        float dull = Dullness.damageFactor(stack);
+        if (!quality && dull == 1.0F) {
             return;
         }
         GearQuality.Grade grade = GearQuality.get(stack);
+        float damage = (quality ? grade.damage() : 1.0F) * dull;
+        float protection = quality ? grade.protection() : 1.0F;
         boolean weapon = GearQuality.isWeapon(stack);
         boolean vanillaArmor = stack.getItem() instanceof ArmorItem;
-        if ((!weapon || grade.damage() == 1.0F) && (!vanillaArmor || grade.protection() == 1.0F)) {
+        if ((!weapon || damage == 1.0F) && (!vanillaArmor || protection == 1.0F)) {
             return;
         }
         List<ItemAttributeModifiers.Entry> scaled = new ArrayList<>();
@@ -79,10 +83,10 @@ public final class QualityEvents {
                     && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
                 // У основного урона вещи учитываем и единицу кулака: весь удар ×множитель
                 amount = modifier.id().equals(Item.BASE_ATTACK_DAMAGE_ID)
-                        ? (1.0 + amount) * grade.damage() - 1.0 : amount * grade.damage();
+                        ? (1.0 + amount) * damage - 1.0 : amount * damage;
             } else if (vanillaArmor && (entry.attribute().equals(Attributes.ARMOR)
                     || entry.attribute().equals(Attributes.ARMOR_TOUGHNESS))) {
-                amount *= grade.protection();
+                amount *= protection;
             } else {
                 continue;
             }

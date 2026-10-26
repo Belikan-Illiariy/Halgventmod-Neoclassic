@@ -113,6 +113,7 @@ public class MapPoints extends SavedData {
                     return;
                 }
                 point.id = data.nextId++;
+                point.mapVersion = 0; // снимок делает только LocationMaps
                 data.points.add(point);
                 LOGGER.info("{} поставил {} «{}» #{} в {} {} {}", player.getGameProfile().getName(),
                         point.isSpawn() ? "точку появления" : "точку", point.name, point.id, point.x, point.y, point.z);
@@ -124,6 +125,7 @@ public class MapPoints extends SavedData {
                 }
                 point.dimension = data.points.get(index).dimension; // измерение и тип не меняются
                 point.kind = data.points.get(index).kind;
+                point.mapVersion = data.points.get(index).mapVersion;
                 if (!point.valid()) {
                     return;
                 }
@@ -139,9 +141,31 @@ public class MapPoints extends SavedData {
             }
         }
         data.setDirty();
-        for (ServerPlayer each : player.server.getPlayerList().getPlayers()) {
+        syncAll(player.server);
+    }
+
+    private static void syncAll(MinecraftServer server) {
+        for (ServerPlayer each : server.getPlayerList().getPlayers()) {
             sync(each);
         }
+    }
+
+    @Nullable
+    public MapPoint find(int id) {
+        int index = indexOf(id);
+        return index < 0 ? null : points.get(index);
+    }
+
+    /** Снимок карты локации готов (LocationMaps): новая версия — всем, клиенты сами попросят файл. */
+    public static void setMapVersion(MinecraftServer server, int id, int version) {
+        MapPoints data = get(server);
+        MapPoint point = data.find(id);
+        if (point == null) {
+            return;
+        }
+        point.mapVersion = version;
+        data.setDirty();
+        syncAll(server);
     }
 
     private int indexOf(int id) {

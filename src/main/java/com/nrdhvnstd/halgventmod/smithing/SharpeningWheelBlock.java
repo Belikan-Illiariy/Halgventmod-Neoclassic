@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.serialization.MapCodec;
+import com.nrdhvnstd.halgventmod.quality.Dullness;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,7 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Точило. Нужно наковальне для заточки (этап GRIND). E затупившимся клинком или инструментом — подточить
  * (мини-игра, как заточка на наковальне): вернёт часть прочности — тем больше, чем чище работа, но не дальше
- * {@link #FLOOR} износа: последнее снимает только перековка на наковальне.
+ * {@link #FLOOR} износа: последнее снимает только перековка на наковальне. Заодно снимает затупление (Dullness).
  */
 public class SharpeningWheelBlock extends HorizontalDirectionalBlock implements Minigame.Host {
     public static final MapCodec<SharpeningWheelBlock> CODEC = simpleCodec(SharpeningWheelBlock::new);
@@ -117,6 +118,7 @@ public class SharpeningWheelBlock extends HorizontalDirectionalBlock implements 
         int floor = Math.round(max * FLOOR);
         int restore = Math.round(max * (BASE + PER_SCORE * score / 100F));
         stack.setDamageValue(Math.max(floor, stack.getDamageValue() - restore));
+        Dullness.sharpen(stack); // подточенное больше не тупое
         if (score < Smithing.SCORE_POOR && stack.has(DataComponents.MAX_DAMAGE)) {
             // Пережгли кромку — металл сняли зря
             stack.set(DataComponents.MAX_DAMAGE, Math.max(1, Math.round(max * 0.98F)));

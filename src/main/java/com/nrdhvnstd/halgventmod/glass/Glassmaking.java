@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.nrdhvnstd.halgventmod.alchemy.AlchemyItems;
 import com.nrdhvnstd.halgventmod.pottery.Pottery;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
+import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.smithing.SmithingItems;
 
 import net.minecraft.network.chat.Component;
@@ -155,7 +156,7 @@ public final class Glassmaking {
 
     /** Песок для шихты. */
     public static boolean sand(ItemStack stack) {
-        return stack.is(Items.SAND) || stack.is(Items.RED_SAND);
+        return stack.is(Items.SAND) || stack.is(Items.RED_SAND) || stack.is(ModItems.SAND_LUMP.get());
     }
 
     /** Что кладут в печь шихтой: песок, поташ, флюс, бой стекла. */

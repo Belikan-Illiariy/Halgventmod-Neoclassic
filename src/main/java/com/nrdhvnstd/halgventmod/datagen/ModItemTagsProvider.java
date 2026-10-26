@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.datagen;
 import java.util.concurrent.CompletableFuture;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.sound.SoundTags;
 
 import net.minecraft.core.HolderLookup;
@@ -29,5 +30,8 @@ public class ModItemTagsProvider extends ItemTagsProvider {
         tag(SoundTags.HEAVY_WEAPON).addTag(ItemTags.AXES).add(Items.MACE);
         // Что достаётся из ножен со звуком клинка
         tag(SoundTags.SHEATHED).addTag(ItemTags.SWORDS);
+        // Свои лопата и топор — тоже лопата и топор: ил, куча углежога, колода для колки, звуки удара, зачарования
+        tag(ItemTags.SHOVELS).add(ModItems.SHOVEL.get());
+        tag(ItemTags.AXES).add(ModItems.AXE.get());
     }
 }

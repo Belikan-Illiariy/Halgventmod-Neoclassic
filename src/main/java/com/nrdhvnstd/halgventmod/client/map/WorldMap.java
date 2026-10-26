@@ -1,5 +1,7 @@
 package com.nrdhvnstd.halgventmod.client.map;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -11,7 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mojang.logging.LogUtils;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.map.ColumnSampler;
+import com.nrdhvnstd.halgventmod.map.LocationMapData;
+import com.nrdhvnstd.halgventmod.point.MapPoint;
 
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -21,15 +27,13 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -38,6 +42,8 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
+
+import org.slf4j.Logger;
 
 /**
  * Карта мира в стиле Xaero's World Map. Каждый чанк, который клиент получил, раскрашивается сверху вниз
@@ -53,8 +59,10 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class WorldMap {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SCAN_NANOS = 2_000_000;  // сканирование чанков за тик
     private static final long ACCEPT_NANOS = 3_000_000; // приём готового из фона за тик
+    private static final long FILL_NANOS = 3_000_000;   // заливка снимков локаций за тик
     private static final int RESCAN_RADIUS = 5;        // пересмотр чанков вокруг игрока, по одному за тик
     private static final int SAVE_INTERVAL = 20 * 30;  // запись изменённых регионов раз в 30 секунд
     private static final int MAX_PENDING_LOADS = 24;   // больше задач в фоне — окно карты пока не просит новых
@@ -66,7 +74,6 @@ public final class WorldMap {
     private static final float WATER_MIN = 0.45F;
     private static final float WATER_PER_BLOCK = 0.06F;
     private static final float WATER_MAX = 0.88F;
-    private static final int CEILING_SCAN_BELOW_TOP = 9; // Незер: начинаем чуть ниже верха
 
     private static final List<ChunkPos> RESCAN_ORDER = rescanOrder();
 
@@ -96,7 +103,12 @@ public final class WorldMap {
     private static final ArrayDeque<Long> QUEUE = new ArrayDeque<>();
     private static final Set<Long> QUEUED = new HashSet<>();
     private static final ChunkTints TINTS = new ChunkTints();
+    private static final SnapshotTints SNAPSHOT_TINTS = new SnapshotTints();
+    private static final ArrayDeque<Fill> FILLS = new ArrayDeque<>();
+    private static final String OLD_TEXTS_FILE = "texts.json"; // надписей больше нет — файл удаляется
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
+    private static final ColumnSampler SAMPLER = new ColumnSampler();
+    private static final ColumnSampler SURFACE = new ColumnSampler(); // для высоты меток и телепорта
     private static int rescanIndex;
     private static int ticksToSave = SAVE_INTERVAL;
     private static int ticksToUnload = UNLOAD_INTERVAL;
@@ -310,6 +322,14 @@ public final class WorldMap {
             rescanIndex = (rescanIndex + 1) % RESCAN_ORDER.size();
             scan(center.x + offset.x, center.z + offset.z);
         }
+        // Снимки локаций — понемногу, по своему бюджету
+        long fillDeadline = System.nanoTime() + FILL_NANOS;
+        while (!FILLS.isEmpty() && System.nanoTime() < fillDeadline) {
+            if (!FILLS.peek().step(fillDeadline)) {
+                break; // регион читается или кончилось время
+            }
+            FILLS.poll().done.run();
+        }
 
         if (--ticksToSave <= 0) {
             ticksToSave = SAVE_INTERVAL;
@@ -416,14 +436,17 @@ public final class WorldMap {
         }
         QUEUE.clear();
         QUEUED.clear();
+        FILLS.clear();
         MapWorker.newGeneration();
         biomeRevision++;
         level = newLevel;
         directory = newLevel == null ? null : directoryFor(newLevel);
         Waypoints.switchTo(directory);
-        MapTexts.switchTo(directory);
         MapDrawing.switchTo(directory);
+        LocationMapCache.switchTo(directory);
         if (directory != null) {
+            deleteQuietly(directory.resolve(OLD_TEXTS_FILE));
+            MapStyle.deleteOldFile();
             // Уровни отдаления ещё не строились (карта старого формата) — построить в фоне
             Path dir = directory;
             int generation = MapWorker.generation();
@@ -468,8 +491,15 @@ public final class WorldMap {
         if (chunk == null || chunk.isEmpty()) {
             return null;
         }
-        int y = surface(chunk, x, z, new BlockPos.MutableBlockPos());
-        return y == Integer.MIN_VALUE ? null : y + 1;
+        return SURFACE.sample(chunk, x, z) ? SURFACE.height + 1 : null;
+    }
+
+    private static void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            LOGGER.warn("Не удалось удалить {}", file, e);
+        }
     }
 
     private static Path directoryFor(ClientLevel level) {
@@ -495,6 +525,120 @@ public final class WorldMap {
         name.codePoints().forEach(c -> result.appendCodePoint(
                 Character.isLetterOrDigit(c) || c == '.' || c == '-' || c == '_' ? c : '_'));
         return result.toString();
+    }
+
+    // ===== Снимки локаций =====
+
+    /**
+     * Залить снимок карты локации (LocationMapCache): пиксели внутри границы точки перезаписываются целиком,
+     * столбцы «неизвестно» — тоже. Дальше карта живёт как обычно: чанки рядом с игроком пересматриваются.
+     * done — когда залито и регионы отданы на запись.
+     */
+    static void fill(LocationMapData data, MapPoint point, Runnable done) {
+        FILLS.add(new Fill(data, point, done));
+    }
+
+    /** Заливка одного снимка: регион за регионом, строка за строкой, пока есть время. */
+    private static final class Fill {
+        final LocationMapData data;
+        final MapPoint point;
+        final Runnable done;
+        final List<Long> regions = new ArrayList<>();
+        final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int regionIndex;
+        int row = Integer.MIN_VALUE;
+
+        Fill(LocationMapData data, MapPoint point, Runnable done) {
+            this.data = data;
+            this.point = point;
+            this.done = done;
+            for (int rz = data.minZ >> MapTile.SHIFT; rz <= (data.minZ + data.height - 1) >> MapTile.SHIFT; rz++) {
+                for (int rx = data.minX >> MapTile.SHIFT; rx <= (data.minX + data.width - 1) >> MapTile.SHIFT; rx++) {
+                    regions.add(MapStorage.key(rx, rz));
+                }
+            }
+        }
+
+        /** true — снимок залит целиком. */
+        boolean step(long deadline) {
+            SNAPSHOT_TINTS.begin(data); // дёшево: только палитра биомов
+            try {
+                while (regionIndex < regions.size()) {
+                    long key = regions.get(regionIndex);
+                    int rx = ChunkPos.getX(key);
+                    int rz = ChunkPos.getZ(key);
+                    MapRegion region = regionForScan(rx, rz);
+                    if (region == null) {
+                        return false;
+                    }
+                    region.touch();
+                    int fromX = Math.max(data.minX, rx << MapTile.SHIFT);
+                    int toX = Math.min(data.minX + data.width, (rx + 1) << MapTile.SHIFT);
+                    int fromZ = Math.max(data.minZ, rz << MapTile.SHIFT);
+                    int toZ = Math.min(data.minZ + data.height, (rz + 1) << MapTile.SHIFT);
+                    if (row < fromZ) {
+                        row = fromZ;
+                    }
+                    int firstRow = row;
+                    boolean changed = false;
+                    while (row < toZ) {
+                        for (int x = fromX; x < toX; x++) {
+                            changed |= column(region, x, row);
+                        }
+                        row++;
+                        if (System.nanoTime() > deadline) {
+                            break;
+                        }
+                    }
+                    int mask = MapTile.SIZE - 1;
+                    if (changed) {
+                        region.dataChanged(fromX & mask, firstRow & mask, (toX - 1) & mask, (row - 1) & mask);
+                    }
+                    if (row < toZ) {
+                        return false; // время вышло посреди региона
+                    }
+                    regionIndex++;
+                    row = Integer.MIN_VALUE;
+                }
+            } finally {
+                SNAPSHOT_TINTS.end();
+            }
+            saveDirty();
+            return true;
+        }
+
+        // Столбец снимка — в регион; true — пиксель поменялся
+        private boolean column(MapRegion region, int x, int z) {
+            if (!point.contains(x + 0.5, z + 0.5)) {
+                return false;
+            }
+            int mask = MapTile.SIZE - 1;
+            int localX = x & mask;
+            int localZ = z & mask;
+            boolean changed;
+            int index = (z - data.minZ) * data.width + (x - data.minX);
+            BlockState state = data.block(index);
+            if (state == null) {
+                changed = region.set(localX, localZ, 0, (short) 0, MapTile.NO_HEIGHT);
+            } else {
+                int y = data.heights[index];
+                int depth = data.depth(index);
+                int color = depth > 0
+                        ? withAlpha(waterColor(SNAPSHOT_TINTS, pos, x, y, z, data.floor(index), depth), MapStyle.ALPHA_TINTED)
+                        : withAlpha(MapColors.color(SNAPSHOT_TINTS, pos.set(x, y, z), state),
+                                MapColors.tinted(state) ? MapStyle.ALPHA_TINTED : MapStyle.ALPHA_PLAIN);
+                changed = region.set(localX, localZ, color, MapPalettes.block(state), y);
+            }
+            // Биом клетки 4 × 4 — один раз на клетку (прямоугольник снимка выровнен по чанкам)
+            if ((x & 3) == 0 && (z & 3) == 0) {
+                ResourceLocation biome = data.biomeAt(x, z);
+                if (biome != null && region.setBiome((x >> MapTile.CELL_SHIFT) & (MapTile.CELLS - 1),
+                        (z >> MapTile.CELL_SHIFT) & (MapTile.CELLS - 1), MapPalettes.biome(biome))) {
+                    biomeRevision++;
+                }
+            }
+            return changed;
+        }
     }
 
     // ===== Раскраска чанка =====
@@ -523,26 +667,26 @@ public final class WorldMap {
             for (int x = 0; x < 16; x++) {
                 int worldX = baseX + x;
                 int worldZ = baseZ + z;
-                int y = surface(chunk, worldX, worldZ, pos);
-                if (y == Integer.MIN_VALUE) {
+                if (!SAMPLER.sample(chunk, worldX, worldZ)) {
                     changed |= region.set(localX + x, localZ + z, 0, (short) 0, MapTile.NO_HEIGHT);
                     continue;
                 }
-                BlockState state = chunk.getBlockState(pos.set(worldX, y, worldZ));
-                boolean water = state.getFluidState().is(FluidTags.WATER);
+                int y = SAMPLER.height;
+                BlockState state = SAMPLER.state;
                 // Блок, давший цвет: у воды (и водорослей в ней) цвет — от воды
-                short block = MapPalettes.block(water ? WATER : state);
-                int color = water
-                        ? withAlpha(waterColor(chunk, worldX, y, worldZ, pos), MapStyle.ALPHA_TINTED)
-                        : withAlpha(MapColors.color(TINTS, pos, state),
+                short block = MapPalettes.block(state);
+                int color = SAMPLER.depth > 0
+                        ? withAlpha(waterColor(TINTS, pos, worldX, y, worldZ, SAMPLER.floor, SAMPLER.depth),
+                                MapStyle.ALPHA_TINTED)
+                        : withAlpha(MapColors.color(TINTS, pos.set(worldX, y, worldZ), state),
                                 MapColors.tinted(state) ? MapStyle.ALPHA_TINTED : MapStyle.ALPHA_PLAIN);
                 changed |= region.set(localX + x, localZ + z, color, block, y);
                 // Биом клетки 4 × 4 — по её середине, на высоте поверхности
                 if ((x & 3) == 2 && (z & 3) == 2) {
                     int cellX = (worldX >> MapTile.CELL_SHIFT) & (MapTile.CELLS - 1);
                     int cellZ = (worldZ >> MapTile.CELL_SHIFT) & (MapTile.CELLS - 1);
-                    var biome = level.getBiome(pos.set(worldX, y, worldZ)).unwrapKey();
-                    if (biome.isPresent() && region.setBiome(cellX, cellZ, MapPalettes.biome(biome.get().location()))) {
+                    ResourceLocation biome = SAMPLER.biome(worldX, worldZ);
+                    if (biome != null && region.setBiome(cellX, cellZ, MapPalettes.biome(biome))) {
                         biomeRevision++;
                     }
                 }
@@ -570,49 +714,20 @@ public final class WorldMap {
         return null;
     }
 
-    /** Высота верхнего видимого блока; MIN_VALUE — столбец пуст. */
-    private static int surface(LevelChunk chunk, int x, int z, BlockPos.MutableBlockPos pos) {
-        int min = level.getMinBuildHeight();
-        int y;
-        if (level.dimensionType().hasCeiling()) {
-            y = Math.min(chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15),
-                    min + level.dimensionType().logicalHeight() - CEILING_SCAN_BELOW_TOP);
-            while (y >= min && !chunk.getBlockState(pos.set(x, y, z)).isAir()) {
-                y--; // сквозь потолок
-            }
-        } else {
-            y = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15);
-        }
-        for (; y >= min; y--) {
-            if (visible(chunk.getBlockState(pos.set(x, y, z)))) {
-                return y;
-            }
-        }
-        return Integer.MIN_VALUE;
-    }
-
-    private static boolean visible(BlockState state) {
-        return state.getRenderShape() != RenderShape.INVISIBLE || !state.getFluidState().isEmpty();
-    }
-
     private static int withAlpha(int color, int alpha) {
         return alpha << 24 | (color & 0xFFFFFF);
     }
 
-    // Вода: цвет воды биома поверх дна, тем плотнее, чем глубже
-    private static int waterColor(LevelChunk chunk, int x, int y, int z, BlockPos.MutableBlockPos pos) {
-        int water = MapColors.color(TINTS, pos.set(x, y, z), WATER);
-        int min = level.getMinBuildHeight();
-        int floorY = y - 1;
-        while (floorY >= min && chunk.getBlockState(pos.set(x, floorY, z)).getFluidState().is(FluidTags.WATER)) {
-            floorY--;
-        }
-        if (floorY < min) {
+    /** Вода: цвет воды биома поверх дна, тем плотнее, чем глубже. floor null — дна не видно. */
+    static int waterColor(BlockAndTintGetter tints, BlockPos.MutableBlockPos pos, int x, int y, int z,
+                          BlockState floor, int depth) {
+        int water = MapColors.color(tints, pos.set(x, y, z), WATER);
+        if (floor == null) {
             return water;
         }
-        int floor = MapColors.color(TINTS, pos, chunk.getBlockState(pos));
-        float cover = Mth.clamp(WATER_MIN + (y - floorY) * WATER_PER_BLOCK, WATER_MIN, WATER_MAX);
-        return FastColor.ARGB32.lerp(cover, floor, water) | 0xFF000000;
+        int floorColor = MapColors.color(tints, pos.set(x, y - depth, z), floor);
+        float cover = Mth.clamp(WATER_MIN + depth * WATER_PER_BLOCK, WATER_MIN, WATER_MAX);
+        return FastColor.ARGB32.lerp(cover, floorColor, water) | 0xFF000000;
     }
 
     // Чанки вокруг игрока, от ближних к дальним

@@ -5,12 +5,10 @@ import org.joml.Matrix4f;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.nrdhvnstd.halgventmod.HalgventMod;
-import com.nrdhvnstd.halgventmod.client.ModKeys;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -19,13 +17,12 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
  * Метки в мире: значок метки (MapIcon), под ним название и расстояние — видны сквозь стены
  * и не уменьшаются с расстоянием. Дальние метки рисуются на расстоянии MAX_DISTANCE в их сторону.
- * Клавиша B в игре — новая метка там, где стоит игрок.
+ * Метки ставятся только на карте (MapScreenBase).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class WaypointsInWorld {
@@ -37,18 +34,6 @@ public final class WaypointsInWorld {
     private static final float ICON_SIZE = 16;
 
     private WaypointsInWorld() {}
-
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        while (ModKeys.WAYPOINT.consumeClick()) {
-            LocalPlayer player = minecraft.player;
-            if (minecraft.screen == null && player != null && Waypoints.available()) {
-                minecraft.setScreen(WaypointEditScreen.create(null,
-                        player.getBlockX(), player.getBlockY(), player.getBlockZ()));
-            }
-        }
-    }
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -91,8 +76,9 @@ public final class WaypointsInWorld {
             icon.addVertex(matrix, half, bottom, 0).setColor(-1).setUv(uv[2], uv[3]).setLight(LightTexture.FULL_BRIGHT);
             icon.addVertex(matrix, half, bottom - ICON_SIZE, 0).setColor(-1).setUv(uv[2], uv[1]).setLight(LightTexture.FULL_BRIGHT);
 
-            Component label = Component.translatable("gui.halgventmod.waypoint.in_world",
-                    waypoint.name, (int) distance);
+            Component label = waypoint.name.isEmpty()
+                    ? Component.translatable("gui.halgventmod.waypoint.distance", (int) distance)
+                    : Component.translatable("gui.halgventmod.waypoint.in_world", waypoint.name, (int) distance);
             font.drawInBatch(label, -font.width(label) / 2.0F, 2, 0xFFFFFFFF, false, matrix, buffers,
                     Font.DisplayMode.SEE_THROUGH, TEXT_BACKGROUND, LightTexture.FULL_BRIGHT);
             pose.popPose();

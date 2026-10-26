@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -18,7 +17,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -37,11 +35,11 @@ import net.neoforged.neoforge.event.level.BlockDropsEvent;
  * <ul>
  *   <li>шкура — со зверя из {@link Animals} вместо ванильной кожи; всегда; чистое убийство (≤{@link #CLEAN_KILL_HITS} удара) — качество +1,
  *       искромсанный зверь (≥{@link #MANGLED_HITS} ударов) — кусок кожи меньше;</li>
- *   <li>кора — ПКМ топором по бревну (обдирает его, как в ваниле);</li>
+ *   <li>кора — при колке неокорённого бревна на колоде (ChoppingBlockEntity);</li>
  *   <li>зола — ПКМ лопатой по горящему костру (тушит его);</li>
  *   <li>квасцы — из кальцита.</li>
  * </ul>
- * Топор и лопата — действие предмета (ПКМ), работают и в режиме приключения.
+ * Лопата — действие предмета (ПКМ), работает и в режиме приключения.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class LeatherEvents {
@@ -89,7 +87,7 @@ public final class LeatherEvents {
         event.getDrops().add(new ItemEntity(level, entity.getX(), entity.getY() + 0.3, entity.getZ(), hide));
     }
 
-    // ---------------------------------------------------------------- кора и зола
+    // ---------------------------------------------------------------- зола
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -112,21 +110,6 @@ public final class LeatherEvents {
             }
             finish(event, level);
             return;
-        }
-        // Топором по бревну — ободрать кору
-        if (state.is(BlockTags.LOGS) && tool.canPerformAction(ItemAbilities.AXE_STRIP)) {
-            UseOnContext context = new UseOnContext(player, event.getHand(), event.getHitVec());
-            BlockState stripped = state.getToolModifiedState(context, ItemAbilities.AXE_STRIP, false);
-            if (stripped == null || stripped == state) {
-                return;
-            }
-            if (!level.isClientSide) {
-                level.setBlock(pos, stripped, Block.UPDATE_ALL_IMMEDIATE);
-                level.playSound(null, pos, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
-                Block.popResourceFromFace(level, pos, event.getFace(), new ItemStack(ModItems.BARK.get()));
-                damage(player, event.getHand(), tool);
-            }
-            finish(event, level);
         }
     }
 

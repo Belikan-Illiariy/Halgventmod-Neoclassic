@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "25"; // 25: точки появления — отдельный тип точек; 24: создание персонажа, точки появления; 23: кузнечество (удар по жиле, мини-игры, молотобоец); 22: распил и работа на верстаке плотника; 21: шитейный стол, раскрой; 20: окно тканья; 19: книга выкроек портного; 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
+    private static final String VERSION = "26"; // 26: снимки карт локаций, место точки на глобальной карте, маршруты; 25: точки появления — отдельный тип точек; 24: создание персонажа, точки появления; 23: кузнечество (удар по жиле, мини-игры, молотобоец); 22: распил и работа на верстаке плотника; 21: шитейный стол, раскрой; 20: окно тканья; 19: книга выкроек портного; 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -38,6 +38,12 @@ public final class ModNetwork {
         registrar.playToClient(PointsSyncPayload.TYPE, PointsSyncPayload.STREAM_CODEC, PointsSyncPayload::handle);
         registrar.playToClient(PointsDiscoveredPayload.TYPE, PointsDiscoveredPayload.STREAM_CODEC, PointsDiscoveredPayload::handle);
         registrar.playToServer(PointEditPayload.TYPE, PointEditPayload.STREAM_CODEC, PointEditPayload::handle);
+        registrar.playToServer(LocationMapRequestPayload.TYPE, LocationMapRequestPayload.STREAM_CODEC, LocationMapRequestPayload::handle);
+        registrar.playToClient(LocationMapPartPayload.TYPE, LocationMapPartPayload.STREAM_CODEC, LocationMapPartPayload::handle);
+        registrar.playToServer(LocationCapturePayload.TYPE, LocationCapturePayload.STREAM_CODEC, LocationCapturePayload::handle);
+        registrar.playToClient(LocationCaptureProgressPayload.TYPE, LocationCaptureProgressPayload.STREAM_CODEC, LocationCaptureProgressPayload::handle);
+        registrar.playToClient(RoutesSyncPayload.TYPE, RoutesSyncPayload.STREAM_CODEC, RoutesSyncPayload::handle);
+        registrar.playToServer(RouteEditPayload.TYPE, RouteEditPayload.STREAM_CODEC, RouteEditPayload::handle);
         registrar.playToClient(DawnPayload.TYPE, DawnPayload.STREAM_CODEC, DawnPayload::handle);
         registrar.playToClient(BannersSyncPayload.TYPE, BannersSyncPayload.STREAM_CODEC, BannersSyncPayload::handle);
         registrar.playToClient(BannerRegistryOpenPayload.TYPE, BannerRegistryOpenPayload.STREAM_CODEC, BannerRegistryOpenPayload::handle);

@@ -1,110 +1,43 @@
 package com.nrdhvnstd.halgventmod.client.map;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 import org.slf4j.Logger;
 
 /**
- * Стиль карты: основа (пресет) и тонкая настройка поверх неё. Регион хранит «сырой» цвет блока
- * и высоту (MapRegion), а картинку на экране собирает отсюда — apply(). Тень от рельефа тоже здесь,
- * поэтому её сила настраивается. Стиль один на все миры: .minecraft/halgventmod/map_style.json.
+ * Вид карты — один на всех, «пергамент»: регион хранит «сырой» цвет блока и высоту (MapRegion), а картинку
+ * на экране собирает отсюда — apply(). Тень от рельефа тоже здесь. Выбора основы и ползунков больше нет;
+ * старый файл настроек .minecraft/halgventmod/map_style.json удаляется.
  */
 public final class MapStyle {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String FILE = "map_style.json";
+    private static final String OLD_FILE = "map_style.json";
 
     /** Альфа «сырого» пикселя: обычный блок и блок, окрашенный биомом (трава, листва, вода). 0 — неизвестно. */
     public static final int ALPHA_PLAIN = 0xFF;
     public static final int ALPHA_TINTED = 0xFE;
 
-    public enum Group {
-        COLOR, RELIEF, PAPER;
+    // Пергамент: насыщенность, контраст, яркость, сепия, оттенок (°), цвет биомов, приглушение зелени,
+    // склоны, светотень высот, зерно — в процентах
+    private static final float SATURATION = 0.45F;
+    private static final float CONTRAST = 0.95F;
+    private static final float BRIGHTNESS = 1.05F;
+    private static final float SEPIA_AMOUNT = 0.75F;
+    private static final int HUE_DEGREES = 0;
+    private static final float BIOME_COLOR = 0.60F;
+    private static final float GREEN_MUTE = 0.55F;
+    private static final float SLOPES = 1.40F;
+    private static final float HEIGHTS = 0.30F;
+    private static final float GRAIN = 0.35F;
 
-        public Component title() {
-            return Component.translatable("gui.halgventmod.map.style.group." + name().toLowerCase(Locale.ROOT));
-        }
-    }
-
-    /** Ползунки: пределы и единица (% или °). */
-    public enum Setting {
-        SATURATION(Group.COLOR, 0, 200, false),
-        CONTRAST(Group.COLOR, 50, 200, false),
-        BRIGHTNESS(Group.COLOR, 50, 150, false),
-        SEPIA(Group.COLOR, 0, 100, false),
-        HUE(Group.COLOR, -180, 180, true),
-        BIOME_COLOR(Group.COLOR, 0, 100, false),
-        GREEN_MUTE(Group.COLOR, 0, 100, false),
-        SLOPES(Group.RELIEF, 0, 200, false),
-        HEIGHTS(Group.RELIEF, 0, 100, false),
-        GRAIN(Group.PAPER, 0, 100, false);
-
-        public final Group group;
-        public final int min;
-        public final int max;
-        public final boolean degrees;
-
-        Setting(Group group, int min, int max, boolean degrees) {
-            this.group = group;
-            this.min = min;
-            this.max = max;
-            this.degrees = degrees;
-        }
-
-        public String key() {
-            return name().toLowerCase(Locale.ROOT);
-        }
-
-        public Component title() {
-            return Component.translatable("gui.halgventmod.map.style." + key());
-        }
-    }
-
-    /** Основы. Значения — в порядке Setting. */
-    public enum Base {
-        //            насыщ контр ярк сепия оттен биомы зелень склоны высоты зерно
-        VANILLA(new int[] {115, 105, 100, 0, 0, 100, 0, 100, 0, 0}),
-        PARCHMENT(new int[] {45, 95, 105, 75, 0, 60, 55, 140, 30, 35}),
-        ENGRAVING(new int[] {0, 140, 105, 20, 0, 0, 0, 200, 45, 50}),
-        ATLAS(new int[] {70, 100, 105, 15, -8, 75, 45, 120, 20, 10});
-
-        private final int[] defaults;
-
-        Base(int[] defaults) {
-            this.defaults = defaults;
-        }
-
-        public Component title() {
-            return Component.translatable("gui.halgventmod.map.style.base." + name().toLowerCase(Locale.ROOT));
-        }
-    }
-
-    private static Base base = Base.PARCHMENT;
-    private static final int[] VALUES = Base.PARCHMENT.defaults.clone();
-    private static boolean biomeLabels = true;
-    private static boolean loaded;
-    private static boolean dirty;
-    /** Растёт при каждой смене стиля: регионы с другим номером пересобирают картинку. */
-    private static int version;
-
-    // Готовые к расчёту множители — пересчитываются при смене стиля
     private static float saturation;
     private static float contrast;
     private static float brightness;
@@ -115,64 +48,31 @@ public final class MapStyle {
     private static float heights;
     private static float grain;
     private static final float[] HUE = new float[9];
+    private static boolean oldFileChecked;
+
+    static {
+        prepare();
+    }
 
     private MapStyle() {}
 
-    public static Base base() {
-        load();
-        return base;
-    }
-
-    public static int get(Setting setting) {
-        load();
-        return VALUES[setting.ordinal()];
-    }
-
-    /** Показывать ли названия биомов. К основе не относится: сброс её не трогает. */
-    public static boolean biomeLabels() {
-        load();
-        return biomeLabels;
-    }
-
-    public static void setBiomeLabels(boolean shown) {
-        load();
-        if (biomeLabels != shown) {
-            biomeLabels = shown;
-            dirty = true;
-        }
-    }
-
+    /** Вид не меняется: тайлы собираются один раз. */
     public static int version() {
-        load();
-        return version;
+        return 1;
     }
 
-    /** Новая основа: все ползунки — к её значениям. */
-    public static void setBase(Base newBase) {
-        load();
-        base = newBase;
-        System.arraycopy(newBase.defaults, 0, VALUES, 0, VALUES.length);
-        changed();
-    }
-
-    /** Сброс тонкой настройки к значениям основы. */
-    public static void reset() {
-        setBase(base());
-    }
-
-    public static void set(Setting setting, int value) {
-        load();
-        value = Mth.clamp(value, setting.min, setting.max);
-        if (VALUES[setting.ordinal()] != value) {
-            VALUES[setting.ordinal()] = value;
-            changed();
+    /** Удалить файл настроек стиля прежних версий (один раз за запуск). */
+    static void deleteOldFile() {
+        if (oldFileChecked) {
+            return;
         }
-    }
-
-    private static void changed() {
-        version++;
-        dirty = true;
-        prepare();
+        oldFileChecked = true;
+        Path file = Minecraft.getInstance().gameDirectory.toPath().resolve(HalgventMod.MODID).resolve(OLD_FILE);
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            LOGGER.warn("Не удалось удалить {}", file, e);
+        }
     }
 
     // ===== Цвет пикселя =====
@@ -280,18 +180,18 @@ public final class MapStyle {
     }
 
     private static void prepare() {
-        saturation = VALUES[Setting.SATURATION.ordinal()] / 100.0F;
-        contrast = VALUES[Setting.CONTRAST.ordinal()] / 100.0F;
-        brightness = VALUES[Setting.BRIGHTNESS.ordinal()] / 100.0F;
-        sepia = VALUES[Setting.SEPIA.ordinal()] / 100.0F;
-        biomeColor = VALUES[Setting.BIOME_COLOR.ordinal()] / 100.0F;
-        greenMute = VALUES[Setting.GREEN_MUTE.ordinal()] / 100.0F;
-        slopes = VALUES[Setting.SLOPES.ordinal()] / 100.0F;
-        heights = VALUES[Setting.HEIGHTS.ordinal()] / 100.0F;
-        grain = VALUES[Setting.GRAIN.ordinal()] / 100.0F;
+        saturation = SATURATION;
+        contrast = CONTRAST;
+        brightness = BRIGHTNESS;
+        sepia = SEPIA_AMOUNT;
+        biomeColor = BIOME_COLOR;
+        greenMute = GREEN_MUTE;
+        slopes = SLOPES;
+        heights = HEIGHTS;
+        grain = GRAIN;
 
         // Матрица поворота оттенка (как hue-rotate в CSS)
-        double angle = Math.toRadians(VALUES[Setting.HUE.ordinal()]);
+        double angle = Math.toRadians(HUE_DEGREES);
         float cos = (float) Math.cos(angle);
         float sin = (float) Math.sin(angle);
         HUE[0] = 0.213F + cos * 0.787F - sin * 0.213F;
@@ -303,77 +203,5 @@ public final class MapStyle {
         HUE[6] = 0.213F - cos * 0.213F - sin * 0.787F;
         HUE[7] = 0.715F - cos * 0.715F + sin * 0.715F;
         HUE[8] = 0.072F + cos * 0.928F + sin * 0.072F;
-    }
-
-    // ===== Файл =====
-
-    private static Path file() {
-        return Minecraft.getInstance().gameDirectory.toPath().resolve(HalgventMod.MODID).resolve(FILE);
-    }
-
-    private static void load() {
-        if (loaded) {
-            return;
-        }
-        loaded = true;
-        Path file = file();
-        if (Files.isRegularFile(file)) {
-            try (Reader reader = Files.newBufferedReader(file)) {
-                JsonObject json = GSON.fromJson(reader, JsonObject.class);
-                if (json != null) {
-                    JsonElement baseName = json.get("base");
-                    if (baseName != null) {
-                        for (Base candidate : Base.values()) {
-                            if (candidate.name().equalsIgnoreCase(baseName.getAsString())) {
-                                base = candidate;
-                            }
-                        }
-                    }
-                    System.arraycopy(base.defaults, 0, VALUES, 0, VALUES.length);
-                    JsonElement labels = json.get("biome_labels");
-                    if (labels != null) {
-                        biomeLabels = labels.getAsBoolean();
-                    }
-                    JsonObject values = json.getAsJsonObject("values");
-                    if (values != null) {
-                        for (Setting setting : Setting.values()) {
-                            JsonElement value = values.get(setting.key());
-                            if (value != null) {
-                                VALUES[setting.ordinal()] = Mth.clamp(value.getAsInt(), setting.min, setting.max);
-                            }
-                        }
-                    }
-                }
-            } catch (IOException | JsonParseException | ClassCastException | IllegalStateException e) {
-                LOGGER.warn("Не удалось прочитать стиль карты {}", file, e);
-            }
-        }
-        version++;
-        prepare();
-    }
-
-    /** Записать, если менялся (при закрытии карты). */
-    public static void saveIfChanged() {
-        if (!dirty) {
-            return;
-        }
-        dirty = false;
-        JsonObject json = new JsonObject();
-        json.addProperty("base", base.name().toLowerCase(Locale.ROOT));
-        json.addProperty("biome_labels", biomeLabels);
-        JsonObject values = new JsonObject();
-        for (Setting setting : Setting.values()) {
-            values.addProperty(setting.key(), VALUES[setting.ordinal()]);
-        }
-        json.add("values", values);
-        Path file = file();
-        try {
-            Files.createDirectories(file.getParent());
-            try (Writer writer = Files.newBufferedWriter(file)) {
-                GSON.toJson(json, writer);
-            }
-        } catch (IOException e) {
-            LOGGER.warn("Не удалось сохранить стиль карты {}", file, e);
-        }
     }
 }

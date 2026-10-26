@@ -260,6 +260,13 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.VAR_INT)
                     .build());
 
+    // Оружие: сколько ударов осталось до затупления (Dullness); нет — ещё не считали или только что заточено
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HITS_TO_DULL =
+            COMPONENTS.register("hits_to_dull", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
     // Светильник: запас масла в тиках и горит ли
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LAMP_FUEL =
             COMPONENTS.register("lamp_fuel", () -> DataComponentType.<Integer>builder()

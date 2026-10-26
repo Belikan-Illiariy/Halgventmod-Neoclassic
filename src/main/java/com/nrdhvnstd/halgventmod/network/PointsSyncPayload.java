@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.network;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.map.LocationMapCache;
 import com.nrdhvnstd.halgventmod.point.MapPoint;
 import com.nrdhvnstd.halgventmod.point.MapPoints;
 
@@ -36,6 +37,9 @@ public record PointsSyncPayload(List<MapPoint> points) implements CustomPacketPa
     }
 
     public static void handle(PointsSyncPayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> MapPoints.clientPoints = payload.points().stream().map(MapPoint::copy).toList());
+        context.enqueueWork(() -> {
+            MapPoints.clientPoints = payload.points().stream().map(MapPoint::copy).toList();
+            LocationMapCache.pointsChanged(); // новые версии снимков — попросить
+        });
     }
 }

@@ -23,16 +23,15 @@ public final class ModKeys {
     // Вкладки окон игрока (MenuTabs); инвентарь — ванильная клавиша, переставленная на Tab (KeyMigration)
     public static final KeyMapping CHARACTER = new KeyMapping("key.halgventmod.character",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P, CATEGORY);
+    // Маппа — техническая карта администрации; по умолчанию без клавиши
+    public static final KeyMapping MAPPA = new KeyMapping("key.halgventmod.mappa",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), CATEGORY);
     public static final KeyMapping MAP = new KeyMapping("key.halgventmod.map",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, CATEGORY);
     public static final KeyMapping SQUAD = new KeyMapping("key.halgventmod.squad",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, CATEGORY);
     public static final KeyMapping CODEX = new KeyMapping("key.halgventmod.codex",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, CATEGORY);
-
-    // Новая метка там, где стоит игрок (client/map/WaypointsInWorld)
-    public static final KeyMapping WAYPOINT = new KeyMapping("key.halgventmod.waypoint",
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY);
 
     // Подобрать вещь под прицелом (pickup/Pickup); Shift — подобрать и надеть. E освободилась от инвентаря (KeyMigration)
     public static final KeyMapping PICKUP = new KeyMapping("key.halgventmod.pickup",
@@ -49,9 +48,9 @@ public final class ModKeys {
         event.register(CALENDAR);
         event.register(CHARACTER);
         event.register(MAP);
+        event.register(MAPPA);
         event.register(SQUAD);
         event.register(CODEX);
-        event.register(WAYPOINT);
         event.register(PICKUP);
         event.register(VISOR);
     }

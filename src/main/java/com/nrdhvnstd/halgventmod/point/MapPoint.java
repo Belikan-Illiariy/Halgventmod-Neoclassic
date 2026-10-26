@@ -36,6 +36,9 @@ public final class MapPoint {
     public static final int MAX_VERTICES = 64;
     /** Сколько блоков от середины до вершин у нового многоугольника и у нового круга. */
     public static final int DEFAULT_SIZE = 16;
+    /** Место на глобальной карте: -1 — не поставлена. Размер рисунка сервер не знает — проверяется только предел. */
+    public static final int NO_GLOBAL = -1;
+    public static final int GLOBAL_MAX = 16384; // ⚠️
 
     /** 0 — ещё не создана (номер даёт сервер). */
     public int id;
@@ -66,6 +69,13 @@ public final class MapPoint {
     public int radius = DEFAULT_SIZE;
     public List<Integer> xs = new ArrayList<>();
     public List<Integer> zs = new ArrayList<>();
+    /** Версия снимка карты локации (LocationMaps); 0 — не снята. Растёт только на сервере, клиент её не правит. */
+    public int mapVersion;
+    /** Место на рисунке глобальной карты в его пикселях; NO_GLOBAL — не поставлена. Регион берётся из маски. */
+    public int globalX = NO_GLOBAL;
+    public int globalY = NO_GLOBAL;
+    /** Главная локация: видна на глобальной карте и в масштабе «Весь Хальгвент». */
+    public boolean major;
 
     public MapPoint copy() {
         MapPoint copy = new MapPoint();
@@ -88,11 +98,35 @@ public final class MapPoint {
         copy.radius = radius;
         copy.xs = new ArrayList<>(xs);
         copy.zs = new ArrayList<>(zs);
+        copy.mapVersion = mapVersion;
+        copy.globalX = globalX;
+        copy.globalY = globalY;
+        copy.major = major;
         return copy;
     }
 
     public boolean isSpawn() {
         return kind == Kind.SPAWN;
+    }
+
+    /** Поставлена ли на глобальную карту. */
+    public boolean onGlobalMap() {
+        return globalX != NO_GLOBAL && globalY != NO_GLOBAL;
+    }
+
+    /** Прямоугольник границы в блоках: {minX, minZ, maxX, maxZ} включительно. Круг — квадрат 2r × 2r. */
+    public int[] bounds() {
+        if (shape == Shape.CIRCLE) {
+            return new int[] {x - radius, z - radius, x + radius, z + radius};
+        }
+        int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+        for (int i = 0; i < xs.size(); i++) {
+            minX = Math.min(minX, xs.get(i));
+            maxX = Math.max(maxX, xs.get(i));
+            minZ = Math.min(minZ, zs.get(i));
+            maxZ = Math.max(maxZ, zs.get(i));
+        }
+        return xs.isEmpty() ? new int[] {x, z, x, z} : new int[] {minX, minZ, maxX, maxZ};
     }
 
     /** Многоугольник по умолчанию — квадрат вокруг середины. */
@@ -138,7 +172,8 @@ public final class MapPoint {
         if (name == null || name.isBlank() || name.length() > NAME_MAX || dimension.isEmpty()
                 || icon.length() > 64 || dye.length() > 32 || !ICON_ID.matcher(hiddenIcon).matches()
                 || hoverText.length() > HOVER_TEXT_MAX || description.length() > DESCRIPTION_MAX || info.length() > INFO_MAX
-                || !(banner.isEmpty() || BannerEntry.validId(banner))) {
+                || !(banner.isEmpty() || BannerEntry.validId(banner))
+                || globalX < NO_GLOBAL || globalX > GLOBAL_MAX || globalY < NO_GLOBAL || globalY > GLOBAL_MAX) {
             return false;
         }
         if (shape == Shape.CIRCLE) {
@@ -184,6 +219,10 @@ public final class MapPoint {
             buf.writeVarInt(xs.get(i));
             buf.writeVarInt(zs.get(i));
         }
+        buf.writeVarInt(mapVersion);
+        buf.writeVarInt(globalX);
+        buf.writeVarInt(globalY);
+        buf.writeBoolean(major);
     }
 
     private static MapPoint read(FriendlyByteBuf buf) {
@@ -210,6 +249,10 @@ public final class MapPoint {
             point.xs.add(buf.readVarInt());
             point.zs.add(buf.readVarInt());
         }
+        point.mapVersion = buf.readVarInt();
+        point.globalX = buf.readVarInt();
+        point.globalY = buf.readVarInt();
+        point.major = buf.readBoolean();
         return point;
     }
 
@@ -234,6 +277,9 @@ public final class MapPoint {
         tag.putInt("radius", radius);
         tag.put("xs", new IntArrayTag(xs.stream().mapToInt(Integer::intValue).toArray()));
         tag.put("zs", new IntArrayTag(zs.stream().mapToInt(Integer::intValue).toArray()));
+        tag.putInt("map_version", mapVersion);
+        tag.putIntArray("global", new int[] {globalX, globalY});
+        tag.putBoolean("major", major);
         return tag;
     }
 
@@ -267,6 +313,14 @@ public final class MapPoint {
         for (int value : tag.getIntArray("zs")) {
             point.zs.add(value);
         }
+        // Мир до снимков и глобальной карты: не снята, не на глобальной карте, не главная
+        point.mapVersion = tag.getInt("map_version");
+        int[] global = tag.getIntArray("global");
+        if (global.length == 2) {
+            point.globalX = global[0];
+            point.globalY = global[1];
+        }
+        point.major = tag.getBoolean("major");
         return point;
     }
 }

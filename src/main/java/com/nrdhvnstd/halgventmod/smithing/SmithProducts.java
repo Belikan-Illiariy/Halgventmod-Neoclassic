@@ -308,12 +308,12 @@ public final class SmithProducts {
         anvil(Tab.TOOLS, ModItems.SCYTHE, 1).iron(2).steel(1).wood(ModItems.HAFT, 1)
                 .step(ForgeOp.DRAW, ForgeShape.CURVED).step(ForgeOp.WELD).step(ForgeOp.BEND, ForgeShape.SICKLE)
                 .step(ForgeOp.QUENCH).step(ForgeOp.TEMPER, 2).step(ForgeOp.GRIND).step(ForgeOp.RIVET, 2);
-        anvil(Tab.TOOLS, () -> Items.IRON_AXE, 1).gear().iron(2).steel(1).wood(ModItems.AXE_HANDLE, 1)
+        anvil(Tab.TOOLS, ModItems.AXE, 1).gear().iron(2).steel(1).wood(ModItems.AXE_HANDLE, 1)
                 .step(ForgeOp.DRAW, ForgeShape.AXE).step(ForgeOp.BEND, ForgeShape.EYE).step(ForgeOp.WELD)
                 .step(ForgeOp.QUENCH).step(ForgeOp.GRIND);
         anvil(Tab.TOOLS, () -> Items.IRON_PICKAXE, 1).iron(2).steel(1).wood(ModItems.HAFT, 1)
                 .step(ForgeOp.DRAW, ForgeShape.TOOL_HEAD).step(ForgeOp.PUNCH, 1).step(ForgeOp.QUENCH).step(ForgeOp.GRIND);
-        anvil(Tab.TOOLS, () -> Items.IRON_SHOVEL, 1).iron(2).wood(ModItems.HAFT, 1)
+        anvil(Tab.TOOLS, ModItems.SHOVEL, 1).iron(2).wood(ModItems.HAFT, 1)
                 .step(ForgeOp.DRAW, ForgeShape.PLATE).step(ForgeOp.BEND, ForgeShape.SOCKET).step(ForgeOp.RIVET, 2);
         anvil(Tab.TOOLS, () -> Items.IRON_HOE, 1).iron(1).wood(ModItems.HAFT, 1)
                 .step(ForgeOp.DRAW, ForgeShape.PLATE).step(ForgeOp.PUNCH, 1).step(ForgeOp.RIVET, 1);
