@@ -1,0 +1,32 @@
+{
+  "size": [
+    2496,
+    2020
+  ],
+  "regions": [
+    {
+      "id": "vessen",
+      "color": "#F0C828"
+    },
+    {
+      "id": "pereval",
+      "color": "#286E32"
+    },
+    {
+      "id": "wallenburg",
+      "color": "#6E0032"
+    },
+    {
+      "id": "treveron",
+      "color": "#C82828"
+    },
+    {
+      "id": "rosenmair",
+      "color": "#9646D2"
+    },
+    {
+      "id": "lebenskap",
+      "color": "#28BEBE"
+    }
+  ]
+}

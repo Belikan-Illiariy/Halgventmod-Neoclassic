@@ -43,6 +43,7 @@
 - Предыстории — данные датапака (`data/<пространство>/halgvent_backstory/<id>.json`): порядок, одежда, вещи (как предмет в датапаке: `id`, `count`, `components`, плюс `wear` — доля износа). Правятся без пересборки, применяются по `/reload`.
 
 ### Файлы
+- `textures/gui/global_map/` — новое, ресурсы глобальной карты (этап 3 `TZ_two_level_map.md`, кода карты ещё нет): рисунок Хальгвента художника, увеличенный вдвое (2496 × 2020), куски `map_0_0.png` и `map_1_0.png` по 2048; маска регионов `regions.png` (1248 × 1010, вдвое меньше рисунка, без сглаживания, море — чёрное) и `regions.json` с цветами шести регионов: `vessen` (Die Weizen), `pereval` (Die Langestein), `wallenburg`, `treveron`, `rosenmair`, `lebenskap`. Границы обведены по цветным контурам рисунка.
 - `character/` — новое: `Appearance` (части облика, варианты, цвета, проверка), `CharacterData` (вложение: состояние, облик, предыстория), `Backstory`, `Backstories` (загрузка из датапака), `CharacterCreation` (вход, прихожая, проверка и выдача комплекта, перенос на точку, `/character`).
 - `network/CharacterOpenPayload`, `CharacterCreatePayload`, `CharacterResultPayload`; `ModNetwork` — версия 25; `PointsSyncPayload` — каждому игроку свой список (точки появления — только администрации).
 - `client/character/` — новое: `CharacterCreationScreen` (окно), `CharacterClient` (открыть, вернуть закрытое, ответ сервера), `AppearanceSkins` (сборка скина из слоёв, кэш); `mixin/AbstractClientPlayerMixin` — скин из облика.
