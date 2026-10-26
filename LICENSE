@@ -1,0 +1,61 @@
+Halgvent Mod: Neoclassic
+Copyright (c) 2026 Bynelog. All rights reserved.
+
+== English ==
+
+This repository and the mod built from it (code, textures, models, animations,
+music, sounds, fonts, game data, balance tables, texts and documentation) are
+the property of the author, except for the materials listed under "Exceptions".
+
+Without the author's prior written permission you may NOT:
+  - copy, publish, upload or distribute the mod or any part of it, in original
+    or modified form, on any website, mod platform, file host, server or chat;
+  - modify, decompile, unpack, extract or reuse its code or assets, in whole or
+    in part, in other mods, resource packs, games or projects;
+  - run the mod on a server other than the official Halgvent servers;
+  - remove or alter this notice or any marks identifying the author or the copy.
+
+You MAY run the copy of the mod you received through the official Halgvent
+launcher in order to play on the official Halgvent servers.
+
+Exceptions:
+  - Sounds listed in CREDITS_SOUNDS.md keep their original licenses
+    (CC-BY 3.0 / CC-BY-SA 3.0 etc.); those licenses apply to those files only.
+  - Files supplied by the NeoForged MDK template are covered by
+    TEMPLATE_LICENSE.txt.
+  - Minecraft and its assets belong to Mojang AB / Microsoft and are not
+    covered by this notice.
+
+THE MOD IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+For permission requests contact the author: https://github.com/bynelog
+
+== Русский ==
+
+Этот репозиторий и собранный из него мод (код, текстуры, модели, анимации,
+музыка, звуки, шрифты, игровые данные, таблицы баланса, тексты и документация)
+принадлежат автору, за исключением материалов из раздела «Исключения».
+
+Без предварительного письменного разрешения автора ЗАПРЕЩЕНО:
+  - копировать, публиковать, выкладывать и распространять мод или любую его
+    часть, в исходном или изменённом виде, на любых сайтах, площадках модов,
+    файлообменниках, серверах и в чатах;
+  - изменять, декомпилировать, распаковывать, извлекать и использовать его код
+    или ресурсы, целиком или частично, в других модах, ресурс-паках, играх и
+    проектах;
+  - запускать мод на серверах, кроме официальных серверов Halgvent;
+  - удалять или изменять это уведомление и любые метки автора или копии.
+
+РАЗРЕШЕНО запускать копию мода, полученную через официальный лаунчер Halgvent,
+для игры на официальных серверах Halgvent.
+
+Исключения:
+  - Звуки из CREDITS_SOUNDS.md остаются под своими исходными лицензиями
+    (CC-BY 3.0 / CC-BY-SA 3.0 и др.), эти лицензии действуют только на эти файлы.
+  - Файлы шаблона NeoForged MDK — под TEMPLATE_LICENSE.txt.
+  - Minecraft и его ресурсы принадлежат Mojang AB / Microsoft, это уведомление
+    на них не распространяется.
+
+МОД ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ.
+
+Запросы на разрешение — автору: https://github.com/bynelog
