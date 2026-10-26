@@ -299,6 +299,10 @@ public final class SmithProducts {
         // Клеймо: стальной пруток, знак мастера выбивают пробойником (Hallmark.bind — при выдаче)
         anvil(Tab.TOOLS, SmithingItems.SMITH_STAMP, 1).steel(1)
                 .step(ForgeOp.DRAW, ForgeShape.ROD).step(ForgeOp.PUNCH, 3).step(ForgeOp.QUENCH);
+        // Навесной замок: корпус из пластины, дужка крюком, скважина, склёпан; секрет и ключ — при навешивании
+        anvil(Tab.TOOLS, ModItems.PADLOCK, 1).iron(2).plain()
+                .step(ForgeOp.DRAW, ForgeShape.PLATE).step(ForgeOp.BEND, ForgeShape.HOOK).step(ForgeOp.PUNCH, 1)
+                .step(ForgeOp.RIVET, 2);
         anvil(Tab.TOOLS, ModItems.KNIFE, 1).iron(1).steel(1).wood(ModItems.TOOL_HANDLE, 1)
                 .step(ForgeOp.DRAW, ForgeShape.KNIFE).step(ForgeOp.WELD).step(ForgeOp.QUENCH).step(ForgeOp.TEMPER, 1)
                 .step(ForgeOp.GRIND).step(ForgeOp.RIVET, 2);

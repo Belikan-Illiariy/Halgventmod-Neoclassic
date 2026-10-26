@@ -105,6 +105,10 @@ public static class SmithIcons {
         var flux = Spots(M("#7a766c", "#d2cec2", "#f6f4ee", 0.05, 0.14).With(grainScale: 3), M("#8a8478", "#b8b2a4", "#dad4c8", 0, 0.05), 2.4, 0.7, 614);
         s = new Scene { Elev = 26, Size = 28, Seed = 614 };
         s.Add(Mound(10, 7, 8.5, 0.9, 614), flux); Save(s, "minerals", "flux");
+        // комок песка: рыхлая горка жёлтого песка с тёмными песчинками
+        var sand = Spots(M("#7a6638", "#d8c286", "#f6eac6", 0.05, 0.16).With(grainScale: 3.2), M("#5a4a2a", "#9a845a", "#c4ae80", 0, 0.05), 3.0, 0.72, 615);
+        s = new Scene { Elev = 26, Size = 27, Seed = 615 };
+        s.Add(Mound(9.5, 6.5, 8, 1.1, 615), sand); Save(s, "minerals", "sand_lump");
     }
 
     static void Metals_() {
@@ -265,6 +269,23 @@ public static class SmithIcons {
         s.Add(S.Torus(0, 9.5, 0, 2.2, 0.35), Iron);
         s.Add(S.Box(0, 9.5, 0, 1.9, 0.35, 0.35), Iron).Add(S.Box(0, 9.5, 0, 0.35, 0.35, 1.9), Iron);
         Save(s, "tools", "smith_stamp");
+
+        // лопата: черенок, железная тулья и заострённое полотно с загнутыми краями
+        s = new Scene { Elev = 14, Roll = -45, Size = 26, Seed = 668 };
+        s.Add(S.Cap(-15, 0, 0, 1, 0, 0, 1.1, 1.25), Wood);
+        s.Add(S.Cap(-0.5, 0, 0, 4.2, 0, 0, 1.45, 2.0), Iron);
+        s.Add(S.Plate(0, 0.45, 0.2, 3.6, 3.4, 10.0, 3.9, 12.4, 2.2, 13.4, 0, 12.4, -2.2, 10.0, -3.9, 3.6, -3.4), Iron);
+        s.Add(S.Plate(0.15, 0.32, 0.1, 11.4, 3.2, 12.8, 1.8, 13.8, 0, 12.8, -1.8, 11.4, -3.2, 12.2, 0), Steel);
+        Save(s, "tools", "shovel");
+
+        // топор: топорище, обух с проухом и бородатое лезвие со стальной наваркой по кромке
+        s = new Scene { Elev = 14, Roll = -45, Size = 26, Seed = 669 };
+        s.Add(S.Cap(-15, -2, 0, 8.4, -2, 0, 1.1, 1.3), Wood);
+        s.Add(S.Box(7.6, -2, 0, 1.9, 1.7, 1.5, 0.4), Iron);
+        s.Add(S.Box(7.6, -4.2, 0, 1.5, 0.9, 1.3, 0.3), Iron);
+        s.Add(S.Plate(0, 0.5, 0.15, 6.4, -0.8, 9.2, -0.8, 10.2, 2.2, 13.6, 7.0, 12.8, 9.8, 7.8, 9.2, 2.6, 8.0, 4.6, 5.4, 6.4, 2.2), Iron);
+        s.Add(S.Plate(0.12, 0.36, 0.1, 2.4, 7.2, 7.8, 8.4, 12.8, 9.0, 13.8, 6.4, 14.4, 7.2, 13.4, 10.8, 7.6, 10.4, 2.0, 8.8), Steel);
+        Save(s, "tools", "axe");
 
         // драгоценности
         s = new Scene { Elev = 50, Size = 22, Seed = 671 };
