@@ -128,8 +128,8 @@ public final class Social {
             return;
         }
         Entity entity = player.level().getEntity(targetId);
-        if (!(entity instanceof ServerPlayer target) || !valid(player, target, action)
-                || (target != player && !Pickup.inReach(player, target, INTERACT_REACH + REACH_MARGIN))) {
+        if (!(entity instanceof ServerPlayer target) || !valid(player, target, action) || (target != player
+                && (!Pickup.inReach(player, target, INTERACT_REACH + REACH_MARGIN) || !player.hasLineOfSight(target)))) {
             return;
         }
         if (action == SocialAction.HEAL && Healing.find(player).isEmpty()) {

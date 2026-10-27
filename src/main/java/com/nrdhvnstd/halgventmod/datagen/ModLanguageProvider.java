@@ -673,6 +673,12 @@ public class ModLanguageProvider extends LanguageProvider {
         add("social.halgventmod.bar.carry", russian ? "Взваливает на плечи" : "Lifting");
         add("social.halgventmod.done.heal", russian ? "Вас перевязали — вы на ногах" : "You were treated and are back on your feet");
         add("social.halgventmod.done.carry", russian ? "Вас несут на плечах" : "You are being carried");
+        add("hud.halgventmod.npc.talk", russian ? "[%s] Поговорить" : "[%s] Talk");
+        add("gui.halgventmod.npc.info", russian ? "Информация" : "Information");
+        add("gui.halgventmod.npc.name", russian ? "Имя:" : "Name:");
+        add("gui.halgventmod.npc.profession", russian ? "Профессия:" : "Profession:");
+        add("npc.halgventmod.no_profession", russian ? "не указана" : "not set");
+        add("hud.halgventmod.use.lock_key", russian ? "Запереть или отпереть: Shift+%s" : "Lock or unlock: Shift+%s");
         add("message.halgventmod.heal_no_item", russian
                 ? "Нужна повязка или лечебная мазь" : "You need a bandage or a healing salve");
 

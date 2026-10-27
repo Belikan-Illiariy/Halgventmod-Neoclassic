@@ -2,7 +2,8 @@ package com.nrdhvnstd.halgventmod.client.downed;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.client.ModKeys;
-import com.nrdhvnstd.halgventmod.client.PickupInput;
+import com.nrdhvnstd.halgventmod.client.Interaction;
+import com.nrdhvnstd.halgventmod.client.social.SocialInput;
 import com.nrdhvnstd.halgventmod.downed.Downed;
 
 import net.minecraft.client.DeltaTracker;
@@ -55,7 +56,8 @@ public final class DownedHud {
         Component key = ModKeys.PICKUP.getTranslatedKeyMessage();
         int x = graphics.guiWidth() / 2;
         int y = graphics.guiHeight() / 2;
-        if (Downed.isDowned(player)) {
+        Interaction.Kind kind = Interaction.current().kind();
+        if (kind == Interaction.Kind.SURRENDER) {
             int seconds = (Downed.ticksLeft(player) + 19) / 20;
             graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.downed.timer",
                     String.format("%d:%02d", seconds / 60, seconds % 60)), x, y - TIMER_OFFSET - font.lineHeight, COLOR_TIMER);
@@ -69,9 +71,9 @@ public final class DownedHud {
                 graphics.fill(left + 1, top + 1, left + HOLD_WIDTH - 1, top + HOLD_HEIGHT - 1, COLOR_EMPTY);
                 graphics.fill(left + 1, top + 1, left + 1 + Math.round((HOLD_WIDTH - 2) * progress), top + HOLD_HEIGHT - 1, COLOR_FILL);
             }
-        } else if (Downed.carried(player) != null) {
+        } else if (kind == Interaction.Kind.DROP) {
             graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.downed.drop", key), x, y + HINT_OFFSET, COLOR_ACTION);
-        } else if (PickupInput.target() == null && DownedInput.selfHealReady(minecraft, player)) {
+        } else if (kind == Interaction.Kind.HEAL_SELF && SocialInput.menu() == null) {
             graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.heal_self", key), x, y + HINT_OFFSET, COLOR_ACTION);
         }
     }

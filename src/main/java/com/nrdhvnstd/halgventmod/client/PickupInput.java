@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.client.downed.DownedInput;
 import com.nrdhvnstd.halgventmod.client.social.SocialInput;
-import com.nrdhvnstd.halgventmod.downed.Downed;
+import com.nrdhvnstd.halgventmod.network.InteractPayload;
 import com.nrdhvnstd.halgventmod.network.PickupPayload;
 import com.nrdhvnstd.halgventmod.network.UseKeyPayload;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
@@ -45,10 +45,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Ручной подбор на клиенте (ТЗ 6.1): вещь или стрела под прицелом в пределах Pickup.REACH обведена
  * контуром (MinecraftMixin), над ней — «Хлеб ×3 · 0,6 кг», под прицелом — «[E] Подобрать».
  * E — подобрать, удержание E — подбирать по очереди с шагом Pickup.PICKUP_COOLDOWN, Shift+E — подобрать и надеть.
- * Вещи под прицелом нет — игрок в 2 блоках: удержание E открывает круговое меню (client/social/SocialInput).
- * Нет и игрока — E открывает и использует блок (дверь, сундук, рычаг), как ПКМ пустой рукой; нет и блока с действием,
- * а в руке повязка или мазь — перевязаться (DownedInput). Поверженный и несущий E только сдаются и бросают (DownedInput).
- * Решает сервер (Pickup.handle); здесь только выбор цели и подсказки.
+ * Что под прицелом, решает Interaction (docs/INTERACTION_E_SPEC.md, 2), здесь — что E с этим делает:
+ * игрок — удержание открывает круговое меню (client/social/SocialInput); НПС — окно «Информация» (InteractPayload);
+ * блок — открыть и использовать, как ПКМ пустой рукой; повязка или мазь в руке без цели — перевязаться;
+ * поверженный и несущий — сдаться и бросить (DownedInput). Между разными действиями — общий кулдаун 0,4 с.
+ * Решает сервер (Pickup.handle и др.); здесь только выбор цели и подсказка подбора.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class PickupInput {
@@ -57,8 +58,6 @@ public final class PickupInput {
     private static final int HINT_OFFSET = 12;         // под прицелом
     private static final ResourceLocation HINT_LAYER = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "pickup_hint");
 
-    @Nullable
-    private static Entity target;
     private static int heldTicks;
 
     private PickupInput() {}
@@ -66,16 +65,16 @@ public final class PickupInput {
     /** Вещь под прицелом, которую можно подобрать, или null. */
     @Nullable
     public static Entity target() {
-        return target;
+        Interaction now = Interaction.current();
+        return now.kind() == Interaction.Kind.ITEM ? now.entity() : null;
     }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        target = player != null && minecraft.screen == null && !player.isSpectator() && !Downed.busy(player)
-                ? findTarget(player) : null;
-        SocialInput.update(minecraft, player, target != null); // игрок под прицелом — после вещи, до блока
+        Interaction now = Interaction.resolve(minecraft, player);
+        SocialInput.update(minecraft, player, now);
 
         boolean down = ModKeys.PICKUP.isDown();
         while (ModKeys.PICKUP.consumeClick()) {
@@ -95,13 +94,30 @@ public final class PickupInput {
             heldTicks = 0;
             return;
         }
-        if (heldTicks % Pickup.PICKUP_COOLDOWN == 0 && target != null) {
-            PacketDistributor.sendToServer(new PickupPayload(target.getId(), Screen.hasShiftDown()));
-            player.swing(InteractionHand.MAIN_HAND);
-        } else if (heldTicks == 0 && target == null && DownedInput.selfHealReady(minecraft, player)) {
-            DownedInput.healSelf(player);
-        } else if (heldTicks == 0 && target == null && minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
-            useBlock(minecraft, player, hit);
+        // Удержание повторяет только подбор; остальное — по первому нажатию (ТЗ 3.6)
+        boolean first = heldTicks == 0;
+        if (Interaction.ready(player) && (now.kind() == Interaction.Kind.ITEM ? heldTicks % Pickup.PICKUP_COOLDOWN == 0 : first)) {
+            switch (now.kind()) {
+                case ITEM -> {
+                    PacketDistributor.sendToServer(new PickupPayload(now.entity().getId(), Screen.hasShiftDown()));
+                    player.swing(InteractionHand.MAIN_HAND);
+                    Interaction.used(player);
+                }
+                case NPC -> {
+                    PacketDistributor.sendToServer(new InteractPayload(now.entity().getId(), Screen.hasShiftDown()));
+                    Interaction.used(player);
+                }
+                case BLOCK, PLAIN_BLOCK -> {
+                    useBlock(minecraft, player, now.block());
+                    Interaction.used(player);
+                }
+                case HEAL_SELF -> {
+                    DownedInput.healSelf(player);
+                    Interaction.used(player);
+                }
+                default -> {
+                }
+            }
         }
         heldTicks++;
     }
@@ -123,7 +139,7 @@ public final class PickupInput {
 
     // Ближайшая подбираемая вещь на луче взгляда до первого блока
     @Nullable
-    private static Entity findTarget(LocalPlayer player) {
+    static Entity findTarget(LocalPlayer player) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1.0F);
         Vec3 end = eye.add(look.scale(Pickup.REACH));
@@ -162,7 +178,8 @@ public final class PickupInput {
     // Надпись над вещью: «Хлеб ×3 · 0,6 кг»
     @SubscribeEvent
     public static void onNameTag(RenderNameTagEvent event) {
-        if (event.getEntity() != target) {
+        Entity target = target();
+        if (target == null || event.getEntity() != target) {
             return;
         }
         ItemStack stack = stackOf(target);
@@ -183,6 +200,7 @@ public final class PickupInput {
     // «[E] Подобрать» и у надеваемой вещи «[Shift+E] Надеть» — под прицелом
     private static void renderHint(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
+        Entity target = target();
         if (target == null || minecraft.options.hideGui) {
             return;
         }

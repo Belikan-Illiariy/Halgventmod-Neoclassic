@@ -1,11 +1,11 @@
 package com.nrdhvnstd.halgventmod.client.social;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.Interaction;
 import com.nrdhvnstd.halgventmod.network.SocialActionPayload;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.social.Social;
@@ -18,9 +18,6 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -35,15 +32,13 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * удержание дольше MENU_HOLD_TICKS открывает круговое меню в центре экрана. Мышь двигает не камеру, а виртуальный
  * курсор; отпустить E на пункте — выбрать, в центре («Отмена») или Esc — выйти без действия.
  * Ходить и прыгать в меню можно, бить и использовать — нет. Решает сервер (social/Social); здесь только выбор.
- * Клавишу E опрашивает PickupInput: вещь под прицелом важнее игрока, игрок — блока за ним.
+ * Цель выбирает Interaction (вещь под прицелом важнее игрока, игрок — блока за ним), клавишу E опрашивает PickupInput.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class SocialInput {
     public static final int MENU_HOLD_TICKS = 6;        // 0,3 с — дольше короткого нажатия ⚠️
     public static final float MENU_RADIUS = 90;          // дальше центра виртуальный курсор не уходит, в пикселях интерфейса ⚠️
     public static final float MENU_CENTER_RADIUS = 24;   // центр — «Отмена» ⚠️
-    private static final double RAY_EXTRA = 1.0;          // луч длиннее радиуса: до хитбокса он доходит позже ближайшей точки
-    private static final double SCAN_RADIUS = 4.0;        // игроков ищем только поблизости
     private static final double NO_TURN = -1.0 / 3.0;     // чувствительность, при которой камера не поворачивается (MouseHandler.turnPlayer)
 
     /** Открытое меню: над кем, какие пункты, где виртуальный курсор (от центра экрана). */
@@ -113,9 +108,9 @@ public final class SocialInput {
         return menu;
     }
 
-    /** Каждый тик из PickupInput: цель — только если под прицелом нет вещи. */
-    public static void update(Minecraft minecraft, @Nullable LocalPlayer player, boolean itemTargeted) {
-        target = player != null && minecraft.screen == null && !itemTargeted ? findTarget(player) : null;
+    /** Каждый тик из PickupInput: цель — игрок, если Interaction выбрал его. */
+    public static void update(Minecraft minecraft, @Nullable LocalPlayer player, Interaction now) {
+        target = now.kind() == Interaction.Kind.PLAYER ? (Player) now.entity() : null;
         if (menu != null && (player == null || minecraft.screen != null || !menu.target.isAlive() || menu.target.isRemoved()
                 || !Pickup.inReach(player, menu.target, Social.INTERACT_REACH))) {
             menu = null; // отошёл дальше радиуса до отпускания E — меню закрыто, действие не начато (ТЗ 3.4)
@@ -157,36 +152,6 @@ public final class SocialInput {
         if (hovered >= 0) {
             PacketDistributor.sendToServer(new SocialActionPayload(open.target.getId(), open.options.get(hovered)));
         }
-    }
-
-    // Ближайший игрок на луче взгляда до первого блока, в радиусе от глаз до хитбокса
-    @Nullable
-    private static Player findTarget(LocalPlayer player) {
-        if (player.isSpectator()) {
-            return null;
-        }
-        Vec3 eye = player.getEyePosition();
-        Vec3 end = eye.add(player.getViewVector(1.0F).scale(Social.INTERACT_REACH + RAY_EXTRA));
-        HitResult block = player.level().clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        if (block.getType() != HitResult.Type.MISS) {
-            end = block.getLocation();
-        }
-        Player best = null;
-        double bestDistance = Double.MAX_VALUE;
-        for (Player other : player.level().players()) {
-            if (other.distanceToSqr(player) > SCAN_RADIUS * SCAN_RADIUS || !Social.canTarget(player, other)) {
-                continue;
-            }
-            Optional<Vec3> hit = other.getBoundingBox().clip(eye, end);
-            if (hit.isPresent() && Pickup.inReach(player, other, Social.INTERACT_REACH)) {
-                double distance = eye.distanceToSqr(hit.get());
-                if (distance < bestDistance) {
-                    best = other;
-                    bestDistance = distance;
-                }
-            }
-        }
-        return best;
     }
 
     // В меню мышь двигает виртуальный курсор, камера стоит

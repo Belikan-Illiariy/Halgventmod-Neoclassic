@@ -6,7 +6,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.client.social.SocialInput;
-import com.nrdhvnstd.halgventmod.downed.Downed;
+import com.nrdhvnstd.halgventmod.lock.Locks;
+import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.herbs.HerbPlantBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
@@ -22,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -44,7 +46,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * Прицела нет: ванильный крест убран совсем. Взгляд на блок, который используется на E (PickupInput.useBlock), —
  * посередине экрана его название и действие: «Дверь» / «Открыть: E». Сундуки и прочие окна — «Открыть»,
  * открытые дверь, люк, калитка — «Закрыть», остальное (рычаг, кнопка, кровать) — «Использовать». Под станцией
- * с ожиданием (сушка, обжиг, брожение…) — ещё «Состояние: ПКМ».
+ * с ожиданием (сушка, обжиг, брожение…) — ещё «Состояние: ПКМ», у двери и сундука с ключом в руке — «Ключ: Shift+E».
+ * Блок ли это, решает Interaction: вещь и игрок перед блоком важнее.
  * Используемый блок — тот, чей класс переопределяет useWithoutItem (ПКМ пустой рукой что-то делает).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -99,19 +102,22 @@ public final class UseHint {
         return state.getMenuProvider(level, pos) != null ? "open" : "use";
     }
 
+    // Блок с действием — если E сейчас выбирает его (Interaction), а не вещь или игрока перед ним
     @Nullable
     private static BlockHitResult target(Minecraft minecraft) {
         LocalPlayer player = minecraft.player;
-        if (player == null || minecraft.level == null || minecraft.screen != null || player.isSpectator()
-                || PickupInput.target() != null || SocialInput.target() != null || SocialInput.menu() != null
-                || player.isHandsBusy() || Downed.busy(player)) {
+        Interaction now = Interaction.current();
+        if (player == null || minecraft.level == null || now.kind() != Interaction.Kind.BLOCK
+                || SocialInput.menu() != null || player.isHandsBusy()) {
             return null;
         }
-        if (minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK
-                && usable(minecraft.level.getBlockState(hit.getBlockPos()))) {
-            return hit;
-        }
-        return null;
+        return now.block();
+    }
+
+    // Вторая ветка — Shift+E ключом по двери или сундуку: запереть или отпереть (LockEvents)
+    private static boolean keyBranch(LocalPlayer player, BlockState state) {
+        ItemStack hand = player.getMainHandItem();
+        return Locks.isLockable(state) && (hand.is(ModItems.KEY.get()) || hand.is(ModItems.KEY_RING.get()));
     }
 
     /**
@@ -204,10 +210,16 @@ public final class UseHint {
         graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use." + action(minecraft.level, pos, state),
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);
         // Станция с ожиданием: по ПКМ — как идёт дело (Pickup.onRightClickBlock)
+        int line = y + 2 + font.lineHeight;
         StationBlockEntity station = StationBlock.station(minecraft.level, pos);
         if (station != null && station.hasReport()) {
             graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use.status",
-                    minecraft.options.keyUse.getTranslatedKeyMessage()), x, y + 2 + font.lineHeight, COLOR_STATUS);
+                    minecraft.options.keyUse.getTranslatedKeyMessage()), x, line, COLOR_STATUS);
+            line += font.lineHeight + 1;
+        }
+        if (keyBranch(minecraft.player, state)) {
+            graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.use.lock_key",
+                    ModKeys.PICKUP.getTranslatedKeyMessage()), x, line, COLOR_ACTION);
         }
     }
 }
