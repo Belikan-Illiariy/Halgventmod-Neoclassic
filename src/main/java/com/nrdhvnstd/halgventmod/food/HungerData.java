@@ -17,9 +17,6 @@ public class HungerData {
     float saturation = 25; // как у ванильного игрока при появлении (5 из 20)
     float exhaustion;
 
-    // Служебное, не сохраняется
-    int timer; // лечение или урон от голода
-
     public HungerData() {}
 
     HungerData(int level, float saturation, float exhaustion) {

@@ -10,6 +10,7 @@ import com.nrdhvnstd.halgventmod.menu.KilnMenu;
 import com.nrdhvnstd.halgventmod.menu.OvenMenu;
 import com.nrdhvnstd.halgventmod.menu.PlayerArmorMenu;
 import com.nrdhvnstd.halgventmod.menu.SewingTableMenu;
+import com.nrdhvnstd.halgventmod.menu.SocialSearchMenu;
 import com.nrdhvnstd.halgventmod.menu.StillMenu;
 
 import net.minecraft.core.registries.Registries;
@@ -32,6 +33,10 @@ public final class ModMenus {
     // Стойка для брони: 12 ячеек брони стойки + хранилище, карманы и вторая рука игрока
     public static final DeferredHolder<MenuType<?>, MenuType<ArmorStandMenu>> ARMOR_STAND =
             MENUS.register("armor_stand", () -> IMenuTypeExtension.create(ArmorStandMenu::fromNetwork));
+
+    // Обыск: инвентарь другого игрока в раскладке окна инвентаря, только просмотр (social/Social)
+    public static final DeferredHolder<MenuType<?>, MenuType<SocialSearchMenu>> SOCIAL_SEARCH =
+            MENUS.register("social_search", () -> IMenuTypeExtension.create(SocialSearchMenu::fromNetwork));
 
     // Шитейный стол: выкройки, ячейки стола 3×3 + сумки, карманы и вторая рука игрока
     public static final DeferredHolder<MenuType<?>, MenuType<SewingTableMenu>> SEWING_TABLE =

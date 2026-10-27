@@ -46,7 +46,7 @@ import net.minecraft.util.Mth;
 
 /**
  * Глобальная карта Хальгвента: нарисованная карта (GlobalMapData) лежит плоскостью, камера смотрит на неё
- * под постоянным наклоном TILT и вращается только вокруг вертикали (ПКМ-перетаскивание по горизонтали, Q / E).
+ * строго сверху (TILT) и вращается только вокруг вертикали (ПКМ-перетаскивание по горизонтали, Q / E).
  * ЛКМ-перетаскивание — сдвиг, колёсико — приблизить / отдалить; дальше предела — смена масштаба.
  * На время рисования рисунка окно ставит свою перспективную проекцию, интерфейс поверх — обычный.
  *
@@ -60,7 +60,7 @@ import net.minecraft.util.Mth;
  * Режим выбора места (окно точки администрации): ЛКМ ставит место, Enter или «Готово» — вернуть, Esc — без изменений.
  */
 public class GlobalMapScreen extends Screen implements MenuTabScreen {
-    private static final float TILT = 50;            // ⚠️ градусов над плоскостью
+    private static final float TILT = 90;            // градусов над плоскостью: взгляд строго сверху
     private static final float FOV = 35;             // градусов по вертикали
     private static final float LIFT = 6;             // ⚠️ подъём региона под курсором, пикселей интерфейса
     private static final float LIFT_SECONDS = 0.15F; // ⚠️
@@ -337,7 +337,9 @@ public class GlobalMapScreen extends Screen implements MenuTabScreen {
         float eyeX = (float) (targetX + distance * Math.sin(angle) * Math.cos(pitch));
         float eyeY = (float) (distance * Math.sin(pitch));
         float eyeZ = (float) (targetZ + distance * Math.cos(angle) * Math.cos(pitch));
-        view.identity().lookAt(eyeX, eyeY, eyeZ, (float) targetX, 0, (float) targetZ, 0, 1, 0);
+        // Верх экрана — по повороту камеры: при взгляде сверху вертикаль совпадает с направлением взгляда
+        view.identity().lookAt(eyeX, eyeY, eyeZ, (float) targetX, 0, (float) targetZ,
+                (float) -Math.sin(angle), 0, (float) -Math.cos(angle));
         projection.identity().perspective((float) Math.toRadians(FOV), (float) width / height,
                 (float) (distance * 0.05), (float) (distance * 20));
         projection.mul(view, combined);

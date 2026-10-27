@@ -99,6 +99,21 @@ public final class CharacterCreation {
         ANCHORS.remove(event.getEntity().getUUID());
     }
 
+    // После смерти — на точку появления, выбранную при создании персонажа (docs/TZ_downed_and_hp.md, 3.4).
+    // Не выбрана или её удалили — как в ванилле: кровать или точка мира
+    @SubscribeEvent
+    public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.isEndConquered() || !(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        int id = player.getData(ModAttachments.SPAWN_POINT);
+        if (id < 0) {
+            return;
+        }
+        spawnPoints(player.server).stream().filter(point -> point.id == id).findFirst()
+                .ifPresent(point -> moveTo(player, point));
+    }
+
     /** Открыть игроку окно создания по его состоянию и поставить его в прихожую. */
     private static void open(ServerPlayer player) {
         CharacterData data = player.getData(ModAttachments.CHARACTER);
@@ -236,6 +251,7 @@ public final class CharacterCreation {
             giveKit(player, backstory);
         }
         if (spawn != null) {
+            player.setData(ModAttachments.SPAWN_POINT, spawn.id);
             moveTo(player, spawn);
         }
         reply(player, "");

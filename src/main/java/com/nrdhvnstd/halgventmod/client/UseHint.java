@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.social.SocialInput;
+import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.cooking.HearthBlockEntity;
 import com.nrdhvnstd.halgventmod.herbs.HerbPlantBlock;
 import com.nrdhvnstd.halgventmod.leather.FleshingBeamBlockEntity;
@@ -101,7 +103,8 @@ public final class UseHint {
     private static BlockHitResult target(Minecraft minecraft) {
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.level == null || minecraft.screen != null || player.isSpectator()
-                || PickupInput.target() != null || player.isHandsBusy()) {
+                || PickupInput.target() != null || SocialInput.target() != null || SocialInput.menu() != null
+                || player.isHandsBusy() || Downed.busy(player)) {
             return null;
         }
         if (minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK

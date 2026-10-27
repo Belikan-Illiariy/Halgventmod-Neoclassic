@@ -148,6 +148,7 @@ public final class LeatherPatterns {
 
         // Из ткани: шерстяное сукно — плащи, капюшоны, варежки; льняное полотно — сюрко и поддоспех с паклей
         cloth(ModItems.HOOD, 1, 6, 1, CutShape.HOOD).leather(ModItems.WOOLEN_CLOTH, 1);
+        cloth(ModItems.BANDAGE, 4, 0, 0, CutShape.STRAP).leather(ModItems.LINEN_CLOTH, 1); // полосы полотна, без шитья
         cloth(ModItems.CHAPERON, 1, 8, 1, CutShape.HOOD).leather(ModItems.WOOLEN_CLOTH, 2);
         cloth(ModItems.WOOLEN_MITTENS, 1, 6, 1, CutShape.MITTEN).leather(ModItems.WOOLEN_CLOTH, 1);
         cloth(ModItems.CLOTH_GAUNTLETS, 1, 6, 1, CutShape.MITTEN).leather(ModItems.LINEN_CLOTH, 1);

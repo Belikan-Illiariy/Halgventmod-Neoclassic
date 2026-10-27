@@ -27,7 +27,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 /**
  * Эффекты еды (таблица баланса):
  * <ul>
- *   <li><b>Сытость</b> — жареное мясо и рыба, каши: голод не убывает, здоровье восстанавливается ×{@link #FED_REGEN};</li>
+ *   <li><b>Сытость</b> — жареное мясо и рыба, каши: голод не убывает;</li>
  *   <li><b>Улучшенное насыщение</b> — горячие сложные блюда (похлёбки, блюда с травами, ягодный пирог): как «Сытость»,
  *       плюс выносливость восстанавливается ×{@link #WELL_FED_STAMINA_REGEN} и её на {@link #WELL_FED_STAMINA_MAX} больше.
  *       Заменяет «Сытость»; «Сытость» его не сбивает;</li>
@@ -40,7 +40,6 @@ import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class FoodEffects {
     // Меняйте здесь
-    public static final float FED_REGEN = 1.5F;
     public static final float WELL_FED_STAMINA_REGEN = 1.15F;
     public static final int WELL_FED_STAMINA_MAX = 10;
     public static final float POISON_CHANCE = 0.5F;

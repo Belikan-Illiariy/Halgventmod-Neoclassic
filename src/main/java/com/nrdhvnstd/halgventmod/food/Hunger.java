@@ -21,8 +21,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Голод 0–100 вместо ванильного 0–20. Ванильный FoodData отключён (FoodDataMixin):
- * трата, лечение и урон от голода считаются здесь.
+ * Голод 0–100 вместо ванильного 0–20. Ванильный FoodData отключён (FoodDataMixin): трата считается здесь.
+ * Здоровье голод не лечит и не отнимает (docs/TZ_downed_and_hp.md, 1–2): при нуле — эффект «Голодание» (Starvation).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Hunger {
@@ -38,14 +38,6 @@ public final class Hunger {
     // 0,8 единицы усталости = 1 единица голода: так голод тратится с той же скоростью, что в ванилле
     public static final float EXHAUSTION_PER_POINT = 0.8F;
     public static final int NO_SPRINT_AT = 30;          // при 30 и ниже бегать нельзя
-
-    public static final int REGEN_AT = 90;              // с 90 и выше здоровье понемногу восстанавливается
-    public static final int REGEN_INTERVAL = 80;        // +1 здоровья раз в 4 секунды
-    public static final float REGEN_EXHAUSTION = 6.0F;  // и это стоит 7,5 единицы голода
-    public static final int FAST_REGEN_INTERVAL = 10;   // при полном голоде и насыщении — быстро, как в ванилле
-
-    public static final int DAMAGE_INTERVAL = 80;       // при пустом голоде урон раз в 4 секунды
-    public static final float DAMAGE = 1.0F;
 
     private Hunger() {}
 
@@ -131,8 +123,7 @@ public final class Hunger {
         }
 
         // Усталость съедает сначала насыщение, потом сытость. Сытно поел («Сытость») — голод не убывает
-        boolean fed = FoodEffects.fed(player);
-        if (fed) {
+        if (FoodEffects.fed(player)) {
             data.exhaustion = 0;
         } else if (data.exhaustion >= EXHAUSTION_PER_POINT) {
             data.exhaustion -= EXHAUSTION_PER_POINT;
@@ -147,41 +138,6 @@ public final class Hunger {
         if (difficulty == Difficulty.PEACEFUL && naturalRegen && player.tickCount % 10 == 0 && data.level < MAX) {
             data.level = Math.min(data.level + VANILLA_SCALE, MAX);
         }
-
-        // Лечение и урон — по ванильным правилам FoodData.tick
-        if (naturalRegen && data.saturation > 0 && player.isHurt() && data.level >= MAX) {
-            if (++data.timer >= FAST_REGEN_INTERVAL) {
-                float amount = Math.min(data.saturation / VANILLA_SCALE, 6.0F);
-                player.heal(amount / 6.0F);
-                addExhaustion(player, amount);
-                data.timer = 0;
-            }
-        } else if (naturalRegen && data.level >= REGEN_AT && player.isHurt()) {
-            if (++data.timer >= (fed ? Math.round(REGEN_INTERVAL / FoodEffects.FED_REGEN) : REGEN_INTERVAL)) {
-                player.heal(1.0F);
-                addExhaustion(player, REGEN_EXHAUSTION);
-                data.timer = 0;
-            }
-        } else if (data.level <= 0) {
-            if (++data.timer >= DAMAGE_INTERVAL) {
-                if (canStarve(player)) {
-                    player.hurt(player.damageSources().starve(), DAMAGE);
-                }
-                data.timer = 0;
-            }
-        } else {
-            data.timer = 0;
-        }
-    }
-
-    /**
-     * Можно ли ранить голодом или жаждой: на лёгкой — до половины здоровья,
-     * на нормальной — до 1, на сложной — насмерть. Как в ванилле.
-     */
-    static boolean canStarve(Player player) {
-        Difficulty difficulty = player.level().getDifficulty();
-        return player.getHealth() > player.getMaxHealth() / 2 || difficulty == Difficulty.HARD
-                || (player.getHealth() > 1.0F && difficulty == Difficulty.NORMAL);
     }
 
     // Единицы за сутки → усталость за секунду: 40 × 0,8 = 32 усталости на 10 800 секунд

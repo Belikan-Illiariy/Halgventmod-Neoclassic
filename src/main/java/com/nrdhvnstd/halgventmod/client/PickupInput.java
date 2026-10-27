@@ -5,6 +5,9 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.client.downed.DownedInput;
+import com.nrdhvnstd.halgventmod.client.social.SocialInput;
+import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.network.PickupPayload;
 import com.nrdhvnstd.halgventmod.network.UseKeyPayload;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
@@ -42,7 +45,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * Ручной подбор на клиенте (ТЗ 6.1): вещь или стрела под прицелом в пределах Pickup.REACH обведена
  * контуром (MinecraftMixin), над ней — «Хлеб ×3 · 0,6 кг», под прицелом — «[E] Подобрать».
  * E — подобрать, удержание E — подбирать по очереди с шагом Pickup.PICKUP_COOLDOWN, Shift+E — подобрать и надеть.
- * Вещи под прицелом нет — E открывает и использует блок (дверь, сундук, рычаг), как ПКМ пустой рукой.
+ * Вещи под прицелом нет — игрок в 2 блоках: удержание E открывает круговое меню (client/social/SocialInput).
+ * Нет и игрока — E открывает и использует блок (дверь, сундук, рычаг), как ПКМ пустой рукой; нет и блока с действием,
+ * а в руке повязка или мазь — перевязаться (DownedInput). Поверженный и несущий E только сдаются и бросают (DownedInput).
  * Решает сервер (Pickup.handle); здесь только выбор цели и подсказки.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -68,11 +73,23 @@ public final class PickupInput {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        target = player != null && minecraft.screen == null && !player.isSpectator() ? findTarget(player) : null;
+        target = player != null && minecraft.screen == null && !player.isSpectator() && !Downed.busy(player)
+                ? findTarget(player) : null;
+        SocialInput.update(minecraft, player, target != null); // игрок под прицелом — после вещи, до блока
 
         boolean down = ModKeys.PICKUP.isDown();
         while (ModKeys.PICKUP.consumeClick()) {
             // нажатия считаем по isDown: первое — сразу, дальше при удержании с шагом задержки
+        }
+        // Поверженный и несущий: E — сдаться или бросить (DownedInput), больше ничего
+        if (player != null && DownedInput.handleKey(player, down)) {
+            heldTicks = 0;
+            return;
+        }
+        // E по игроку: удержание — круговое меню (SocialInput). Пока нажатие его — ни подбора, ни блока
+        if (player != null && SocialInput.handleKey(player, down)) {
+            heldTicks++;
+            return;
         }
         if (!down || player == null) {
             heldTicks = 0;
@@ -81,6 +98,8 @@ public final class PickupInput {
         if (heldTicks % Pickup.PICKUP_COOLDOWN == 0 && target != null) {
             PacketDistributor.sendToServer(new PickupPayload(target.getId(), Screen.hasShiftDown()));
             player.swing(InteractionHand.MAIN_HAND);
+        } else if (heldTicks == 0 && target == null && DownedInput.selfHealReady(minecraft, player)) {
+            DownedInput.healSelf(player);
         } else if (heldTicks == 0 && target == null && minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
             useBlock(minecraft, player, hit);
         }

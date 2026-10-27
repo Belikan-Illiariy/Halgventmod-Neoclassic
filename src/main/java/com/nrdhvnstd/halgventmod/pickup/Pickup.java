@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.pickup;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorRules;
+import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.gear.GearInventory;
@@ -156,7 +157,7 @@ public final class Pickup {
 
     /** Пакет от клиента: подобрать сущность entityId; equip — Shift+E. */
     public static void handle(ServerPlayer player, int entityId, boolean equip) {
-        if (player.isSpectator() || !player.isAlive()) {
+        if (player.isSpectator() || !player.isAlive() || Downed.busy(player)) {
             return;
         }
         State state = player.getData(ModAttachments.PICKUP);

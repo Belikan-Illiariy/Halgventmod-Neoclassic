@@ -7,6 +7,7 @@ import com.nrdhvnstd.halgventmod.character.CharacterData;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.draw.Drawing;
+import com.nrdhvnstd.halgventmod.downed.DownedData;
 import com.nrdhvnstd.halgventmod.gear.GearInventory;
 import com.nrdhvnstd.halgventmod.food.HungerData;
 import com.nrdhvnstd.halgventmod.food.ThirstData;
@@ -17,6 +18,7 @@ import com.nrdhvnstd.halgventmod.needs.NeedsSync;
 import com.nrdhvnstd.halgventmod.needs.StaminaData;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.point.PointDiscovery;
+import com.nrdhvnstd.halgventmod.social.Restraint;
 import com.nrdhvnstd.halgventmod.storage.Quiver;
 
 import net.neoforged.bus.api.IEventBus;
@@ -124,6 +126,29 @@ public final class ModAttachments {
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Intoxication.Data>> INTOXICATION =
             ATTACHMENTS.register("intoxication", () -> AttachmentType.builder(() -> Intoxication.Data.NONE)
                     .serialize(Intoxication.Data.CODEC)
+                    .build());
+
+    // Мешок, кандалы, наручники на игроке — маска для клиентов (social/Restraint). Не сохраняется:
+    // держатся эффектом, маску сервер сверяет с эффектами сам; видно всем, кто видит игрока
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> RESTRAINTS =
+            ATTACHMENTS.register("restraints", () -> AttachmentType.builder(() -> 0)
+                    .sync(Restraint.SYNC)
+                    .build());
+
+    // «Повержен» (downed/Downed): остаток таймера и время последнего падения. Сохраняется — переживает выход из игры;
+    // после смерти — новое тело, снова не повержен. Остаток виден всем, кто видит игрока
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DownedData>> DOWNED =
+            ATTACHMENTS.register("downed", () -> AttachmentType.builder(DownedData::new)
+                    .serialize(DownedData.CODEC)
+                    .sync(DownedData.SYNC)
+                    .build());
+
+    // Точка появления, выбранная при создании персонажа (character/CharacterCreation): туда — после смерти.
+    // -1 — не выбрана. Сохраняется и переносится в новое тело
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Integer>> SPAWN_POINT =
+            ATTACHMENTS.register("spawn_point", () -> AttachmentType.builder(() -> -1)
+                    .serialize(Codec.INT)
+                    .copyOnDeath()
                     .build());
 
     private ModAttachments() {}

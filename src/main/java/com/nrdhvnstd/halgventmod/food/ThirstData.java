@@ -18,7 +18,6 @@ public class ThirstData {
     float exhaustion;
 
     // Служебное, не сохраняется
-    int damageTimer;
     int lastDrinkTick = -1000;
 
     public ThirstData() {}

@@ -2048,6 +2048,27 @@ public final class ModItems {
             .stacksTo(16)
             .grams(400)
             .register();
+    // ----- Лечение (downed/Healing): здоровье само не восстанавливается, только этим -----
+    public static final DeferredItem<Item> BANDAGE = item("bandage", "Повязка", "Bandage", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TEXTILES)
+            .lore("Чистое льняное полотно. В руке, E без цели — перевязаться самому (+15 здоровья). "
+                            + "Поверженного — через меню E, «Вылечить»: встанет.",
+                    "Clean linen. In hand, E with nothing targeted bandages yourself (+15 health). "
+                            + "A downed player: E menu, \"Treat\", and they get up.")
+            .stacksTo(16)
+            .grams(30)
+            .register();
+    public static final DeferredItem<Item> HEALING_SALVE = item("healing_salve", "Лечебная мазь", "Healing salve", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.ALCHEMY)
+            .lore("Баночка мази на травах. В руке, E без цели — намазать раны (+30 здоровья). "
+                            + "Поверженного — через меню E, «Вылечить»: встанет.",
+                    "A jar of herbal salve. In hand, E with nothing targeted dresses your wounds (+30 health). "
+                            + "A downed player: E menu, \"Treat\", and they get up.")
+            .stacksTo(8)
+            .grams(150)
+            .register();
     public static final DeferredItem<FiberToolItem> CARDING_COMB = item("carding_comb", "Чесалка", "Carding comb", Gender.F)
             .traits(ModTraits.COMMON)
             .category(Category.TEXTILES)

@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.nrdhvnstd.halgventmod.food.Hunger;
@@ -44,5 +45,10 @@ public abstract class PlayerMixin {
     private void halgventmod$canEat(boolean canAlwaysEat, CallbackInfoReturnable<Boolean> cir) {
         Player self = (Player) (Object) this;
         cir.setReturnValue(self.getAbilities().invulnerable || canAlwaysEat || Hunger.needs(self));
+    }
+
+    // Здоровье само не восстанавливается и на мирной сложности (docs/TZ_downed_and_hp.md, 1)
+    @Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;heal(F)V"))
+    private void halgventmod$noPeacefulRegen(Player self, float amount) {
     }
 }

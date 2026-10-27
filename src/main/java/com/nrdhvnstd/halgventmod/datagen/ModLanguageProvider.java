@@ -627,6 +627,55 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.VIGOR.get(), russian ? "Бодрость" : "Vigour");
         foodTranslations();
 
+        // Социальные взаимодействия (social/Social, docs/TZ_social_interactions.md)
+        add(ModEffects.BAGGED.get(), russian ? "Мешок на голове" : "Bagged");
+        add(ModEffects.SHACKLED.get(), russian ? "В кандалах" : "Shackled");
+        add(ModEffects.CUFFED.get(), russian ? "В наручниках" : "Handcuffed");
+        add("hud.halgventmod.social.interact", russian ? "[%s] Взаимодействовать" : "[%s] Interact");
+        add("social.halgventmod.unknown", russian ? "Неизвестный в шлеме" : "Stranger in a helmet");
+        add("social.halgventmod.action.search", russian ? "Обыскать" : "Search");
+        add("social.halgventmod.action.bag", russian ? "Накинуть мешок" : "Put a bag on");
+        add("social.halgventmod.action.shackles", russian ? "Заковать в кандалы" : "Shackle");
+        add("social.halgventmod.action.cuffs", russian ? "Заковать в наручники" : "Handcuff");
+        add("social.halgventmod.action.unbag", russian ? "Снять мешок" : "Take the bag off");
+        add("social.halgventmod.action.unshackle", russian ? "Снять кандалы" : "Remove shackles");
+        add("social.halgventmod.action.uncuff", russian ? "Снять наручники" : "Remove handcuffs");
+        add("social.halgventmod.action.cancel", russian ? "Отмена" : "Cancel");
+        add("social.halgventmod.bar.search", russian ? "Обыск" : "Search");
+        add("social.halgventmod.bar.bag", russian ? "Мешок" : "Bag");
+        add("social.halgventmod.bar.shackles", russian ? "Кандалы" : "Shackles");
+        add("social.halgventmod.bar.cuffs", russian ? "Наручники" : "Handcuffs");
+        add("social.halgventmod.bar.unbag", russian ? "Снятие мешка" : "Removing the bag");
+        add("social.halgventmod.bar.unshackle", russian ? "Снятие кандалов" : "Removing shackles");
+        add("social.halgventmod.bar.uncuff", russian ? "Снятие наручников" : "Removing handcuffs");
+        add("social.halgventmod.done.search", russian ? "Вас обыскивают" : "You are being searched");
+        add("social.halgventmod.done.bag", russian ? "На вас накинули мешок" : "A bag was put over your head");
+        add("social.halgventmod.done.shackles", russian ? "Вас заковали в кандалы" : "You were shackled");
+        add("social.halgventmod.done.cuffs", russian ? "Вас заковали в наручники" : "You were handcuffed");
+        add("social.halgventmod.done.unbag", russian ? "С вас сняли мешок" : "The bag was taken off");
+        add("social.halgventmod.done.unshackle", russian ? "С вас сняли кандалы" : "Your shackles were removed");
+        add("social.halgventmod.done.uncuff", russian ? "С вас сняли наручники" : "Your handcuffs were removed");
+        add("gui.halgventmod.search.title", russian ? "Обыск: %s" : "Searching %s");
+        add("message.halgventmod.cuffed_weapon", russian
+                ? "В наручниках оружие и щит в руку не взять" : "You can't take a weapon or shield while handcuffed");
+
+        // Голод и жажда на нуле, «Повержен», лечение (needs/Starvation, downed/Downed, docs/TZ_downed_and_hp.md)
+        add(ModEffects.STARVATION.get(), russian ? "Голодание" : "Starvation");
+        add(ModEffects.DEHYDRATION.get(), russian ? "Жажда" : "Dehydration");
+        add("hud.halgventmod.downed.timer", russian ? "Повержен %s" : "Downed %s");
+        add("hud.halgventmod.downed.label", russian ? "Повержен" : "Downed");
+        add("hud.halgventmod.downed.surrender", russian ? "Удерживайте [%s] — сдаться" : "Hold [%s] to give up");
+        add("hud.halgventmod.downed.drop", russian ? "[%s] Бросить" : "[%s] Put down");
+        add("hud.halgventmod.heal_self", russian ? "[%s] Перевязаться" : "[%s] Treat yourself");
+        add("social.halgventmod.action.heal", russian ? "Вылечить" : "Treat");
+        add("social.halgventmod.action.carry", russian ? "Нести" : "Carry");
+        add("social.halgventmod.bar.heal", russian ? "Перевязка" : "Treating");
+        add("social.halgventmod.bar.carry", russian ? "Взваливает на плечи" : "Lifting");
+        add("social.halgventmod.done.heal", russian ? "Вас перевязали — вы на ногах" : "You were treated and are back on your feet");
+        add("social.halgventmod.done.carry", russian ? "Вас несут на плечах" : "You are being carried");
+        add("message.halgventmod.heal_no_item", russian
+                ? "Нужна повязка или лечебная мазь" : "You need a bandage or a healing salve");
+
         // Субтитры звуков: обычные события и голоса (один ключ на вид крика для всех наборов)
         for (ModSounds.Definition sound : ModSounds.definitions()) {
             add(sound.subtitleKey(), russian ? sound.subtitleRu() : sound.subtitleEn());

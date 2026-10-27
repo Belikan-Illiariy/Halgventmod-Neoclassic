@@ -18,7 +18,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-/** Жажда 0–100: трата, урон при нуле, питьё из воды. На клиент её отправляет NeedsSync. */
+/**
+ * Жажда 0–100: трата и питьё из воды. Здоровье не отнимает (docs/TZ_downed_and_hp.md, 2): при нуле — эффект «Жажда»
+ * (Starvation). На клиент её отправляет NeedsSync.
+ */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Thirst {
     // ===== Правила — меняйте здесь =====
@@ -30,8 +33,6 @@ public final class Thirst {
     public static final float EXHAUSTION_PER_POINT = Hunger.EXHAUSTION_PER_POINT; // как у голода
     public static final float THIRST_MULTIPLIER = 1.0F;     // жажда от действий: 1.5 — в полтора раза быстрее голода
     public static final int NO_SPRINT_AT = 30;              // при 30 и ниже бегать нельзя, как с голодом
-    public static final int DAMAGE_INTERVAL = 80;           // при пустой жажде урон раз в 4 секунды
-    public static final float DAMAGE = 1.0F;
 
     public static final int WATER_SIP = 10;                 // глоток из воды
     public static final int WATER_SIP_COOLDOWN = 10;        // тиков между глотками
@@ -85,18 +86,6 @@ public final class Thirst {
                 && player.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)
                 && player.tickCount % 10 == 0 && data.level < MAX) {
             data.level = Math.min(data.level + Hunger.VANILLA_SCALE, MAX);
-        }
-
-        // Пустая жажда ранит, по тем же правилам сложности, что и голод
-        if (data.level == 0) {
-            if (++data.damageTimer >= DAMAGE_INTERVAL) {
-                data.damageTimer = 0;
-                if (Hunger.canStarve(player)) {
-                    player.hurt(player.damageSources().starve(), DAMAGE);
-                }
-            }
-        } else {
-            data.damageTimer = 0;
         }
     }
 
