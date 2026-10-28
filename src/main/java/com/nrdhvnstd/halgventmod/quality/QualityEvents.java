@@ -9,6 +9,8 @@ import com.nrdhvnstd.halgventmod.Permissions;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
+import com.nrdhvnstd.halgventmod.combat.CombatDamageTypes;
+import com.nrdhvnstd.halgventmod.combat.MobAttacks;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import net.minecraft.commands.Commands;
@@ -133,7 +135,8 @@ public final class QualityEvents {
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         DamageSource source = event.getSource();
         DamageKind kind = DamageKind.of(source);
-        if (kind == null) {
+        // Урон боя уже прошёл сквозь броню (combat/DamagePipeline): качество, пробитие и стойкость там учтены
+        if (kind == null || CombatDamageTypes.kindOf(source) != null) {
             return;
         }
         ItemStack weapon = ItemStack.EMPTY;
@@ -145,6 +148,10 @@ public final class QualityEvents {
             }
         } else if (source.getEntity() instanceof LivingEntity attacker) {
             weapon = attacker.getMainHandItem();
+        }
+        // Удар моба и стрела по игроку дальше идут через бой (combat/MobAttacks): пробитие и стойкость — там
+        if (MobAttacks.redirected(event.getEntity(), source)) {
+            return;
         }
         if (GearQuality.isWeapon(weapon)) {
             float penetration = GearQuality.get(weapon).penetration();

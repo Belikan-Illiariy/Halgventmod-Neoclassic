@@ -1,0 +1,45 @@
+{
+  "class": "greataxe",
+  "segment": "greataxe",
+  "two_handed": true,
+  "blade_length": 1.8,
+  "accuracy": 0.05,
+  "penetration": 2.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "chopping",
+      "damage": 48,
+      "windup": 14,
+      "release": 7,
+      "recovery": 14,
+      "stamina": 14
+    },
+    "overhead": {
+      "type": "chopping",
+      "damage": 58,
+      "windup": 17,
+      "release": 7,
+      "recovery": 15,
+      "stamina": 15
+    },
+    "sprint": {
+      "as": "overhead"
+    }
+  },
+  "alt_grip": {
+    "attacks": {
+      "slash": {
+        "type": "blunt",
+        "damage": 42
+      },
+      "overhead": {
+        "type": "blunt",
+        "damage": 50
+      }
+    }
+  }
+}

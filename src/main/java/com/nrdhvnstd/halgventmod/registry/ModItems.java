@@ -14,6 +14,7 @@ import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorKind;
 import com.nrdhvnstd.halgventmod.armor.ArmorPieceItem;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.armor.ArmorStats;
 import com.nrdhvnstd.halgventmod.armor.CloakType;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.draw.DrawType;
@@ -2612,6 +2613,8 @@ public final class ModItems {
             Item.Properties properties = new Item.Properties().stacksTo(maxStack);
             if (durability > 0) {
                 properties.durability(durability);
+            } else if (armorSlot != null) {
+                properties.durability(ArmorStats.DURABILITY); // вся броня — 100, изнашивается в бою (ArmorStats)
             }
             if (edible || drink) {
                 properties.food(foodProperties());

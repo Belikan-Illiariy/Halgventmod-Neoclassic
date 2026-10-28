@@ -3,6 +3,8 @@ package com.nrdhvnstd.halgventmod.client;
 import java.util.Locale;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.armor.ArmorStats;
+import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.brewing.Brewing;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.carpentry.Carpentry;
@@ -53,7 +55,17 @@ public final class QualityTooltip {
             return;
         }
         GearQuality.Grade grade = GearQuality.get(stack);
-        if (GearQuality.isWeapon(stack)) {
+        // Броня: разбитая не защищает, изношенная (ниже половины прочности) — слабее
+        if (ModArmor.get(stack) != null && ArmorStats.broken(stack)) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.armor.broken").withStyle(ChatFormatting.RED));
+        } else if (ModArmor.get(stack) != null && ArmorStats.condition(stack) < 1.0F) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.armor.worn",
+                    Math.round(ArmorStats.condition(stack) * 100)).withStyle(ChatFormatting.GOLD));
+        }
+        if (GearQuality.isWeapon(stack) && WeaponTooltip.profile(event.getEntity(), stack) != null) {
+            event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.combat_weapon", times(grade.damage()),
+                    Math.round(grade.penetration() * 100)).withStyle(ChatFormatting.DARK_GRAY));
+        } else if (GearQuality.isWeapon(stack)) {
             event.getToolTip().add(Component.translatable("tooltip.halgventmod.quality.weapon", times(grade.damage()),
                     Math.round(grade.penetration() * 100), Component.translatable(DamageKind.of(stack).langKey()))
                     .withStyle(ChatFormatting.DARK_GRAY));

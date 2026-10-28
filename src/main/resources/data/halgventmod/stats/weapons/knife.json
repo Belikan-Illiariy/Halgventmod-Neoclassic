@@ -1,0 +1,39 @@
+{
+  "class": "knife",
+  "segment": "knife",
+  "two_handed": false,
+  "blade_length": 0.6,
+  "accuracy": 0.1,
+  "penetration": 1.2,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "cutting",
+      "damage": 18,
+      "windup": 6,
+      "release": 4,
+      "recovery": 6,
+      "stamina": 5
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 20,
+      "windup": 5,
+      "release": 3,
+      "recovery": 6,
+      "stamina": 4
+    },
+    "special": {
+      "as": "stab",
+      "damage": 20,
+      "windup": 4
+    },
+    "sprint": {
+      "as": "stab"
+    }
+  },
+  "alt_grip": null
+}

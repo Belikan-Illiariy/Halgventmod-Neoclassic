@@ -1,0 +1,40 @@
+{
+  "class": "spear",
+  "segment": "spear",
+  "two_handed": true,
+  "blade_length": 2.6,
+  "accuracy": 0.05,
+  "penetration": 2.2,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "blunt",
+      "damage": 15,
+      "windup": 8,
+      "release": 5,
+      "recovery": 9,
+      "stamina": 9
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 34,
+      "windup": 7,
+      "release": 4,
+      "recovery": 9,
+      "stamina": 8
+    },
+    "special": {
+      "as": "stab",
+      "damage": 34,
+      "reach_bonus": 0.8,
+      "windup": 9
+    },
+    "sprint": {
+      "as": "stab"
+    }
+  },
+  "alt_grip": null
+}

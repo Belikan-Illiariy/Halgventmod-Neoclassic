@@ -1,0 +1,49 @@
+{
+  "class": "greathammer",
+  "segment": "greathammer",
+  "two_handed": true,
+  "blade_length": 2.2,
+  "accuracy": 0.05,
+  "penetration": 2.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "blunt",
+      "damage": 44,
+      "windup": 14,
+      "release": 7,
+      "recovery": 14,
+      "stamina": 15
+    },
+    "overhead": {
+      "type": "blunt",
+      "damage": 54,
+      "windup": 17,
+      "release": 7,
+      "recovery": 15,
+      "stamina": 16
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 30,
+      "windup": 13,
+      "release": 5,
+      "recovery": 14,
+      "stamina": 14
+    },
+    "sprint": {
+      "as": "overhead"
+    }
+  },
+  "alt_grip": {
+    "attacks": {
+      "overhead": {
+        "type": "piercing",
+        "damage": 46
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.registry;
 
 import java.util.List;
 
+import com.nrdhvnstd.halgventmod.combat.CombatState;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.character.CharacterData;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
@@ -15,6 +16,7 @@ import com.mojang.serialization.Codec;
 import com.nrdhvnstd.halgventmod.lock.ChunkLocks;
 import com.nrdhvnstd.halgventmod.name.RpNames;
 import com.nrdhvnstd.halgventmod.needs.NeedsSync;
+import com.nrdhvnstd.halgventmod.needs.PainData;
 import com.nrdhvnstd.halgventmod.needs.StaminaData;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.point.PointDiscovery;
@@ -52,6 +54,12 @@ public final class ModAttachments {
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<StaminaData>> STAMINA =
             ATTACHMENTS.register("stamina", () -> AttachmentType.builder(StaminaData::new)
                     .serialize(StaminaData.CODEC)
+                    .build());
+
+    // Боль (needs/Pain). Сохраняется сама боль; после смерти — ноль.
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<PainData>> PAIN =
+            ATTACHMENTS.register("pain", () -> AttachmentType.builder(PainData::new)
+                    .serialize(PainData.CODEC)
                     .build());
 
     // Что последним отправлено клиенту о голоде, жажде и выносливости. Не сохраняется.
@@ -152,6 +160,10 @@ public final class ModAttachments {
                     .build());
 
     private ModAttachments() {}
+
+    // Состояние бойца (combat/Combat): фаза, удар, блок. Не сохраняется — после входа покой
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<CombatState>> COMBAT =
+            ATTACHMENTS.register("combat", () -> AttachmentType.builder(CombatState::new).build());
 
     public static void register(IEventBus modEventBus) {
         ATTACHMENTS.register(modEventBus);

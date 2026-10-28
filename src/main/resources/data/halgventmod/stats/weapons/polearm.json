@@ -1,0 +1,59 @@
+{
+  "class": "polearm",
+  "segment": "polearm",
+  "two_handed": true,
+  "blade_length": 2.6,
+  "accuracy": 0.05,
+  "penetration": 2.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "chopping",
+      "damage": 44,
+      "windup": 13,
+      "release": 7,
+      "recovery": 13,
+      "stamina": 12
+    },
+    "overhead": {
+      "type": "chopping",
+      "damage": 52,
+      "windup": 16,
+      "release": 7,
+      "recovery": 14,
+      "stamina": 13
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 36,
+      "windup": 12,
+      "release": 5,
+      "recovery": 13,
+      "stamina": 11
+    },
+    "special": {
+      "as": "slash",
+      "type": "blunt",
+      "damage": 20,
+      "effect": "hook"
+    },
+    "sprint": {
+      "as": "stab"
+    }
+  },
+  "alt_grip": {
+    "attacks": {
+      "slash": {
+        "type": "blunt",
+        "damage": 38
+      },
+      "overhead": {
+        "type": "blunt",
+        "damage": 44
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "class": "dagger",
+  "segment": "knife",
+  "two_handed": false,
+  "blade_length": 0.7,
+  "accuracy": 0.15,
+  "penetration": 2.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "cutting",
+      "damage": 16,
+      "windup": 6,
+      "release": 4,
+      "recovery": 6,
+      "stamina": 5
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 24,
+      "windup": 5,
+      "release": 3,
+      "recovery": 6,
+      "stamina": 4
+    },
+    "special": {
+      "as": "stab",
+      "damage": 24,
+      "accuracy_bonus": 0.2
+    },
+    "sprint": {
+      "as": "stab"
+    }
+  },
+  "alt_grip": null
+}

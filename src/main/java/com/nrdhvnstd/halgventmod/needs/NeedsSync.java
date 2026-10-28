@@ -13,7 +13,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-/** Голод, насыщение, жажда и выносливость → клиенту, когда что-то из них заметно изменилось. */
+/** Голод, насыщение, жажда, выносливость и боль → клиенту, когда что-то из них заметно изменилось. */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class NeedsSync {
     private NeedsSync() {}
@@ -25,6 +25,8 @@ public final class NeedsSync {
         int thirst = -1;
         int stamina = -1;     // ×2: шаг полединицы, шкала двигается плавно
         boolean exhausted;
+        int pain = -1;        // целыми: эффекты боли меняются ступенями
+        boolean shock;
         int staminaTick = Integer.MIN_VALUE / 2; // когда выносливость уходила последний раз
     }
 
@@ -46,8 +48,11 @@ public final class NeedsSync {
         int saturation = Math.round(hunger.saturation() * 10);
         int staminaSteps = Math.round(stamina.level() * 2);
         boolean exhausted = stamina.exhaustedTicks() > 0;
+        PainData pain = player.getData(ModAttachments.PAIN);
+        int painLevel = (int) Math.ceil(pain.level());
+        boolean shock = pain.shockTicks() > 0;
         boolean others = hunger.level() != sent.hunger || saturation != sent.saturation || thirst != sent.thirst
-                || exhausted != sent.exhausted;
+                || exhausted != sent.exhausted || painLevel != sent.pain || shock != sent.shock;
         if (!others) {
             if (staminaSteps == sent.stamina) {
                 return;
@@ -63,8 +68,11 @@ public final class NeedsSync {
         sent.thirst = thirst;
         sent.stamina = staminaSteps;
         sent.exhausted = exhausted;
+        sent.pain = painLevel;
+        sent.shock = shock;
         PacketDistributor.sendToPlayer(player, new NeedsSyncPayload(
-                hunger.level(), hunger.saturation(), thirst, stamina.level(), stamina.exhaustedTicks()));
+                hunger.level(), hunger.saturation(), thirst, stamina.level(), stamina.exhaustedTicks(),
+                pain.level(), pain.shockTicks()));
     }
 
     // При смене измерения клиент создаёт игрока заново — отправим всё ещё раз

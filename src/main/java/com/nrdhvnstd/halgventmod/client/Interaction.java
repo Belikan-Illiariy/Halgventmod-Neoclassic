@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import com.nrdhvnstd.halgventmod.digging.ToolGathering;
 import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.npc.Npcs;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
@@ -24,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * и подсказки (PickupInput, SocialMenuHud, NpcHint, UseHint, DownedHud), поэтому они не расходятся.
  *
  * Порядок: руки заняты (поверженный — сдаться, несущий — бросить); вещь или стрела в 3 блоках; игрок или НПС
- * в 2 блоках; блок с действием в 3 блоках; повязка или мазь в руке — перевязаться; любой другой блок (как ПКМ
+ * в 2 блоках; блок с действием в 3 блоках (и бревно с топором, песок и глина с лопатой — ToolGathering); повязка или мазь в руке — перевязаться; любой другой блок (как ПКМ
  * пустой рукой); ничего. Сервер всё перепроверяет — здесь только выбор.
  */
 public record Interaction(Kind kind, @Nullable Entity entity, @Nullable BlockHitResult block) {
@@ -66,7 +67,8 @@ public record Interaction(Kind kind, @Nullable Entity entity, @Nullable BlockHit
             return new Interaction(someone instanceof Player ? Kind.PLAYER : Kind.NPC, someone, null);
         }
         BlockHitResult block = findBlock(player);
-        if (block != null && minecraft.level != null && UseHint.usable(minecraft.level.getBlockState(block.getBlockPos()))) {
+        if (block != null && minecraft.level != null && (UseHint.usable(minecraft.level.getBlockState(block.getBlockPos()))
+                || !ToolGathering.gatherable(player.getMainHandItem(), minecraft.level.getBlockState(block.getBlockPos())).isEmpty())) {
             return new Interaction(Kind.BLOCK, null, block);
         }
         if (Social.canHealSelf(player)) {

@@ -1,0 +1,25 @@
+{
+  "class": "shield",
+  "segment": "shield",
+  "two_handed": false,
+  "blade_length": 0.8,
+  "accuracy": 0.05,
+  "penetration": 0,
+  "block": {
+    "raise": 3,
+    "cost": 0.7
+  },
+  "attacks": {
+    "special": {
+      "shape": "stab",
+      "type": "blunt",
+      "damage": 10,
+      "windup": 6,
+      "release": 3,
+      "recovery": 8,
+      "stamina": 6,
+      "effect": "guard_break"
+    }
+  },
+  "alt_grip": null
+}

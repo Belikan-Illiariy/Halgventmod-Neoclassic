@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /** Пакеты между клиентом и сервером. */
 public final class ModNetwork {
-    private static final String VERSION = "29"; // 29: E по НПС, окно «Информация»; 28: «Повержен» (сдаться, вылечить, нести); 27: социальные взаимодействия (меню на E, шкала применения); 26: снимки карт локаций, место точки на глобальной карте, маршруты; 25: точки появления — отдельный тип точек; 24: создание персонажа, точки появления; 23: кузнечество (удар по жиле, мини-игры, молотобоец); 22: распил и работа на верстаке плотника; 21: шитейный стол, раскрой; 20: окно тканья; 19: книга выкроек портного; 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
+    private static final String VERSION = "33"; // 33: сторона удара и блока по мыши; 32: боль в NeedsSyncPayload; 31: исход удара (трасса клинка); 30: бой (ввод, фазы бойца, профили оружия); 29: E по НПС, окно «Информация»; 28: «Повержен» (сдаться, вылечить, нести); 27: социальные взаимодействия (меню на E, шкала применения); 26: снимки карт локаций, место точки на глобальной карте, маршруты; 25: точки появления — отдельный тип точек; 24: создание персонажа, точки появления; 23: кузнечество (удар по жиле, мини-игры, молотобоец); 22: распил и работа на верстаке плотника; 21: шитейный стол, раскрой; 20: окно тканья; 19: книга выкроек портного; 18: гончарный круг; 17: окно рецептов кухонного стола; 16: окна шитья и выкроек кожевника; 15: замах в воздух; 14: гербовник (названия книг, содержимое, правка); 13: у точки значок до открытия, текст при наведении, описание, знамя, сведения; 12: окно реестра знамён; 11: реестр знамён; 10: забрало; 9: рассвет своим пакетом; 8: точки карты; 7: вещь с курсора каталога в инвентарь; 6: ручной подбор; 5: концепт инвентаря (снаряжение, сумки); 4: ники, очистка инвентаря, отряды
 
     private ModNetwork() {}
 
@@ -80,5 +80,9 @@ public final class ModNetwork {
         registrar.playToServer(SurrenderPayload.TYPE, SurrenderPayload.STREAM_CODEC, SurrenderPayload::handle);
         registrar.playToServer(InteractPayload.TYPE, InteractPayload.STREAM_CODEC, InteractPayload::handle);
         registrar.playToClient(NpcInfoPayload.TYPE, NpcInfoPayload.STREAM_CODEC, NpcInfoPayload::handle);
+        registrar.playToServer(CombatInputPayload.TYPE, CombatInputPayload.STREAM_CODEC, CombatInputPayload::handle);
+        registrar.playToClient(CombatHitPayload.TYPE, CombatHitPayload.STREAM_CODEC, CombatHitPayload::handle);
+        registrar.playToClient(CombatStatePayload.TYPE, CombatStatePayload.STREAM_CODEC, CombatStatePayload::handle);
+        registrar.playToClient(WeaponProfilesSyncPayload.TYPE, WeaponProfilesSyncPayload.STREAM_CODEC, WeaponProfilesSyncPayload::handle);
     }
 }

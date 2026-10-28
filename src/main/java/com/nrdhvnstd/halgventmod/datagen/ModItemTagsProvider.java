@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.datagen;
 import java.util.concurrent.CompletableFuture;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.WeaponProfiles;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 import com.nrdhvnstd.halgventmod.sound.SoundTags;
 
@@ -33,5 +34,7 @@ public class ModItemTagsProvider extends ItemTagsProvider {
         // Свои лопата и топор — тоже лопата и топор: ил, куча углежога, колода для колки, звуки удара, зачарования
         tag(ItemTags.SHOVELS).add(ModItems.SHOVEL.get());
         tag(ItemTags.AXES).add(ModItems.AXE.get());
+        // Щиты боя (combat/Defense): во второй руке — блок щитом, удар щитом на R
+        tag(WeaponProfiles.SHIELDS).add(Items.SHIELD);
     }
 }

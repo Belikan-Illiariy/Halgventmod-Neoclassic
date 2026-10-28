@@ -32,6 +32,7 @@ public class ArmorInventory extends ItemStackHandler {
                 armor.stacks.set(i, ItemStack.OPTIONAL_STREAM_CODEC.decode(buf));
             }
             armor.version++;
+            armor.layersCache = null;
             return armor;
         }
     };
@@ -40,6 +41,7 @@ public class ArmorInventory extends ItemStackHandler {
     private int version;   // растёт при каждом изменении: по нему клиент пересобирает вид брони
     private Object renderCache; // только на клиенте: собранный вид брони (ArmorLook)
     private int protectionVersion = -1; // только на сервере: version, при которой защита последний раз легла на игрока
+    private Object layersCache;         // сводка слоёв брони для боя (ArmorLayers), сбрасывается при каждом изменении
 
     public ArmorInventory() {
         super(ArmorSlot.COUNT);
@@ -71,6 +73,14 @@ public class ArmorInventory extends ItemStackHandler {
         return changed;
     }
 
+    public Object layersCache() {
+        return layersCache;
+    }
+
+    public void setLayersCache(Object layersCache) {
+        this.layersCache = layersCache;
+    }
+
     public Object renderCache() {
         return renderCache;
     }
@@ -93,6 +103,7 @@ public class ArmorInventory extends ItemStackHandler {
     protected void onContentsChanged(int slot) {
         dirty = true;
         version++;
+        layersCache = null;
     }
 
     @Override
@@ -116,5 +127,6 @@ public class ArmorInventory extends ItemStackHandler {
             stacks.set(slot.ordinal(), stack);
         }
         version++;
+        layersCache = null;
     }
 }

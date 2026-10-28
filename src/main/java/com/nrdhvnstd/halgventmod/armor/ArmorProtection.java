@@ -11,7 +11,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Защита надетой брони — временно ванильными атрибутами «Броня» и «Твёрдость брони» (до этапа 7 ТЗ брони).
+ * Защита надетой брони от урона не из боя (падение, мобы, взрывы) — ванильными атрибутами «Броня» и «Твёрдость брони».
+ * Удары боя её не видят (тег bypasses_armor): их считают 4 слоя брони (combat/DamagePipeline).
  * Сумма .protection(...) всех надетых вещей (у шлема с опущенным забралом — с прибавкой) ложится на игрока
  * одним модификатором на атрибут. Модификаторы не сохраняются: после входа, возрождения и любой смены брони
  * их пересчитывает ArmorEvents (по ArmorInventory.version).
@@ -28,7 +29,8 @@ public final class ArmorProtection {
         for (ArmorSlot slot : ArmorSlot.values()) {
             ModArmor.ArmorInfo info = ModArmor.get(armor.get(slot));
             if (info != null) {
-                total = total.plus(info.protection(armor.get(slot)));
+                // Изношенная защищает слабее, разбитая — никак (ArmorStats)
+                total = total.plus(info.protection(armor.get(slot)).times(ArmorStats.condition(armor.get(slot))));
             }
         }
         return total;

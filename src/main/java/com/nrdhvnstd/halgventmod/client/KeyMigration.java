@@ -24,11 +24,13 @@ import org.lwjgl.glfw.GLFW;
  * по умолчанию сами не применятся. Переставляется только то, что стоит на старом месте; дальше игрок волен.
  * Ванильные «Социальные взаимодействия» стоят на P — их снимаем с P, чтобы P не открывала два окна.
  * Отметка, что перестановка сделана, — файл config/halgventmod-keys.txt. Версия 1 ставила инвентарь на I,
- * поэтому версия 2 переносит его на Tab и оттуда.
+ * поэтому версия 2 переносит его на Tab и оттуда. Версия 3 (бой, docs/TZ_chivalry_combat.md): средняя кнопка мыши — удар
+ * сверху, поэтому ванильное «Выбрать блок» с неё снимается; F — пинок, ванильное «Поменять руки» с неё снимается.
+ * Каждая версия применяется один раз: кто уже прошёл версию 2, получает только шаги версии 3.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
 public final class KeyMigration {
-    private static final String VERSION = "2";
+    private static final int VERSION = 3;
     private static boolean checked;
 
     private KeyMigration() {}
@@ -41,21 +43,43 @@ public final class KeyMigration {
         checked = true;
         Path marker = FMLPaths.CONFIGDIR.get().resolve(HalgventMod.MODID + "-keys.txt");
         try {
-            if (Files.exists(marker) && Files.readString(marker).trim().equals(VERSION)) {
+            int done = Files.exists(marker) ? parse(Files.readString(marker).trim()) : 0;
+            if (done >= VERSION) {
                 return;
             }
             Options options = Minecraft.getInstance().options;
-            move(options.keySocialInteractions, GLFW.GLFW_KEY_P, GLFW.GLFW_KEY_UNKNOWN);
-            move(options.keyPlayerList, GLFW.GLFW_KEY_TAB, GLFW.GLFW_KEY_I);
-            move(options.keyInventory, GLFW.GLFW_KEY_E, GLFW.GLFW_KEY_TAB);
-            move(options.keyInventory, GLFW.GLFW_KEY_I, GLFW.GLFW_KEY_TAB); // после версии 1
-            move(ModKeys.CHARACTER, GLFW.GLFW_KEY_O, GLFW.GLFW_KEY_P);
-            move(ModKeys.SQUAD, GLFW.GLFW_KEY_G, GLFW.GLFW_KEY_O);
+            if (done < 2) {
+                move(options.keySocialInteractions, GLFW.GLFW_KEY_P, GLFW.GLFW_KEY_UNKNOWN);
+                move(options.keyPlayerList, GLFW.GLFW_KEY_TAB, GLFW.GLFW_KEY_I);
+                move(options.keyInventory, GLFW.GLFW_KEY_E, GLFW.GLFW_KEY_TAB);
+                move(options.keyInventory, GLFW.GLFW_KEY_I, GLFW.GLFW_KEY_TAB); // после версии 1
+                move(ModKeys.CHARACTER, GLFW.GLFW_KEY_O, GLFW.GLFW_KEY_P);
+                move(ModKeys.SQUAD, GLFW.GLFW_KEY_G, GLFW.GLFW_KEY_O);
+            }
+            if (done < 3) {
+                unbind(options.keyPickItem, InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+                unbind(options.keySwapOffhand, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F);
+            }
             KeyMapping.resetMapping();
             options.save();
-            Files.writeString(marker, VERSION);
+            Files.writeString(marker, Integer.toString(VERSION));
         } catch (IOException e) {
             HalgventMod.LOGGER.warn("Не удалось записать отметку о перестановке клавиш", e);
+        }
+    }
+
+    private static int parse(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static void unbind(KeyMapping key, InputConstants.Type type, int from) {
+        InputConstants.Key current = key.getKey();
+        if (current.getType() == type && current.getValue() == from) {
+            key.setKey(InputConstants.UNKNOWN);
         }
     }
 

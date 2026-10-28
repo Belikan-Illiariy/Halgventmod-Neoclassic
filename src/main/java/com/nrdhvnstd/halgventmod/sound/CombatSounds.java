@@ -9,6 +9,9 @@ import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Combat;
+import com.nrdhvnstd.halgventmod.combat.CombatDamageTypes;
+import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.armor.ArmorSounds;
 import com.nrdhvnstd.halgventmod.draw.Drawing;
 import com.nrdhvnstd.halgventmod.needs.Stamina;
@@ -32,6 +35,7 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
@@ -135,6 +139,23 @@ public final class CombatSounds {
         return Weapon.BLUNT;
     }
 
+    /**
+     * Чем бьют — для звука попадания. Удар боя — по его типу урона (у меча укол звучит остриём, взмах — клинком;
+     * дробящий пустой рукой — кулак), прочее — по оружию в руке (weaponOf).
+     */
+    @Nullable
+    private static Weapon weaponOf(DamageSource source, LivingEntity attacker) {
+        DamageKind kind = CombatDamageTypes.kindOf(source);
+        if (kind == null) {
+            return weaponOf(attacker);
+        }
+        return switch (kind) {
+            case CHOPPING, CUTTING -> Weapon.BLADE;
+            case PIERCING, PENETRATING -> Weapon.POINT;
+            case BLUNT -> attacker.getMainHandItem().isEmpty() ? Weapon.FIST : Weapon.BLUNT;
+        };
+    }
+
     /** Замах слышен только у оружия; пустая рука и прочие предметы — без замаха ⚠️. */
     public static boolean swings(ItemStack stack) {
         return stack.is(SoundTags.BLADE) || stack.is(SoundTags.POINT) || stack.is(SoundTags.BLUNT);
@@ -175,7 +196,7 @@ public final class CombatSounds {
         long now = player.level().getGameTime();
         ATTACKED_LIVING.put(player, now); // ванильный звук удара по существу — заглушить в этот тик
         ItemStack hand = player.getMainHandItem();
-        if (swings(hand)) {
+        if (swings(hand) && !Combat.isOwnHit()) { // у удара боя замах прозвучал в начале удара (Combat)
             LAST_SWING.put(player, now);
             SoundPlay.at(player, swingSound(hand), SoundSource.PLAYERS, swingVolume(hand), SWING_PITCH_SPREAD);
         }
@@ -192,6 +213,14 @@ public final class CombatSounds {
         }
         LAST_SWING.put(player, now);
         SoundPlay.at(player, player, swingSound(hand), SoundSource.PLAYERS, swingVolume(hand), SWING_PITCH_SPREAD);
+    }
+
+    /** Клинок упёрся в стену (бой, трасса клинка): камень — звон, прочее — звук удара по материалу блока. */
+    public static void wallHit(Level level, BlockPos pos, BlockState state, Vec3 at) {
+        SoundType type = state.getSoundType(level, pos, null);
+        SoundEvent sound = STONE.contains(type) ? ModSounds.COMBAT_HIT_DEFLECT.get() : type.getHitSound();
+        level.playSound(null, at.x, at.y, at.z, sound, SoundSource.PLAYERS, HIT_VOLUME,
+                SoundPlay.pitch(level.getRandom(), HIT_PITCH_SPREAD));
     }
 
     // Урон прошёл: звук удара в ближнем бою или запомнить попадание стрелы
@@ -216,7 +245,7 @@ public final class CombatSounds {
         if (!source.is(SoundTags.MELEE) || direct != source.getEntity() || !(direct instanceof LivingEntity attacker)) {
             return;
         }
-        Weapon weapon = weaponOf(attacker);
+        Weapon weapon = weaponOf(source, attacker);
         if (weapon != null) {
             SoundPlay.atChest(target, hitSound(weapon, ArmorSounds.bodyLayer(target)), attacker.getSoundSource(),
                     HIT_VOLUME, HIT_PITCH_SPREAD);

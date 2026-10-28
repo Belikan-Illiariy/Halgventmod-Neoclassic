@@ -1,0 +1,56 @@
+{
+  "class": "sword",
+  "segment": "sword",
+  "two_handed": false,
+  "blade_length": 1.6,
+  "accuracy": 0.05,
+  "penetration": 1.5,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "chopping",
+      "damage": 30,
+      "windup": 9,
+      "release": 6,
+      "recovery": 9,
+      "stamina": 8
+    },
+    "overhead": {
+      "type": "chopping",
+      "damage": 36,
+      "windup": 11,
+      "release": 6,
+      "recovery": 10,
+      "stamina": 9
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 28,
+      "windup": 8,
+      "release": 4,
+      "recovery": 9,
+      "stamina": 7
+    },
+    "special": {
+      "as": "stab",
+      "damage": 32,
+      "reach_bonus": 0.4
+    },
+    "sprint": {
+      "as": "overhead"
+    }
+  },
+  "alt_grip": {
+    "attacks": {
+      "stab": {
+        "damage": 36
+      },
+      "slash": {
+        "damage": 21
+      }
+    }
+  }
+}

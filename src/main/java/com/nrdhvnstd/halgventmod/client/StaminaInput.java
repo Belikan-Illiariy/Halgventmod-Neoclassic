@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.client;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.WeaponProfiles;
 import com.nrdhvnstd.halgventmod.needs.Stamina;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
@@ -38,11 +39,12 @@ public final class StaminaInput {
         }
     }
 
-    // Удар по существу или по воздуху запрещён; копать блоки можно
+    // Удар не оружием боя по существу или по воздуху запрещён; копать блоки можно. Оружие боя бьёт и при одышке (CombatInput)
     @SubscribeEvent
     public static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (!event.isAttack() || minecraft.player == null || !Stamina.exhausted(minecraft.player)) {
+        if (!event.isAttack() || minecraft.player == null || !Stamina.exhausted(minecraft.player)
+                || WeaponProfiles.handles(minecraft.player)) {
             return;
         }
         if (minecraft.hitResult == null || minecraft.hitResult.getType() != HitResult.Type.BLOCK) {

@@ -1,10 +1,17 @@
 package com.nrdhvnstd.halgventmod.datagen;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.CombatDamageTypes;
+
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistrySetBuilder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
@@ -24,8 +31,13 @@ public final class DataGenerators {
         // Теги для звуков боя: вид оружия, ближний бой
         generator.addProvider(event.includeServer(),
                 new ModItemTagsProvider(output, lookupProvider, blockTags.contentsGetter(), existingFileHelper));
+        // Пять типов урона боя (combat/CombatDamageTypes) и их теги
+        DatapackBuiltinEntriesProvider datapack = generator.addProvider(event.includeServer(),
+                new DatapackBuiltinEntriesProvider(output, lookupProvider,
+                        new RegistrySetBuilder().add(Registries.DAMAGE_TYPE, CombatDamageTypes::bootstrap),
+                        Set.of(HalgventMod.MODID)));
         generator.addProvider(event.includeServer(),
-                new ModDamageTypeTagsProvider(output, lookupProvider, existingFileHelper));
+                new ModDamageTypeTagsProvider(output, datapack.getRegistryProvider(), existingFileHelper));
 
         // Модели предметов и переводы
         generator.addProvider(event.includeClient(), new ModItemModelProvider(output, existingFileHelper));

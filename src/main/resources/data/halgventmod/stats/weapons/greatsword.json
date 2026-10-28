@@ -1,0 +1,56 @@
+{
+  "class": "greatsword",
+  "segment": "greatsword",
+  "two_handed": true,
+  "blade_length": 2.0,
+  "accuracy": 0.05,
+  "penetration": 1.8,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "chopping",
+      "damage": 42,
+      "windup": 12,
+      "release": 7,
+      "recovery": 12,
+      "stamina": 13
+    },
+    "overhead": {
+      "type": "chopping",
+      "damage": 50,
+      "windup": 14,
+      "release": 7,
+      "recovery": 13,
+      "stamina": 14
+    },
+    "stab": {
+      "type": "piercing",
+      "damage": 38,
+      "windup": 11,
+      "release": 5,
+      "recovery": 12,
+      "stamina": 12
+    },
+    "special": {
+      "as": "stab",
+      "damage": 42,
+      "reach_bonus": 0.4
+    },
+    "sprint": {
+      "as": "overhead"
+    }
+  },
+  "alt_grip": {
+    "attacks": {
+      "stab": {
+        "damage": 49
+      },
+      "slash": {
+        "damage": 29
+      }
+    }
+  }
+}

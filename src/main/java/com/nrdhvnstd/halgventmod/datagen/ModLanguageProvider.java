@@ -385,6 +385,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // Метки
         add("key.halgventmod.pickup", russian ? "Подобрать / использовать" : "Pick Up / Use");
         add("key.halgventmod.visor", russian ? "Поднять/опустить забрало" : "Raise/Lower Visor");
+        combatTranslations();
         add("hud.halgventmod.pickup", russian ? "[%s] Подобрать" : "[%s] Pick up");
         add("hud.halgventmod.pickup_equip", russian ? "[Shift+%s] Надеть" : "[Shift+%s] Put on");
         // Музыка биомов и источники звука
@@ -707,6 +708,83 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     /** Алхимия (alchemy/*): реторта, реагенты бродильной бочки, порошки и эссенции трав, сулема, нашатырь. */
+    // Бой (docs/TZ_chivalry_combat.md)
+    private void combatTranslations() {
+        add("key.categories.halgventmod.combat", russian ? "Halgventmod: бой" : "Halgventmod: Combat");
+        add("key.halgventmod.stab", russian ? "Укол" : "Stab");
+        add("key.halgventmod.special", russian ? "Особый удар" : "Special Attack");
+        add("key.halgventmod.feint", russian ? "Финт" : "Feint");
+        add("key.halgventmod.kick", russian ? "Пинок" : "Kick");
+        add("key.halgventmod.grip", russian ? "Сменить хват" : "Switch Grip");
+        add("attack_kind.halgventmod.slash", russian ? "взмах" : "slash");
+        add("attack_kind.halgventmod.overhead", russian ? "удар сверху" : "overhead");
+        add("attack_kind.halgventmod.stab", russian ? "укол" : "stab");
+        add("attack_kind.halgventmod.special", russian ? "особый удар" : "special attack");
+        add("attack_kind.halgventmod.sprint", russian ? "удар с разбега" : "sprint attack");
+        add("command.halgventmod.combat.debug_on", russian ? "Отладка боя включена" : "Combat debug on");
+        add("command.halgventmod.combat.debug_off", russian ? "Отладка боя выключена" : "Combat debug off");
+        add("combat.halgventmod.debug.prefix", russian ? "[бой] " : "[combat] ");
+        add("combat.halgventmod.debug.phase", russian ? "%s: %s, %s т.%s" : "%s: %s, %s t.%s");
+        add("combat.halgventmod.debug.heavy", russian ? "заряженный" : "heavy");
+        add("combat.halgventmod.debug.combo", russian ? "комбо %s" : "combo %s");
+        add("strike_side.halgventmod.left", russian ? "слева" : "from the left");
+        add("strike_side.halgventmod.right", russian ? "справа" : "from the right");
+        add("strike_side.halgventmod.up", russian ? "сверху" : "from above");
+        add("strike_side.halgventmod.down", russian ? "снизу" : "from below");
+        add("combat.halgventmod.debug.block_side", russian ? "блок %s" : "block %s");
+        add("combat.halgventmod.debug.wrong_side", russian ? "блок %s не держит удар — нужен %s" : "block %s misses — needs %s");
+        add("combat.halgventmod.debug.charging", russian ? "заряд…" : "charging…");
+        add("combat.halgventmod.debug.feint", russian ? "финт" : "feint");
+        add("combat.halgventmod.debug.morph", russian ? "смена удара" : "morph");
+        add("combat.halgventmod.debug.hit", russian ? "попал: %s — %s до брони, %s по телу (%s, %s), боль %s"
+                : "hit: %s — %s before armor, %s to body (%s, %s), pain %s");
+        add("combat.halgventmod.debug.no_damage", russian ? "попал без урона: %s — %s до брони, %s по телу (%s, %s), боль %s"
+                : "hit, no damage: %s — %s before armor, %s to body (%s, %s), pain %s");
+        add("combat.halgventmod.debug.layer_gap", russian ? "  %s: в щель" : "  %s: through a gap");
+        add("combat.halgventmod.debug.layer", russian ? "  %s: пробито %s%%, дальше %s своим + %s дробящим, погашено %s"
+                : "  %s: %s%% pierced, %s own + %s blunt goes on, %s absorbed");
+        add("combat.halgventmod.debug.deflect", russian ? "погашено бронёй целиком (%s до брони)" : "fully deflected by armor (%s before armor)");
+        add("armor_layer.halgventmod.cloak", russian ? "накидка" : "cloak");
+        add("armor_layer.halgventmod.plate", russian ? "латы" : "plate");
+        add("armor_layer.halgventmod.mail", russian ? "кольчуга" : "mail");
+        add("armor_layer.halgventmod.padding", russian ? "поддоспех" : "padding");
+        add("tooltip.halgventmod.armor.broken", russian ? "Разбита: не защищает" : "Broken: gives no protection");
+        add("tooltip.halgventmod.armor.worn", russian ? "Изношена: защита %s%%" : "Worn: %s%% protection");
+        for (String[] death : new String[][] {
+                {"chopping", "%1$s зарублен(а)", "%1$s was hacked down"},
+                {"cutting", "%1$s изрезан(а)", "%1$s was cut down"},
+                {"piercing", "%1$s заколот(а)", "%1$s was run through"},
+                {"blunt", "%1$s забит(а)", "%1$s was bludgeoned"},
+                {"penetrating", "%1$s пронзён(а)", "%1$s was pierced"}}) {
+            add("death.attack.halgventmod." + death[0], russian ? death[1] : death[2]);
+            add("death.attack.halgventmod." + death[0] + ".player", russian ? death[1] + " — %2$s" : death[2] + " by %2$s");
+        }
+        add("combat.halgventmod.debug.block", russian ? "блок: −%s выносливости" : "block: −%s stamina");
+        add("combat.halgventmod.debug.parry", russian ? "парирование: −%s выносливости, рипост" : "parry: −%s stamina, riposte");
+        add("combat.halgventmod.debug.guard_break", russian ? "сбой блока: прошло %s%% урона" : "guard break: %s%% of damage through");
+        add("combat.halgventmod.debug.riposte", russian ? "рипост" : "riposte");
+        add("combat.halgventmod.debug.winded", russian ? "одышка" : "winded");
+        add("combat.halgventmod.debug.shock", russian ? "болевой шок" : "pain shock");
+        add("tooltip.halgventmod.weapon.attack", russian ? "%s: %s, %s" : "%s: %s, %s");
+        add("tooltip.halgventmod.weapon.stats", russian ? "Пробивание %s, клинок %s" : "Penetration %s, blade %s");
+        add("tooltip.halgventmod.weapon.grip_main", russian ? "Хват: обычный (X — сменить)" : "Grip: normal (X to switch)");
+        add("tooltip.halgventmod.weapon.grip_alt", russian ? "Хват: второй (X — сменить)" : "Grip: alternate (X to switch)");
+        add("tooltip.halgventmod.quality.combat_weapon", russian ? "Качество: урон ×%s, пробитие +%s%%"
+                : "Quality: damage ×%s, penetration +%s%%");
+        add("combat.halgventmod.debug.grip_alt", russian ? "второй хват" : "alternate grip");
+        add("combat.halgventmod.debug.grip_main", russian ? "обычный хват" : "normal grip");
+        add("combat.halgventmod.debug.counter", russian ? "контратака" : "counterattack");
+        add("combat.halgventmod.debug.kick", russian ? "пинок: %s" : "kick: %s");
+        add("combat.halgventmod.debug.kick_guard", russian ? "блок пробит" : "guard broken");
+        add("combat.halgventmod.debug.flinch", russian ? "замах сбит" : "flinched");
+        add("combat.halgventmod.debug.stun", russian ? "оглушение" : "stunned");
+        add("combat.halgventmod.debug.arrow_block", russian ? "стрела отражена щитом: −%s выносливости" : "arrow blocked by shield: −%s stamina");
+        add("combat.halgventmod.debug.wall", russian ? "клинок упёрся в стену" : "blade hit a wall");
+        add("hit_zone.halgventmod.head", russian ? "голова" : "head");
+        add("hit_zone.halgventmod.torso", russian ? "корпус" : "torso");
+        add("hit_zone.halgventmod.legs", russian ? "ноги" : "legs");
+    }
+
     private void alchemyTranslations() {
         // Порошок и эссенция каждой травы (Herb.mark: item.halgventmod.<предмет>.<трава>)
         String[][] herbs = {
@@ -943,6 +1021,8 @@ public class ModLanguageProvider extends LanguageProvider {
     /** Травы: кустики, виды, сушёные и отвары (herbs/*). */
     private void herbsTranslations() {
         add("hud.halgventmod.use.cut_herbs", russian ? "Срезать: %s" : "Cut: %s");
+        add("hud.halgventmod.use.chop", russian ? "Рубить: %s" : "Chop: %s");
+        add("hud.halgventmod.use.dig", russian ? "Копать: %s" : "Dig: %s");
         herbs("cut", "Срезано: %s × %s", "Cut: %s × %s");
         herbs("regrowing", "%s: здесь уже срезали — отрастёт за пару дней (зимой не растёт)",
                 "%s: already cut here, it grows back in a couple of days (not in winter)");
@@ -2088,6 +2168,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("tooltip.halgventmod.quality.hangover_longer", russian ? "Похмелье дольше на %s%%" : "Hangover lasts %s%% longer");
         add("tooltip.halgventmod.quality.armor", russian ? "Защита ×%s, стойкость ×%s" : "Protection ×%s, resistance ×%s");
         add("damage_kind.halgventmod.chopping", russian ? "рубящий" : "chopping");
+        add("damage_kind.halgventmod.cutting", russian ? "режущий" : "cutting");
         add("damage_kind.halgventmod.piercing", russian ? "колющий" : "piercing");
         add("damage_kind.halgventmod.blunt", russian ? "дробящий" : "blunt");
         add("damage_kind.halgventmod.penetrating", russian ? "проникающий" : "penetrating");

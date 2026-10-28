@@ -1,0 +1,61 @@
+{
+  "items": {
+    "conquest_armory:hunting_knife": "knife",
+    "halgventmod:knife": "knife",
+    "conquest_armory:quillon_dagger": "dagger",
+    "conquest_armory:shortsword": "sword",
+    "conquest_armory:shortsword_with_gilded_hilt": "sword",
+    "conquest_armory:viking_sword": "sword",
+    "conquest_armory:crusader_sword": "sword",
+    "conquest_armory:scimitar": {
+      "class": "sword",
+      "attacks": {
+        "slash": {
+          "type": "cutting"
+        }
+      }
+    },
+    "conquest_armory:longsword": "greatsword",
+    "conquest_armory:bastard_sword": "greatsword",
+    "conquest_armory:large_viking_sword": "greatsword",
+    "conquest_armory:leafblade_claymore": "greatsword",
+    "conquest_armory:flammenschwert": "greatsword",
+    "conquest_armory:zweihander": "greatsword",
+    "conquest_armory:bearded_axe": "axe",
+    "conquest_armory:viking_bearded_axe": "axe",
+    "conquest_armory:horsemans_axe": "axe",
+    "conquest_armory:crowbeak_hatchet": "axe",
+    "conquest_armory:studded_battle_axe": "axe",
+    "halgventmod:axe": "axe",
+    "conquest_armory:broadaxe": "greataxe",
+    "conquest_armory:bearded_great_axe": "greataxe",
+    "conquest_armory:flanged_mace": "mace",
+    "conquest_armory:spiked_mace": "mace",
+    "conquest_armory:shestopyor": "mace",
+    "conquest_armory:flail": "mace",
+    "conquest_armory:spiked_flail": "mace",
+    "conquest_armory:double_flail": "mace",
+    "conquest_armory:polehammer": "greathammer",
+    "conquest_armory:large_bec_de_corbin": "greathammer",
+    "conquest_armory:pole_flail": "greathammer",
+    "conquest_armory:winged_spear": "spear",
+    "conquest_armory:winged_leaf_shaped_spear": "spear",
+    "conquest_armory:ranseur": "polearm",
+    "conquest_armory:glaive": "polearm",
+    "conquest_armory:voulge": "polearm",
+    "conquest_armory:heavy_voulge": "polearm",
+    "conquest_armory:bardiche": "polearm",
+    "conquest_armory:bill": "polearm",
+    "conquest_armory:bill_hook": "polearm",
+    "conquest_armory:simple_halberd": "polearm",
+    "conquest_armory:heavy_halberd": "polearm",
+    "conquest_armory:swiss_halberd": "polearm",
+    "conquest_armory:poleaxe": "polearm",
+    "conquest_armory:war_scythe": "polearm",
+    "conquest_armory:pitchfork": "polearm"
+  },
+  "tags": {
+    "minecraft:swords": "sword",
+    "minecraft:axes": "axe"
+  }
+}

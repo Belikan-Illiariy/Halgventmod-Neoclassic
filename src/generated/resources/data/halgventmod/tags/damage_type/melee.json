@@ -2,6 +2,11 @@
   "values": [
     "minecraft:player_attack",
     "minecraft:mob_attack",
-    "minecraft:mob_attack_no_aggro"
+    "minecraft:mob_attack_no_aggro",
+    "halgventmod:chopping",
+    "halgventmod:cutting",
+    "halgventmod:piercing",
+    "halgventmod:blunt",
+    "halgventmod:penetrating"
   ]
 }

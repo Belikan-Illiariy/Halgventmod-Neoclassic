@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.digging.ToolGathering;
 import com.nrdhvnstd.halgventmod.client.social.SocialInput;
 import com.nrdhvnstd.halgventmod.lock.Locks;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -95,6 +96,11 @@ public final class UseHint {
         // Выросший кустик травы — срезать (herbs/HerbPlantBlock)
         if (block instanceof HerbPlantBlock && HerbPlantBlock.grown(state)) {
             return "cut_herbs";
+        }
+        // Топором по бревну, лопатой по песку и глине — добыча (ToolGathering)
+        ItemStack hand = Minecraft.getInstance().player.getMainHandItem();
+        if (!ToolGathering.gatherable(hand, state).isEmpty()) {
+            return ToolGathering.action(hand);
         }
         if (block instanceof DoorBlock || block instanceof TrapDoorBlock || block instanceof FenceGateBlock) {
             return state.getValue(BlockStateProperties.OPEN) ? "close" : "open";

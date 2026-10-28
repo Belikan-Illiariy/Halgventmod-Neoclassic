@@ -70,6 +70,13 @@ public final class ModComponents {
                     .build());
 
     // Забрало шлема поднято (у шлемов с .visor()). Нет компонента — опущено. Живёт на самом шлеме: снял и надел — осталось как было
+    // Второй хват оружия (бой, X): у профиля оружия — второй набор ударов (combat/WeaponProfile.altGrip)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ALT_GRIP =
+            COMPONENTS.register("alt_grip", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> VISOR_RAISED =
             COMPONENTS.register("visor_raised", () -> DataComponentType.<Boolean>builder()
                     .persistent(Codec.BOOL)

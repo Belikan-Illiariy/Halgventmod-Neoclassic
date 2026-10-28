@@ -1,0 +1,39 @@
+{
+  "class": "mace",
+  "segment": "mace",
+  "two_handed": false,
+  "blade_length": 1.2,
+  "accuracy": 0.05,
+  "penetration": 1.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "blunt",
+      "damage": 30,
+      "windup": 11,
+      "release": 6,
+      "recovery": 11,
+      "stamina": 10
+    },
+    "overhead": {
+      "type": "blunt",
+      "damage": 38,
+      "windup": 13,
+      "release": 6,
+      "recovery": 12,
+      "stamina": 11
+    },
+    "special": {
+      "as": "overhead",
+      "damage": 38,
+      "block_cost": 2.0
+    },
+    "sprint": {
+      "as": "overhead"
+    }
+  },
+  "alt_grip": null
+}

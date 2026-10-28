@@ -20,6 +20,7 @@
     "CapeLayerMixin",
     "ClientPacketListenerMixin",
     "CreativeModeInventoryScreenMixin",
+    "HumanoidModelMixin",
     "ItemInHandRendererMixin",
     "KeyboardHandlerMixin",
     "LocalPlayerMixin",

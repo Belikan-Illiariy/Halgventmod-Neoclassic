@@ -6,7 +6,10 @@ import java.util.List;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
+import com.nrdhvnstd.halgventmod.registry.ModSounds;
+import com.nrdhvnstd.halgventmod.sound.SoundPlay;
 
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,6 +36,8 @@ public final class Dullness {
     public static final int MAX_HITS = 150;
     public static final float DAMAGE_FACTOR = 0.75F;
     public static final float SHARPEN_COST = 0.05F; // доля наибольшей прочности за заточку
+    private static final float DULL_VOLUME = 0.8F;
+    private static final float DULL_PITCH_SPREAD = 0.05F;
 
     private Dullness() {}
 
@@ -96,6 +101,7 @@ public final class Dullness {
         int remaining = (left == null ? roll(attacker.getRandom()) : left) - 1;
         if (remaining <= 0) {
             makeDull(weapon);
+            SoundPlay.at(attacker, ModSounds.COMBAT_WEAPON_DULL.get(), SoundSource.PLAYERS, DULL_VOLUME, DULL_PITCH_SPREAD);
         } else {
             weapon.set(ModComponents.HITS_TO_DULL.get(), remaining);
         }

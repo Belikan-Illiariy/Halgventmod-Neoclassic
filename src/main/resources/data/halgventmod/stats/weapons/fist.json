@@ -1,0 +1,23 @@
+{
+  "class": "fist",
+  "segment": "fist",
+  "two_handed": false,
+  "blade_length": 0.5,
+  "accuracy": 0.05,
+  "penetration": 0.0,
+  "block": {
+    "raise": 3,
+    "cost": 1.0
+  },
+  "attacks": {
+    "slash": {
+      "type": "blunt",
+      "damage": 6,
+      "windup": 6,
+      "release": 3,
+      "recovery": 6,
+      "stamina": 4
+    }
+  },
+  "alt_grip": null
+}

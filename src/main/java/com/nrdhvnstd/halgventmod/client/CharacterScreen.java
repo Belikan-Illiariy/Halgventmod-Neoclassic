@@ -9,6 +9,7 @@ import com.google.common.collect.Ordering;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.Thirst;
+import com.nrdhvnstd.halgventmod.needs.Pain;
 import com.nrdhvnstd.halgventmod.needs.Stamina;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -194,7 +195,7 @@ public class CharacterScreen extends Screen implements MenuTabScreen {
                 new Stat("stamina", need(Stamina.get(player), Stamina.max(player))),
                 new Stat("thirst", need(Thirst.get(player), Thirst.MAX)),
                 new Stat("intoxication", need(0, NEED_MAX)), // пока нет в моде
-                new Stat("pain", need(0, NEED_MAX)));        // пока нет в моде
+                new Stat("pain", need(Pain.get(player), Pain.MAX)));
     }
 
     private static List<Stat> attributeStats(LocalPlayer player) {

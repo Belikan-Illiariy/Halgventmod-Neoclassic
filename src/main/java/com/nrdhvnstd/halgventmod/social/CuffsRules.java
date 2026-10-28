@@ -41,7 +41,7 @@ public final class CuffsRules {
         return !stack.isEmpty() && (GearQuality.isWeapon(stack) || stack.getItem() instanceof ShieldItem);
     }
 
-    private static boolean isCuffed(Player player) {
+    public static boolean isCuffed(Player player) {
         return Restraint.CUFFS.on(player);
     }
 

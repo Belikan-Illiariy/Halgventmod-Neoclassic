@@ -1,6 +1,8 @@
 package com.nrdhvnstd.halgventmod.needs;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Combat;
+import com.nrdhvnstd.halgventmod.combat.Defense;
 import com.nrdhvnstd.halgventmod.food.FoodEffects;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -21,15 +23,16 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
-import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.ArrowLooseEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Выносливость 0–100. Тратится на бег, прыжки, плавание, удары, блок щитом и выстрелы.
- * На нуле — изнеможение: всё это запрещено, замедление и слабость, экран темнеет по краям.
+ * Выносливость 0–100. Тратится на бег, прыжки, плавание, удары не оружием боя и выстрелы. Удары оружием, блок,
+ * финт и пинок тратят её в бою (combat/Combat, Defense, Kick — ТЗ боя, 9).
+ * На нуле — изнеможение: бег, прыжок и лук запрещены, замедление, экран темнеет по краям. Оружием бить можно, но
+ * ослабленно — одышка (Combat.winded).
  * Считается на сервере; клиент получает её через NeedsSync и сам гасит бег, прыжок и удар (StaminaInput).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
@@ -43,9 +46,7 @@ public final class Stamina {
 
     // Разовая трата
     public static final float JUMP = 4.0F;
-    public static final float ATTACK = 6.0F;             // удар по существу
-    public static final float SHIELD_BLOCK = 3.0F;       // блок щитом...
-    public static final float SHIELD_PER_DAMAGE = 1.0F;  // ...плюс за каждую единицу отражённого урона
+    public static final float ATTACK = 6.0F;             // удар по существу не оружием боя (кирка, факел)
     public static final float BOW_SHOT = 8.0F;           // выстрел из лука при полном натяжении
     public static final float CROSSBOW_SHOT = 8.0F;
 
@@ -58,7 +59,6 @@ public final class Stamina {
     // Изнеможение
     public static final int EXHAUSTED_TICKS = 40;        // 2 секунды
     public static final int SLOWNESS_LEVEL = 0;          // 0 = Замедление I
-    public static final int WEAKNESS_LEVEL = 0;          // 0 = Слабость I
 
     private Stamina() {}
 
@@ -68,7 +68,7 @@ public final class Stamina {
 
     /** Сколько выносливости помещается: после горячего сложного блюда — больше (FoodEffects). */
     public static float max(Player player) {
-        return MAX + (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_MAX : 0);
+        return MAX + (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_MAX : 0) - Pain.staminaPenalty(player);
     }
 
     public static boolean exhausted(Player player) {
@@ -77,7 +77,10 @@ public final class Stamina {
 
     /** Можно ли сейчас бежать. Уже бегущий бежит, пока шкала не опустеет. */
     public static boolean canSprint(Player player) {
-        return !exhausted(player) && (player.isSprinting() ? get(player) > 0 : get(player) >= SPRINT_MIN);
+        return !exhausted(player) && !Combat.state(player).blocking // в блоке бег нельзя (бой, 5.1)
+                && !Pain.noSprint(player) // и от мучительной боли
+                && player.level().getGameTime() >= Combat.state(player).sprintLockUntil // и после удара с разбега
+                && (player.isSprinting() ? get(player) > 0 : get(player) >= SPRINT_MIN);
     }
 
     /** Потратить выносливость. Перегруз увеличивает трату. Только на сервере. */
@@ -104,7 +107,7 @@ public final class Stamina {
             player.stopUsingItem();
         }
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, EXHAUSTED_TICKS, SLOWNESS_LEVEL, false, false, true));
-        player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, EXHAUSTED_TICKS, WEAKNESS_LEVEL, false, false, true));
+        // «Слабости» нет: ослабление удара при одышке делает бой (Combat.winded)
         PlayerVoice.cry(player, Voices.Cry.OUT_OF_BREATH); // раз на изнеможение
     }
 
@@ -138,7 +141,9 @@ public final class Stamina {
             // («Бодрость») — тоже
             float regen = REGEN_PER_TICK * Intoxication.staminaFactor(player)
                     * (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_REGEN : 1.0F)
-                    * (player.hasEffect(ModEffects.VIGOR) ? VIGOR_REGEN : 1.0F);
+                    * (player.hasEffect(ModEffects.VIGOR) ? VIGOR_REGEN : 1.0F)
+                    * (Combat.state(player).blocking ? Defense.BLOCK_REGEN : 1.0F) // в блоке — вдвое медленнее
+                    * Pain.regenFactor(player);
             data.level = Math.min(data.level + regen, max(player));
         } else if (data.level > max(player)) {
             data.level = max(player); // эффект прошёл — запас обратно до обычного
@@ -156,18 +161,14 @@ public final class Stamina {
     @SubscribeEvent
     public static void onAttack(AttackEntityEvent event) {
         Player player = event.getEntity();
+        if (Combat.isOwnHit()) {
+            return; // удар боя: выносливость списал Combat в начале удара
+        }
         if (exhausted(player)) {
             event.setCanceled(true);
             return;
         }
         spend(player, ATTACK);
-    }
-
-    @SubscribeEvent
-    public static void onShieldBlock(LivingShieldBlockEvent event) {
-        if (event.getBlocked() && event.getEntity() instanceof Player player) {
-            spend(player, SHIELD_BLOCK + event.getBlockedDamage() * SHIELD_PER_DAMAGE);
-        }
     }
 
     @SubscribeEvent
