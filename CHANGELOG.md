@@ -53,7 +53,7 @@
 
 ---
 
-## Следующая версия — в работе
+## 0.1.3 — 29 октября 2026
 
 ### Что нового
 
@@ -320,6 +320,8 @@
 - ЛКМ и ПКМ отданы бою, поэтому **рубить бревно топором** и **копать песок и глину лопатой** теперь на **E**, с подсказкой у прицела «Рубить: E» / «Копать: E». По ПКМ инструменты больше ничего не добывают.
 
 ### Файлы
+
+- `gradle.properties` — версия 0.1.3.
 - Направление по мыши: `combat/StrikeSide` — новое (сторона удара и блока); `combat/SwingPath` — дуги по сторонам; `combat/Combat` — сторона удара, удар сверху мышью вверх, смена стороны в замахе, сторона блока (`BLOCK_SIDE`); `combat/Defense` — блок только со своей стороны (щит — любой), контратака по стороне; `combat/CombatState` — сторона удара и блока вместо «обратного»; `network/CombatInputPayload` — сторона, `CombatStatePayload` — сторона удара и блока (кодек вручную), `ModNetwork` — версия 33; `client/CombatInput` — движение мыши за 3 тика; `client/ModKeys` — без «Удара сверху» и Alt; `client/CombatAnimation` — переписан (стороны, корпус, позы блока); `client/CombatHud` — черта стороны; `datagen/ModLanguageProvider` — стороны, строки отладки.
 - Этап 12: `client/CombatHud` — новое (метка боя), `client/WeaponTooltip` — новое (удары в подсказке, ванильные атрибуты урона скрыты); `client/QualityTooltip` — строка качества оружия боя; `combat/Combat` — тяжёлый замах у заряженного; `sound/CombatSounds` — звук попадания по типу урона; `quality/Dullness` — звук затупления; `datagen/ModLanguageProvider` — строки подсказки.
 - Этап 11: `client/CombatAnimation` — новое (поза из фазы и `SwingPath`, от первого и третьего лица, хват); `mixin/HumanoidModelMixin` — новое (руки и нога модели), `mixin/ItemInHandRendererMixin` — рука от первого лица; `halgventmod.mixins.json`; `combat/Combat` — хват X (второй набор ударов, 8 тиков без удара и блока, звук); `combat/CombatState` — хват, клиентские поля анимации; `client/ClientCombat` — прошлая фаза, начало блока; `client/CombatInput` — X; `registry/ModComponents` — `alt_grip`; `datagen/ModLanguageProvider` — строки хвата.
