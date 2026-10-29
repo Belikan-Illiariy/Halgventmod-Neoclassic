@@ -1,0 +1,8 @@
+{
+  "loader": "neoforge:obj",
+  "model": "conquest:models/block/obj/wine_press.obj",
+  "emissive_ambient": true,
+  "flip_v": true,
+  "textures": { "particle": "conquest:block/7_tools/3_utility/wine_press", "press": "conquest:block/7_tools/3_utility/wine_press" },
+  "visibility": { "screw": false, "handle": false }
+}

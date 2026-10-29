@@ -17,6 +17,7 @@ import com.nrdhvnstd.halgventmod.menu.SocialSearchMenu;
 import com.nrdhvnstd.halgventmod.name.RpNames;
 import com.nrdhvnstd.halgventmod.network.SocialEndPayload;
 import com.nrdhvnstd.halgventmod.network.SocialProgressPayload;
+import com.nrdhvnstd.halgventmod.npc.Crimes;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
@@ -202,6 +203,9 @@ public final class Social {
         Restraint.refresh(target);
         if (target != player) {
             ArmorRules.tell(target, Component.translatable(action.doneKey()));
+            if (Crimes.hostile(action)) {
+                Crimes.committed(player); // стражник, увидевший это, объявляет в розыск
+            }
         }
     }
 

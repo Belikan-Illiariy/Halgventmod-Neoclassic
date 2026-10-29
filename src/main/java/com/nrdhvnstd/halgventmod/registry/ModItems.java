@@ -57,6 +57,12 @@ import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import com.nrdhvnstd.halgventmod.lock.KeyRingItem;
+import com.nrdhvnstd.halgventmod.npc.HalgNpc;
+import com.nrdhvnstd.halgventmod.npc.NpcPoiWandItem;
+import com.nrdhvnstd.halgventmod.npc.NpcRole;
+import com.nrdhvnstd.halgventmod.npc.NpcWandItem;
+import com.nrdhvnstd.halgventmod.trade.StallKind;
+import com.nrdhvnstd.halgventmod.trade.TradeBlocks;
 import com.nrdhvnstd.halgventmod.farming.HarvestToolItem;
 import com.nrdhvnstd.halgventmod.armorial.ArmorialItem;
 
@@ -121,6 +127,15 @@ public final class ModItems {
             .lore("Подходит только к своему замку.", "Fits only its own lock.")
             .stacksTo(16)
             .grams(30)
+            .register();
+    // Отмычка: E по запертому замку — мини-игра взлома (lock/Lockpicking); может сломаться, куётся на наковальне
+    public static final DeferredItem<Item> LOCKPICK = item("lockpick", "Отмычка", "Lockpick", Gender.F)
+            .traits(ModTraits.COMMON)
+            .category(Category.TOOLS)
+            .lore("E по запертому замку — взлом. Нужна твёрдая рука: чуть пережмёшь — сломается. Стража, увидев взлом, считает это преступлением.",
+                    "E on a locked lock starts picking. It takes a steady hand: press too hard and it snaps. Guards who see it treat it as a crime.")
+            .durability(8)
+            .grams(15)
             .register();
     public static final DeferredItem<Item> PADLOCK = item("padlock", "Навесной замок", "Padlock", Gender.M)
             .traits(ModTraits.COMMON)
@@ -1028,6 +1043,79 @@ public final class ModItems {
                     .lore("Для администрации: призывает гуся.", "For administration: summons a goose.")
                     .register(properties -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(ModEntities.GOOSE,
                             0xE8E4DC, 0xE07820, properties));
+
+    // Прилавки игрока-торговца (trade/): каждый держит свой вид товара; продаёт и скупает НПС-торговец хозяина
+    public static final DeferredItem<BlockItem> WEAPON_STALL = stall(StallKind.WEAPONS, "Оружейная стойка", "Weapon rack",
+            "Настенная стойка на 4 крюка: оружие висит на ней в полный размер.", "A wall rack with 4 hooks: the weapons hang on it full size.");
+    public static final DeferredItem<BlockItem> ARMOR_STALL = stall(StallKind.ARMOR, "Манекен бронника", "Armourer's mannequin",
+            "Манекен с 12 ячейками брони, как у игрока: надетое видно на нём.", "A mannequin with 12 armour slots like a player's: what it wears is shown on it.");
+    public static final DeferredItem<BlockItem> FOOD_STALL = stall(StallKind.FOOD, "Витрина со снедью", "Food showcase",
+            "Широкая горка: три ступени на 8 мест, еда и питьё лежат на ступенях.", "A wide tiered stand: three steps with 8 places, food and drink lie on the steps.");
+    public static final DeferredItem<BlockItem> GOODS_STALL = stall(StallKind.GOODS, "Прилавок товаров", "Goods stall",
+            "Стол в два блока шириной со ступенчатым лотком: 12 вещей лежат на нём, по 4 на ступени. Всё, кроме оружия, брони и еды.", "A table two blocks wide with a stepped tray: 12 items lie on it, 4 per step. Anything but weapons, armour and food.");
+    public static final DeferredItem<BlockItem> TAP_STALL = stall(StallKind.TAP, "Бочонок с краном", "Tap barrel",
+            "Питьё в разлив: E склянкой, кувшином или корчагой — влить (до 32 мер одного питья), Shift+E пустой посудой — отлить. "
+                    + "В ячейки — кружки торговца: в них наливают под залог.",
+            "Drinks on tap: E with a bottle, jug or amphora pours in (up to 32 measures of one drink), Shift+E with an empty "
+                    + "vessel draws out. Its slots hold the merchant's mugs, lent against a deposit.");
+    public static final DeferredItem<BlockItem> MERCHANT_STORAGE = stall(StallKind.STORAGE, "Хранилище", "Storage",
+            "Запас торговца на 27 ячеек: из него НПС-торговец сам пополняет прилавки товаром с ценой продажи, а скупленное "
+                    + "кладёт сюда, когда на прилавке нет места. Привязывается к торговцу жезлом НПС, режим «Прилавок».",
+            "The merchant's reserve of 27 slots: the NPC merchant restocks the stalls from it with priced goods and puts bought "
+                    + "goods here when a stall is full. Bind it to the merchant with the NPC wand, Stall mode.");
+
+    private static DeferredItem<BlockItem> stall(StallKind kind, String ru, String en, String loreRu, String loreEn) {
+        return item(kind.id(), ru, en, Gender.M)
+                .category(Category.MISC)
+                .lore(loreRu + " E — товар, цены продажи и скупки по качествам и запросы. "
+                                + "Напрямую с прилавка не покупают: торгует НПС-торговец, к которому прилавок привязан жезлом НПС.",
+                        loreEn + " E opens stock, sell and buy prices per quality and requests. "
+                                + "Nobody buys from the stall directly: the NPC merchant it is bound to with the NPC wand trades.")
+                .register(properties -> new BlockItem(TradeBlocks.STALLS.get(kind).get(), properties));
+    }
+
+    // Жезл НПС — привязки, маршруты и точки интереса (только администрация)
+    public static final DeferredItem<NpcWandItem> NPC_WAND = item("npc_wand", "Жезл НПС", "NPC wand", Gender.M)
+            .category(Category.MISC)
+            .lore("Для администрации, для одного НПС. ПКМ по НПС — выбрать; ПКМ по блоку — поставить место работы, дом или точку маршрута (по режиму); Shift + ПКМ по воздуху — режим; Shift + ПКМ по блоку — сбросить.",
+                    "For administration, for a single NPC. Right-click an NPC to select it; right-click a block to set its workplace, home or a route point (by mode); Shift + right-click air changes the mode; Shift + right-click a block undoes.")
+            .stacksTo(1)
+            .register(properties -> new NpcWandItem(
+                    properties.component(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)));
+
+    // Жезл точек интереса — общие точки для всех НПС (магазин, рынок, трактир, площадь)
+    public static final DeferredItem<NpcPoiWandItem> NPC_POI_WAND = item("npc_poi_wand", "Жезл точек интереса", "Points of interest wand", Gender.M)
+            .category(Category.MISC)
+            .lore("Для администрации, для всех НПС: точки общие, горожане в 96 блоках ходят на них. Shift + ПКМ по воздуху — вид точки (магазин, рынок, трактир, площадь); ПКМ по блоку — поставить; Shift + ПКМ по блоку — убрать ближайшую.",
+                    "For administration, for all NPCs: points are shared, townspeople within 96 blocks visit them. Shift + right-click air changes the kind (shop, market, tavern, square); right-click a block places one; Shift + right-click a block removes the nearest.")
+            .stacksTo(1)
+            .register(properties -> new NpcPoiWandItem(
+                    properties.component(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)));
+
+    // Яйца призыва НПС по ролям: роль и метку «выдать личность» несёт ENTITY_DATA яйца (см. HalgNpc.tick)
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> NPC_CITIZEN_SPAWN_EGG =
+            npcEgg("npc_citizen_spawn_egg", "Яйцо призыва горожанина", "Citizen spawn egg", NpcRole.CITIZEN,
+                    0xC8B488, 0x6B5A3A);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> NPC_MERCHANT_SPAWN_EGG =
+            npcEgg("npc_merchant_spawn_egg", "Яйцо призыва торговца", "Merchant spawn egg", NpcRole.MERCHANT,
+                    0xD8A838, 0x7A3A1A);
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> NPC_GUARD_SPAWN_EGG =
+            npcEgg("npc_guard_spawn_egg", "Яйцо призыва стражника", "Guard spawn egg", NpcRole.GUARD,
+                    0x8A929A, 0x3A4A6A);
+
+    private static DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> npcEgg(String id, String ru, String en,
+                                                                                         NpcRole role, int background, int highlight) {
+        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        data.putString("Role", role.id());
+        data.putBoolean(HalgNpc.EGG_TAG, true);
+        return item(id, ru, en, Gender.N)
+                .category(Category.MISC)
+                .lore("Для администрации: призывает НПС со случайной личностью из шаблона роли. Shift+E по НПС — настройка.",
+                        "For administration: summons an NPC with a random identity from the role's template. Shift+E on an NPC opens its settings.")
+                .register(properties -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(ModEntities.NPC,
+                        background, highlight, properties.component(net.minecraft.core.component.DataComponents.ENTITY_DATA,
+                                net.minecraft.world.item.component.CustomData.of(data))));
+    }
 
     private static <B extends net.minecraft.world.level.block.Block> DeferredItem<BlockItem> plant(String id, String ru, String en,
                                                                                                    Gender gender, net.neoforged.neoforge.registries.DeferredBlock<B> block) {
@@ -2242,7 +2330,7 @@ public final class ModItems {
                     "Hastily skinned and reeking of beast. Until it is dressed, it is good only for the flies.")
             .stacksTo(99)
             .category(Category.JEWELRY)
-            .grams(2.9)
+            .grams(2)
             .register();
     public static final DeferredItem<Item> COIN_CRONA = item("coin_crona", "Крона", "Crona", Gender.F)
             .traits(ModTraits.RARE)
@@ -2251,7 +2339,7 @@ public final class ModItems {
             .stacksTo(99)
             .category(Category.JEWELRY)
 
-            .grams(1.1)
+            .grams(1)
             .register();
     public static final DeferredItem<Item> COIN_TALER = item("coin_taler", "Талер", "Taler", Gender.M)
             .traits(ModTraits.RARE)
@@ -2259,7 +2347,7 @@ public final class ModItems {
                     "Hastily skinned and reeking of beast. Until it is dressed, it is good only for the flies.")
             .stacksTo(99)
             .category(Category.JEWELRY)
-            .grams(2.5)
+            .grams(5)
             .register();
     public static final DeferredItem<Item> COIN_MARKA = item("coin_marka", "Марка", "Marka", Gender.F)
             .traits(ModTraits.RARE)
@@ -2267,7 +2355,7 @@ public final class ModItems {
                     "Hastily skinned and reeking of beast. Until it is dressed, it is good only for the flies.")
             .stacksTo(99)
             .category(Category.JEWELRY)
-            .grams(1.3)
+            .grams(2)
             .register();
 
 

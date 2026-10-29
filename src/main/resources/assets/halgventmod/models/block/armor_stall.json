@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "plate": "minecraft:block/smooth_stone", "particle": "minecraft:block/smooth_stone" },
+  "elements": [
+    { "from": [3, 0, 3], "to": [13, 1, 13], "faces": { "north": {"texture": "#plate"}, "south": {"texture": "#plate"}, "east": {"texture": "#plate"}, "west": {"texture": "#plate"}, "up": {"texture": "#plate"}, "down": {"texture": "#plate"} } }
+  ]
+}

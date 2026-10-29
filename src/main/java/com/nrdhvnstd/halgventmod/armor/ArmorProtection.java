@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Защита надетой брони от урона не из боя (падение, мобы, взрывы) — ванильными атрибутами «Броня» и «Твёрдость брони».
@@ -37,13 +37,13 @@ public final class ArmorProtection {
     }
 
     /** Переложить защиту на атрибуты игрока. */
-    public static void apply(Player player, ArmorInventory armor) {
+    public static void apply(LivingEntity player, ArmorInventory armor) {
         ModArmor.Protection total = total(armor);
         set(player, Attributes.ARMOR, ARMOR_ID, total.armor());
         set(player, Attributes.ARMOR_TOUGHNESS, TOUGHNESS_ID, total.toughness());
     }
 
-    private static void set(Player player, Holder<Attribute> attribute, ResourceLocation id, double value) {
+    private static void set(LivingEntity player, Holder<Attribute> attribute, ResourceLocation id, double value) {
         AttributeInstance instance = player.getAttribute(attribute);
         if (instance == null) {
             return;

@@ -34,7 +34,8 @@ public final class SmithScreens {
             case Minigame.ANVIL, Minigame.CASTING -> {
                 List<SmithProducts.Product> list = p.kind() == Minigame.ANVIL ? SmithProducts.anvil() : SmithProducts.casting();
                 SmithProducts.Product product = list.get(Math.floorMod(p.product(), list.size()));
-                boolean quality = product.kind() != SmithProducts.Result.PLAIN && product.kind() != SmithProducts.Result.REPAIR;
+                boolean quality = product.kind() != SmithProducts.Result.PLAIN && product.kind() != SmithProducts.Result.REPAIR
+                        && product.kind() != SmithProducts.Result.COPY;
                 // Этапы, сделанные раньше (работу бросали), — пропустить
                 int done = Math.min((p.extra() >> 8) & 0xFF, product.steps().size() - 1);
                 int minTicks = 0;

@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.registry;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.menu.AgingCaskMenu;
 import com.nrdhvnstd.halgventmod.menu.ArmorStandMenu;
+import com.nrdhvnstd.halgventmod.menu.NpcGearMenu;
 import com.nrdhvnstd.halgventmod.menu.CarpenterBenchMenu;
 import com.nrdhvnstd.halgventmod.menu.FermentingBarrelMenu;
 import com.nrdhvnstd.halgventmod.menu.HearthMenu;
@@ -33,6 +34,10 @@ public final class ModMenus {
     // Стойка для брони: 12 ячеек брони стойки + хранилище, карманы и вторая рука игрока
     public static final DeferredHolder<MenuType<?>, MenuType<ArmorStandMenu>> ARMOR_STAND =
             MENUS.register("armor_stand", () -> IMenuTypeExtension.create(ArmorStandMenu::fromNetwork));
+
+    // Снаряжение НПС: 12 ячеек брони, две руки НПС + хранилище, карманы и вторая рука администратора
+    public static final DeferredHolder<MenuType<?>, MenuType<NpcGearMenu>> NPC_GEAR =
+            MENUS.register("npc_gear", () -> IMenuTypeExtension.create(NpcGearMenu::fromNetwork));
 
     // Обыск: инвентарь другого игрока в раскладке окна инвентаря, только просмотр (social/Social)
     public static final DeferredHolder<MenuType<?>, MenuType<SocialSearchMenu>> SOCIAL_SEARCH =
@@ -66,6 +71,7 @@ public final class ModMenus {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initMenus();
         com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.initMenus();
         com.nrdhvnstd.halgventmod.glass.GlassBlocks.initMenus();
+        com.nrdhvnstd.halgventmod.trade.TradeBlocks.init();
         MENUS.register(modEventBus);
     }
 }

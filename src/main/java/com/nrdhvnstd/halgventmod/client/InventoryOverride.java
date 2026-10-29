@@ -32,6 +32,8 @@ public final class InventoryOverride {
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.PLAYER_INVENTORY.get(), ArmorInventoryScreen::new);
         event.register(ModMenus.ARMOR_STAND.get(), ArmorStandScreen::new);
+        event.register(ModMenus.NPC_GEAR.get(), com.nrdhvnstd.halgventmod.client.npc.NpcGearScreen::new);
+        event.register(com.nrdhvnstd.halgventmod.trade.TradeBlocks.MARKET_STALL_MENU.get(), com.nrdhvnstd.halgventmod.client.trade.MarketStallScreen::new);
         event.register(ModMenus.SOCIAL_SEARCH.get(), com.nrdhvnstd.halgventmod.client.social.SocialSearchScreen::new);
         event.register(ModMenus.SEWING_TABLE.get(), com.nrdhvnstd.halgventmod.client.leather.SewingTableScreen::new);
         event.register(ModMenus.CARPENTER_BENCH.get(), com.nrdhvnstd.halgventmod.client.carpentry.CarpenterBenchScreen::new);

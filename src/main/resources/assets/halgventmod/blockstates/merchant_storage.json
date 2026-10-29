@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/merchant_storage" },
+    "facing=east": { "model": "halgventmod:block/merchant_storage", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/merchant_storage", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/merchant_storage", "y": 270 }
+  }
+}

@@ -28,6 +28,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  *
  * E чем угодно           — открыть, если не заперто; иначе «Заперто» (в творческом и администрации — тоже)
  * E навесным замком       — повесить замок (если его там ещё нет)
+ * E отмычкой по запертому — взлом, мини-игра (Lockpicking); стража, увидев, считает это преступлением
  * Shift + E ключом        — запереть или отпереть (связкой — тоже)
  * Shift + E пустой рукой  — снять отпертый навесной замок
  * Набор ключника (администрация или творческий режим):
@@ -83,6 +84,15 @@ public final class LockEvents {
                 }
             }
             return; // замка нет — всё как обычно
+        }
+
+        // Отмычка: E по запертому — мини-игра взлома (Lockpicking); по отпертому — открывается как обычно
+        if (!sneaking && lock.locked() && main.is(ModItems.LOCKPICK.get())) {
+            cancel(event, InteractionResult.SUCCESS);
+            if (server != null && serverPlayer != null) {
+                Lockpicking.start(server, serverPlayer, at, place, lock);
+            }
+            return;
         }
 
         if (sneaking && (main.is(ModItems.KEY.get()) || main.is(ModItems.KEY_RING.get()))) {

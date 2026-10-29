@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -45,10 +46,10 @@ public final class SmithProducts {
     }
 
     /** Как выходит вещь. INGOTS — слитки из тигля: сколько целых слитков расплава, столько и выйдет. */
-    public enum Result { PLAIN, QUALITY, GEAR, REPAIR, INGOTS }
+    public enum Result { PLAIN, QUALITY, GEAR, REPAIR, INGOTS, COPY }
 
     /** Роль нужного: металл, расплав и дерево дают качество. */
-    public enum Role { METAL, WOOD, OTHER, REPAIRED, MELT }
+    public enum Role { METAL, WOOD, OTHER, REPAIRED, MELT, TEMPLATE }
 
     /** Нужное. MELT — расплав металла metal в жидком тигле при себе (count — слитков), в ячейки его не кладут. */
     public record Need(Predicate<ItemStack> test, Supplier<ItemStack> icon, int count, Role role, @javax.annotation.Nullable Metal metal) {
@@ -126,6 +127,14 @@ public final class SmithProducts {
         private Product gilded() {
             need(SmithingItems.GOLD_INGOT, 1).need(SmithingItems.MERCURY, 1);
             return step(ForgeOp.GILD);
+        }
+
+        /** Копия ключа: образец — любой ключ с секретом замка, на станции он остаётся (Role.TEMPLATE), выходит ключ с тем же секретом. */
+        private Product copiesKey() {
+            needs.add(0, new Need(stack -> stack.is(ModItems.KEY.get()) && stack.has(ModComponents.LOCK_SECRET.get()),
+                    () -> new ItemStack(ModItems.KEY.get()), 1, Role.TEMPLATE, null));
+            kind = Result.COPY;
+            return this;
         }
 
         private Product repairs(Predicate<ItemStack> what, Supplier<ItemStack> icon) {
@@ -303,6 +312,13 @@ public final class SmithProducts {
         anvil(Tab.TOOLS, ModItems.PADLOCK, 1).iron(2).plain()
                 .step(ForgeOp.DRAW, ForgeShape.PLATE).step(ForgeOp.BEND, ForgeShape.HOOK).step(ForgeOp.PUNCH, 1)
                 .step(ForgeOp.RIVET, 2);
+        // Отмычка: тонкая стальная полоска с загнутым концом; из слитка выходит две (прочность и взлом — lock/Lockpicking)
+        anvil(Tab.TOOLS, ModItems.LOCKPICK, 2).steel(1).plain()
+                .step(ForgeOp.DRAW, ForgeShape.STRIP).step(ForgeOp.BEND, ForgeShape.HOOK).step(ForgeOp.QUENCH)
+                .step(ForgeOp.GRIND);
+        // Копия ключа: положите на станцию ключ-образец (он останется) и железо; выйдет ключ с тем же секретом
+        anvil(Tab.TOOLS, ModItems.KEY, 1).copiesKey().iron(1)
+                .step(ForgeOp.DRAW, ForgeShape.ROD).step(ForgeOp.PUNCH, 1).step(ForgeOp.GRIND);
         anvil(Tab.TOOLS, ModItems.KNIFE, 1).iron(1).steel(1).wood(ModItems.TOOL_HANDLE, 1)
                 .step(ForgeOp.DRAW, ForgeShape.KNIFE).step(ForgeOp.WELD).step(ForgeOp.QUENCH).step(ForgeOp.TEMPER, 1)
                 .step(ForgeOp.GRIND).step(ForgeOp.RIVET, 2);
