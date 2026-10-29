@@ -80,19 +80,22 @@ public final class DamagePipeline {
         float bluntBody = (kind == DamageKind.BLUNT ? own * kind.body() : 0) + blunt * DamageKind.BLUNT.body();
         float body = (kind == DamageKind.BLUNT ? 0 : own * kind.body()) + bluntBody;
         float pain = (body - bluntBody) * kind.pain() + bluntBody * DamageKind.BLUNT.pain() + metal * Combat.METAL_PAIN;
-        if (target instanceof Player player) {
-            wear(player, wear, random);
+        if (!wear.isEmpty()) {
+            wear(target, wear, random);
         }
         return new Result(body, bluntBody, metal, pain, lines);
     }
 
     // Износ: дробные единицы — бросок (0.3 — с шансом 30 %). Вещь кладётся заново: сводка слоёв и защита пересчитаются,
     // броня уйдёт клиентам. Разбилась — звук, остаётся надетой без защиты
-    private static void wear(Player player, Map<ArmorSlot, Float> wear, RandomSource random) {
-        if (wear.isEmpty() || player.getAbilities().instabuild) {
+    private static void wear(LivingEntity player, Map<ArmorSlot, Float> wear, RandomSource random) {
+        if (wear.isEmpty() || (player instanceof Player human && human.getAbilities().instabuild)) {
             return;
         }
-        ArmorInventory armor = player.getData(ModAttachments.ARMOR);
+        ArmorInventory armor = player.getExistingDataOrNull(ModAttachments.ARMOR);
+        if (armor == null) {
+            return;
+        }
         wear.forEach((slot, amount) -> {
             int points = (int) Math.floor(amount) + (random.nextFloat() < amount - Math.floor(amount) ? 1 : 0);
             ItemStack stack = armor.get(slot);

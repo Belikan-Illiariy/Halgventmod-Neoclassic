@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/weapon_stall" },
+    "facing=east": { "model": "halgventmod:block/weapon_stall", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/weapon_stall", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/weapon_stall", "y": 270 }
+  }
+}

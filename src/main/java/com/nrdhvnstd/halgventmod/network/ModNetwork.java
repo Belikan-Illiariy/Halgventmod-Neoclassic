@@ -20,6 +20,12 @@ public final class ModNetwork {
         registrar.playToClient(CalendarSyncPayload.TYPE, CalendarSyncPayload.STREAM_CODEC, CalendarSyncPayload::handle);
         registrar.playToClient(CalendarEventsPayload.TYPE, CalendarEventsPayload.STREAM_CODEC, CalendarEventsPayload::handle);
         registrar.playToClient(LocksChunkPayload.TYPE, LocksChunkPayload.STREAM_CODEC, LocksChunkPayload::handle);
+        registrar.playToClient(LockpickStartPayload.TYPE, LockpickStartPayload.STREAM_CODEC, LockpickStartPayload::handle);
+        registrar.playToServer(LockpickResultPayload.TYPE, LockpickResultPayload.STREAM_CODEC, LockpickResultPayload::handle);
+        registrar.playToClient(StallSyncPayload.TYPE, StallSyncPayload.STREAM_CODEC, StallSyncPayload::handle);
+        registrar.playToServer(StallEditPayload.TYPE, StallEditPayload.STREAM_CODEC, StallEditPayload::handle);
+        registrar.playToClient(ShopOpenPayload.TYPE, ShopOpenPayload.STREAM_CODEC, ShopOpenPayload::handle);
+        registrar.playToServer(ShopActionPayload.TYPE, ShopActionPayload.STREAM_CODEC, ShopActionPayload::handle);
         registrar.playToClient(NameTagsSyncPayload.TYPE, NameTagsSyncPayload.STREAM_CODEC, NameTagsSyncPayload::handle);
         registrar.playToClient(SquadMembersPayload.TYPE, SquadMembersPayload.STREAM_CODEC, SquadMembersPayload::handle);
         registrar.playToClient(SquadStatePayload.TYPE, SquadStatePayload.STREAM_CODEC, SquadStatePayload::handle);
@@ -80,6 +86,8 @@ public final class ModNetwork {
         registrar.playToServer(SurrenderPayload.TYPE, SurrenderPayload.STREAM_CODEC, SurrenderPayload::handle);
         registrar.playToServer(InteractPayload.TYPE, InteractPayload.STREAM_CODEC, InteractPayload::handle);
         registrar.playToClient(NpcInfoPayload.TYPE, NpcInfoPayload.STREAM_CODEC, NpcInfoPayload::handle);
+        registrar.playToClient(NpcEditOpenPayload.TYPE, NpcEditOpenPayload.STREAM_CODEC, NpcEditOpenPayload::handle);
+        registrar.playToServer(NpcEditPayload.TYPE, NpcEditPayload.STREAM_CODEC, NpcEditPayload::handle);
         registrar.playToServer(CombatInputPayload.TYPE, CombatInputPayload.STREAM_CODEC, CombatInputPayload::handle);
         registrar.playToClient(CombatHitPayload.TYPE, CombatHitPayload.STREAM_CODEC, CombatHitPayload::handle);
         registrar.playToClient(CombatStatePayload.TYPE, CombatStatePayload.STREAM_CODEC, CombatStatePayload::handle);

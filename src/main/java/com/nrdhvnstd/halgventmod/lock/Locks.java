@@ -155,6 +155,12 @@ public final class Locks {
         return key;
     }
 
+    /** Копия ключа с тем же секретом и подписью (наковальня, SmithProducts.copiesKey); не ключ или без секрета — пусто. */
+    public static ItemStack copyKey(ItemStack original) {
+        Long secret = original.get(ModComponents.LOCK_SECRET.get());
+        return secret == null ? ItemStack.EMPTY : makeKey(secret, original.get(ModComponents.KEY_LABEL.get()));
+    }
+
     public static void give(Player player, ItemStack stack) {
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);

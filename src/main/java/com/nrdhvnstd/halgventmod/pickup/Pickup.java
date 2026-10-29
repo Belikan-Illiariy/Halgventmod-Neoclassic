@@ -11,6 +11,9 @@ import com.nrdhvnstd.halgventmod.gear.GearRules;
 import com.nrdhvnstd.halgventmod.gear.GearSlot;
 import com.nrdhvnstd.halgventmod.gear.ModGear;
 import com.nrdhvnstd.halgventmod.leather.StationBlock;
+import com.nrdhvnstd.halgventmod.lock.Locks;
+import com.nrdhvnstd.halgventmod.npc.NpcWandItem;
+import com.nrdhvnstd.halgventmod.trade.MarketStallBlockEntity;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.mixin.AbstractArrowAccessor;
 import com.nrdhvnstd.halgventmod.mixin.ItemEntityAccessor;
@@ -22,7 +25,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -47,7 +53,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * Shift+E по надеваемой вещи — подобрать и сразу надеть, если ячейка свободна и правила пускают.
  * E по блоку без вещи под прицелом — ванильное использование блока (дверь, сундук, рычаг), но без
  * предмета из руки: блок не ставится, предмет не применяется (markUseKey, onRightClickBlock).
- * ПКМ по блоку, наоборот, блок не использует — только ставит блок и применяет предмет.
+ * ПКМ по блоку, наоборот, блок не использует — только ставит блок и применяет предмет; кроме блоков с окном (станции,
+ * прилавки, печи): по ним ПКМ открывает окно, как E (Shift+ПКМ — ставит блок).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
 public final class Pickup {
@@ -111,7 +118,24 @@ public final class Pickup {
             event.setCancellationResult(InteractionResult.SUCCESS);
             return;
         }
+        // ПКМ по блоку с окном (станция, прилавок, печь, верстак) — открыть окно, как E, а не ставить блок из руки.
+        // Shift+ПКМ — по-прежнему ставит. Двери и сундуки с замками — только на E (LockEvents)
+        if (!player.isSecondaryUseActive() && !(player.getMainHandItem().getItem() instanceof NpcWandItem)
+                && opensMenu(event.getLevel(), event.getPos())) { // жезлом НПС по прилавку — привязка, не окно
+            event.setUseItem(TriState.FALSE);
+            return;
+        }
         event.setUseBlock(TriState.FALSE);
+    }
+
+    /** Блок, который на использование открывает окно (станция, прилавок, печь): ПКМ по нему — открыть, а не бой. */
+    public static boolean opensMenu(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (Locks.isLockable(state)) {
+            return false;
+        }
+        return StationBlock.station(level, pos) != null || level.getBlockEntity(pos) instanceof MarketStallBlockEntity
+                || state.getMenuProvider(level, pos) != null;
     }
 
     /** Можно ли вообще подобрать эту сущность (без дальности). Клиент зовёт для подсветки. */

@@ -1,8 +1,11 @@
 package com.nrdhvnstd.halgventmod.client.npc;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.Permissions;
 import com.nrdhvnstd.halgventmod.client.Interaction;
 import com.nrdhvnstd.halgventmod.client.ModKeys;
+import com.nrdhvnstd.halgventmod.npc.HalgNpc;
+import com.nrdhvnstd.halgventmod.npc.NpcRole;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -22,6 +25,7 @@ public final class NpcHint {
     private static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "npc_hint");
     private static final int COLOR_NAME = 0xFFFFFFFF;
     private static final int COLOR_ACTION = 0xFFFFE8A0;   // как действие в UseHint
+    private static final int COLOR_EDIT = 0xFFB8B0A0;     // подсказка администрации тусклее
 
     private NpcHint() {}
 
@@ -40,7 +44,13 @@ public final class NpcHint {
         int x = graphics.guiWidth() / 2;
         int y = graphics.guiHeight() / 2;
         graphics.drawCenteredString(font, now.entity().getDisplayName(), x, y - font.lineHeight, COLOR_NAME);
-        graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.npc.talk",
+        // Торговец — «Торговать» (лавка откроется, если он привязан к игроку-торговцу)
+        boolean merchant = now.entity() instanceof HalgNpc npc && npc.getRole() == NpcRole.MERCHANT;
+        graphics.drawCenteredString(font, Component.translatable(merchant ? "hud.halgventmod.npc.trade" : "hud.halgventmod.npc.talk",
                 ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1, COLOR_ACTION);
+        if (now.entity() instanceof HalgNpc && Permissions.isAdmin(minecraft.player)) {
+            graphics.drawCenteredString(font, Component.translatable("hud.halgventmod.npc.edit",
+                    ModKeys.PICKUP.getTranslatedKeyMessage()), x, y + 1 + font.lineHeight, COLOR_EDIT);
+        }
     }
 }

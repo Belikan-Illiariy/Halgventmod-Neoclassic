@@ -129,6 +129,7 @@ public final class ModBlockEntities {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.initEntities();
         com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.initEntities();
         com.nrdhvnstd.halgventmod.glass.GlassBlocks.initEntities();
+        com.nrdhvnstd.halgventmod.trade.TradeBlocks.init();
         BLOCK_ENTITIES.register(modEventBus);
     }
 }

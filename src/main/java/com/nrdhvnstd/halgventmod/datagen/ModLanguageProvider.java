@@ -679,6 +679,210 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.npc.name", russian ? "Имя:" : "Name:");
         add("gui.halgventmod.npc.profession", russian ? "Профессия:" : "Profession:");
         add("npc.halgventmod.no_profession", russian ? "не указана" : "not set");
+        add("entity.halgventmod.npc", russian ? "Горожанин" : "Townsperson");
+        add("npc.halgventmod.role.citizen", russian ? "Горожанин" : "Townsperson");
+        add("npc.halgventmod.role.merchant", russian ? "Торговец" : "Merchant");
+        add("npc.halgventmod.role.guard", russian ? "Стражник" : "Guard");
+        add("npc.halgventmod.command.spawned", russian ? "НПС поставлен: %s (%s)" : "NPC placed: %s (%s)");
+        add("npc.halgventmod.command.no_target", russian
+                ? "Наведите прицел на НПС (до 8 блоков)" : "Aim at an NPC (up to 8 blocks)");
+        add("npc.halgventmod.command.role", russian ? "Роль: %s" : "Role: %s");
+        add("npc.halgventmod.command.skin", russian ? "Скин: %s" : "Skin: %s");
+        add("npc.halgventmod.command.skin_cleared", russian ? "Скин сброшен — по облику" : "Skin cleared: by appearance");
+        add("npc.halgventmod.command.removed", russian ? "НПС убран" : "NPC removed");
+        add("npc.halgventmod.command.no_template", russian ? "Нет шаблона НПС «%s»" : "No NPC template \"%s\"");
+        add("npc.halgventmod.command.no_templates", russian
+                ? "У роли «%s» нет шаблонов" : "The role \"%s\" has no templates");
+        add("npc.halgventmod.command.rerolled", russian ? "Новая личность: %s" : "New identity: %s");
+        add("npc.halgventmod.command.stress", russian ? "Поставлено НПС: %s" : "NPCs placed: %s");
+        add("npc.halgventmod.command.stats", russian
+                ? "НПС в мире: %s, спят: %s, средний тик сервера: %s мс" : "NPCs: %s, sleeping: %s, average server tick: %s ms");
+        add("npc.halgventmod.command.purged", russian ? "Убрано НПС: %s" : "NPCs removed: %s");
+        add("gui.halgventmod.npc.edit.tab.identity", russian ? "Личность" : "Identity");
+        add("gui.halgventmod.npc.edit.tab.appearance", russian ? "Облик" : "Appearance");
+        add("gui.halgventmod.npc.edit.tab.bindings", russian ? "Привязки" : "Bindings");
+        add("gui.halgventmod.npc.edit.here", russian ? "Здесь" : "Here");
+        add("gui.halgventmod.npc.edit.clear", russian ? "Сбросить" : "Clear");
+        add("gui.halgventmod.npc.edit.route_clear", russian ? "Очистить" : "Clear");
+        add("gui.halgventmod.npc.edit.unset", russian ? "не задан" : "not set");
+        add("gui.halgventmod.npc.edit.post_at", russian ? "Место работы: %s" : "Workplace: %s");
+        add("gui.halgventmod.npc.edit.home_at", russian ? "Дом: %s" : "Home: %s");
+        add("gui.halgventmod.npc.edit.route_points", russian ? "Точек маршрута: %s" : "Route points: %s");
+        add("gui.halgventmod.npc.edit.wand_hint", russian
+                ? "Маршрут ставится жезлом НПС (режим «Маршрут»)." : "The route is set with the NPC wand (Route mode).");
+        add("npc.halgventmod.edit.home_set", russian ? "Дом — здесь" : "Home set here");
+        add("npc.halgventmod.poi.shop", russian ? "Магазин" : "Shop");
+        add("npc.halgventmod.poi.market", russian ? "Рынок" : "Market");
+        add("npc.halgventmod.poi.tavern", russian ? "Трактир" : "Tavern");
+        add("npc.halgventmod.poi.square", russian ? "Площадь" : "Square");
+        add("item.halgventmod.npc_wand.mode.post", russian ? "Место работы" : "Workplace");
+        add("item.halgventmod.npc_wand.mode.home", russian ? "Дом" : "Home");
+        add("item.halgventmod.npc_wand.mode.route", russian ? "Маршрут" : "Route");
+        add("item.halgventmod.npc_wand.mode.stall", russian ? "Прилавок" : "Stall");
+        add("npc.halgventmod.wand.mode", russian ? "Режим жезла: %s" : "Wand mode: %s");
+        add("npc.halgventmod.wand.selected", russian ? "Выбран: %s" : "Selected: %s");
+        add("npc.halgventmod.wand.status", russian ? "Режим: %s · выбран: %s" : "Mode: %s · selected: %s");
+        add("npc.halgventmod.wand.nobody", russian ? "никто" : "nobody");
+        add("npc.halgventmod.wand.no_selection", russian
+                ? "Сначала выберите НПС: ПКМ по нему" : "Select an NPC first: right-click it");
+        add("npc.halgventmod.wand.post_set", russian ? "Место работы поставлено" : "Workplace set");
+        add("npc.halgventmod.wand.post_cleared", russian ? "Место работы сброшено" : "Workplace cleared");
+        add("npc.halgventmod.wand.home_set", russian ? "Дом поставлен" : "Home set");
+        add("npc.halgventmod.wand.home_cleared", russian ? "Дом сброшен" : "Home cleared");
+        add("npc.halgventmod.wand.route_points", russian ? "Точек маршрута: %s" : "Route points: %s");
+        add("npc.halgventmod.wand.not_stall", russian ? "Это не прилавок" : "That is not a stall");
+        add("npc.halgventmod.wand.stall_bound", russian ? "%s торгует этим прилавком" : "%s now trades from this stall");
+        add("npc.halgventmod.wand.stall_unbound", russian ? "Прилавок отвязан от: %s" : "Stall unbound from %s");
+        add("gui.halgventmod.stall.storage_hint", russian ? "Запас торговца: пополняет прилавки и принимает скупленное" : "Merchant reserve: restocks the stalls and takes bought goods");
+        add("npc.halgventmod.wand.route_full", russian ? "В маршруте уже %s точек" : "The route already has %s points");
+        add("npc.halgventmod.wand.poi_added", russian ? "Точка поставлена: %s" : "Point placed: %s");
+        add("npc.halgventmod.wand.poi_removed", russian ? "Точка убрана: %s" : "Point removed: %s");
+        add("npc.halgventmod.wand.poi_none", russian ? "Рядом нет точек" : "No points nearby");
+        add("npc.halgventmod.wand.poi_full", russian ? "Достигнут предел точек: %s" : "Point limit reached: %s");
+        add("gui.halgventmod.npc.edit.tab.equipment", russian ? "Снаряжение" : "Equipment");
+        add("gui.halgventmod.npc.edit.gear.main_hand", russian ? "Основная рука" : "Main hand");
+        add("gui.halgventmod.npc.edit.gear.off_hand", russian ? "Вторая рука" : "Off hand");
+        add("gui.halgventmod.npc.edit.gear_open", russian ? "Открыть инвентарь снаряжения" : "Open the gear inventory");
+        add("gui.halgventmod.npc.gear.back", russian ? "Настройки" : "Settings");
+        add("gui.halgventmod.npc.edit.gear_hint", russian
+                ? "Броня и руки НПС — как в инвентаре: тяните вещи из своего инвентаря, Shift+клик надевает."
+                : "The NPC's armor and hands work like an inventory: drag items from yours, Shift+click equips.");
+        add("npc.halgventmod.crime.seen", russian ? "Стража заметила вас!" : "The guards saw you!");
+        add("gui.halgventmod.lockpick.title", russian ? "Взлом замка" : "Lockpicking");
+        add("gui.halgventmod.lockpick.pins", russian ? "Штифтов: %s из %s" : "Pins: %s of %s");
+        add("gui.halgventmod.lockpick.durability", russian ? "Прочность отмычки" : "Pick strength");
+        add("gui.halgventmod.lockpick.tension_on", russian ? "Натяжение" : "Tension");
+        add("gui.halgventmod.lockpick.overset", russian ? "Перетянут! Сбросьте натяжение" : "Overset! Release the tension");
+        add("gui.halgventmod.lockpick.false_set", russian ? "Ложная установка: ослабьте и дожмите" : "False set: ease off and push");
+        add("gui.halgventmod.lockpick.hint", russian
+                ? "Мышь — отмычка, ЛКМ — поднять, колесо или W/S — натяжение, Esc — выйти"
+                : "Mouse: pick, LMB: lift pin, wheel or W/S: tension, Esc: give up");
+        add("lock.halgventmod.picked", russian ? "Замок вскрыт" : "Lock picked");
+        add("lock.halgventmod.pick_broke", russian ? "Отмычка сломалась" : "The lockpick snapped");
+        add("lock.halgventmod.pick_failed", russian ? "Не вышло" : "It did not work");
+        // ----- Торговля: прилавки и лавка НПС-торговца (trade/)
+        add("trade.halgventmod.stall.not_yours", russian
+                ? "Прилавок торговца %s. Купить можно у его НПС-торговца." : "%s's stall. Buy from their NPC merchant.");
+        add("gui.halgventmod.stall.tab.goods", russian ? "Товары" : "Goods");
+        add("gui.halgventmod.stall.prices_title", russian ? "Цены" : "Prices");
+        add("gui.halgventmod.stall.sell_full", russian ? "Продажа" : "Selling");
+        add("gui.halgventmod.stall.buy_full", russian ? "Скупка" : "Buying");
+        add("gui.halgventmod.stall.same_for_all", russian ? "Как Обычное" : "Like Mediocre");
+        add("gui.halgventmod.stall.cancel", russian ? "Отмена" : "Cancel");
+        add("gui.halgventmod.stall.buy_only", russian ? "только скупка" : "buying only");
+        add("trade.halgventmod.shop.unbound", russian
+                ? "У торговца нет прилавков: администрация привязывает их жезлом НПС, режим «Прилавок»"
+                : "This merchant has no stalls: an admin binds them with the NPC wand, Stall mode");
+        add("gui.halgventmod.stall.tab.requests", russian ? "Запросы" : "Requests");
+        add("gui.halgventmod.stall.save", russian ? "Сохранить" : "Save");
+        add("gui.halgventmod.stall.remove", russian ? "Снять" : "Remove");
+        add("gui.halgventmod.stall.clear_requests", russian ? "Очистить" : "Clear");
+        add("gui.halgventmod.stall.empty", russian
+                ? "Положите товар в ячейки слева — он появится здесь, щелчок по нему откроет цены."
+                : "Put goods into the slots on the left; they appear here, click one to set its prices.");
+        add("gui.halgventmod.stall.stock", russian ? "Лежит: %s" : "In stock: %s");
+        add("gui.halgventmod.stall.price", russian ? "Цена" : "Price");
+        add("gui.halgventmod.stall.no_offer", russian ? "без цены" : "not priced");
+        add("gui.halgventmod.stall.no_requests", russian ? "Запросов нет." : "No requests.");
+        add("gui.halgventmod.stall.grade.0", russian ? "Ужасное" : "Terrible");
+        add("gui.halgventmod.stall.grade.1", russian ? "Плохое" : "Poor");
+        add("gui.halgventmod.stall.grade.2", russian ? "Обычное" : "Mediocre");
+        add("gui.halgventmod.stall.grade.3", russian ? "Хорошее" : "Fine");
+        add("gui.halgventmod.stall.grade.4", russian ? "Отличное" : "Excellent");
+        add("gui.halgventmod.stall.grade.5", russian ? "Шедевр" : "Masterwork");
+        add("gui.halgventmod.shop.title", russian ? "Лавка: %s" : "Shop: %s");
+        add("gui.halgventmod.shop.tab.buy", russian ? "Купить" : "Buy");
+        add("gui.halgventmod.shop.tab.sell", russian ? "Продать" : "Sell");
+        add("gui.halgventmod.shop.tab.till", russian ? "Касса" : "Till");
+        add("gui.halgventmod.shop.deposit", russian ? "Внести" : "Deposit");
+        add("gui.halgventmod.shop.withdraw", russian ? "Забрать всё" : "Take all");
+        add("gui.halgventmod.shop.purse_line", russian ? "у торговца: %s · у вас: %s" : "merchant has: %s · you have: %s");
+        add("gui.halgventmod.shop.till_hint", russian
+                ? "Выручка с продаж копится у торговца. Скупку он платит отсюда же — внесите монеты, чтобы ему было чем платить."
+                : "Sales takings pile up with the merchant, and buying from players is paid from here: deposit coins so they can pay.");
+        add("trade.halgventmod.shop.deposited", russian ? "Торговцу передано: %s × %s" : "Given to the merchant: %s × %s");
+        add("trade.halgventmod.shop.withdrawn", russian ? "Вы забрали выручку: %s" : "You took the takings: %s");
+        add("gui.halgventmod.shop.buy", russian ? "Купить" : "Buy");
+        add("gui.halgventmod.shop.request", russian ? "Заказать" : "Request");
+        add("gui.halgventmod.shop.sell", russian ? "Продать" : "Sell");
+        add("gui.halgventmod.shop.nothing_for_sale", russian ? "Сейчас ничего не продаётся." : "Nothing for sale right now.");
+        add("gui.halgventmod.shop.nothing_wanted", russian ? "Торговец ничего не скупает." : "The merchant buys nothing.");
+        add("gui.halgventmod.shop.in_stock", russian ? "есть: %s" : "in stock: %s");
+        add("gui.halgventmod.shop.sold_out", russian ? "нет" : "sold out");
+        add("gui.halgventmod.shop.you_have", russian ? "у вас: %s" : "you have: %s");
+        add("gui.halgventmod.shop.your_coins", russian ? "Ваши монеты:" : "Your coins:");
+        add("trade.halgventmod.shop.no_money", russian ? "Не хватает монет: %s" : "Not enough coins: %s");
+        add("trade.halgventmod.shop.bought", russian ? "Куплено: %s за %s" : "Bought: %s for %s");
+        add("trade.halgventmod.shop.sold", russian ? "Продано: %s за %s" : "Sold: %s for %s");
+        add("trade.halgventmod.shop.sold_out", russian ? "Этот товар кончился" : "This item is sold out");
+        add("trade.halgventmod.shop.not_buying", russian
+                ? "Торговец сейчас это не скупает: у него нет денег или на прилавке нет места"
+                : "The merchant cannot buy this now: no money or no room on the stall");
+        add("trade.halgventmod.shop.nothing_to_sell", russian ? "У вас такого нет" : "You have none of that");
+        add("trade.halgventmod.shop.requested", russian ? "Запрос оставлен торговцу" : "Request left with the merchant");
+        add("trade.halgventmod.shop.request_notice", russian ? "%s просит товар: %s" : "%s asks for: %s");
+        add("hud.halgventmod.npc.trade", russian ? "[%s] Торговать" : "[%s] Trade");
+        add("gui.halgventmod.npc.edit.merchant", russian ? "Лавка: %s" : "Shop: %s");
+        add("gui.halgventmod.npc.edit.merchant_nick", russian ? "Ник торговца" : "Merchant's name");
+        add("gui.halgventmod.npc.edit.merchant_set", russian ? "Назначить" : "Assign");
+        add("npc.halgventmod.edit.merchant_offline", russian ? "Игрок %s не в сети" : "Player %s is not online");
+        add("npc.halgventmod.edit.merchant_set", russian ? "Торговец работает на %s" : "The merchant now works for %s");
+        // ----- Розлив: бочонок с краном (trade/Taps)
+        add("trade.halgventmod.tap.refuse", russian
+                ? "Сюда не влить: в бочонке другое питьё или он полон" : "Can't pour in: the barrel holds another drink or is full");
+        add("trade.halgventmod.tap.level", russian ? "В бочонке: %s из %s мер" : "In the barrel: %s of %s measures");
+        add("gui.halgventmod.stall.tab.tap", russian ? "Розлив" : "Tap");
+        add("gui.halgventmod.stall.tap_prices", russian ? "Цены" : "Prices");
+        add("gui.halgventmod.stall.tap_empty", russian ? "Вылить" : "Empty");
+        add("gui.halgventmod.stall.tap_none", russian
+                ? "Бочонок пуст. Влейте питьё: E склянкой, кувшином или корчагой." : "The barrel is empty. Pour a drink in: E with a bottle, jug or amphora.");
+        add("gui.halgventmod.stall.tap_measures", russian ? "Мер: %s из %s" : "Measures: %s of %s");
+        add("gui.halgventmod.stall.tap_cup_price", russian ? "Кружка: %s" : "Cup: %s");
+        add("gui.halgventmod.stall.tap_deposit_clay", russian ? "Залог, глиняная: %s" : "Deposit, clay: %s");
+        add("gui.halgventmod.stall.tap_deposit_pewter", russian ? "Залог, пьютеровая: %s" : "Deposit, pewter: %s");
+        add("gui.halgventmod.stall.tap_mugs", russian ? "Кружек торговца: %s" : "Merchant's mugs: %s");
+        add("gui.halgventmod.stall.tap_hint", russian
+                ? "Без залога кружку торговца не дают и пустые не принимают." : "Without a deposit the merchant lends no mugs and takes no empty ones.");
+        add("gui.halgventmod.stall.tap_prices_title", russian ? "Цены розлива" : "Tap prices");
+        add("gui.halgventmod.stall.tap_row_cup", russian ? "Кружка питья" : "A cup of drink");
+        add("gui.halgventmod.stall.tap_row_clay", russian ? "Залог: глиняная" : "Deposit: clay");
+        add("gui.halgventmod.stall.tap_row_pewter", russian ? "Залог: пьютеровая" : "Deposit: pewter");
+        add("gui.halgventmod.shop.tap_own", russian ? "Налить" : "Pour");
+        add("gui.halgventmod.shop.tap_own_hint", russian
+                ? "В кружку, кувшин или корчагу у вас в руке: за каждую меру — цена кружки"
+                : "Into the cup, jug or amphora in your hand: the price of a cup per measure");
+        add("gui.halgventmod.shop.tap_mug", russian ? "С кружкой" : "With a mug");
+        add("gui.halgventmod.shop.tap_mug_hint", russian
+                ? "В кружку торговца; сверх цены — залог %s, его вернут за пустую кружку"
+                : "Into the merchant's mug; on top of the price a deposit of %s, returned for the empty mug");
+        add("gui.halgventmod.shop.tap_info", russian ? "мер: %s · кружек: %s" : "measures: %s · mugs: %s");
+        add("gui.halgventmod.shop.return_mug", russian ? "Сдать" : "Return");
+        add("trade.halgventmod.shop.tap_need_vessel", russian
+                ? "Возьмите в руку кружку, кувшин или корчагу" : "Hold a cup, jug or amphora in your hand");
+        add("trade.halgventmod.shop.tap_vessel_full", russian ? "В эту посуду больше не налить" : "Nothing more fits in this vessel");
+        add("trade.halgventmod.shop.tap_poured", russian ? "Налито мер: %s (%s) за %s" : "Poured %s measures (%s) for %s");
+        add("trade.halgventmod.shop.tap_mug", russian ? "Налито в кружку торговца: %s за %s" : "Poured into the merchant's mug: %s for %s");
+        add("trade.halgventmod.shop.tap_no_mugs", russian ? "У торговца нет кружек" : "The merchant has no mugs");
+        add("trade.halgventmod.shop.mug_returned", russian ? "Кружка сдана, залог возвращён: %s" : "Mug returned, deposit back: %s");
+        add("gui.halgventmod.shop.tab.exchange", russian ? "Обмен" : "Exchange");
+        add("gui.halgventmod.shop.exchange", russian ? "Обменять" : "Exchange");
+        add("gui.halgventmod.shop.exchange_hint", russian ? "Shift — обменять, сколько хватит" : "Shift: exchange as much as possible");
+        add("gui.halgventmod.shop.exchange_rate", russian
+                ? "По весу металла: 1 г золота = 10 г серебра" : "By weight of metal: 1 g of gold = 10 g of silver");
+        add("trade.halgventmod.shop.exchanged", russian ? "Обменяно: %s × %s на %s × %s" : "Exchanged %s × %s for %s × %s");
+        add("hud.halgventmod.npc.edit", russian ? "Shift+%s: настроить" : "Shift+%s: configure");
+        add("gui.halgventmod.npc.edit.title", russian ? "Настройка НПС" : "NPC settings");
+        add("gui.halgventmod.npc.edit.name", russian ? "Имя" : "Name");
+        add("gui.halgventmod.npc.edit.role", russian ? "Роль" : "Role");
+        add("gui.halgventmod.npc.edit.skin", russian ? "Скин (пусто — по облику)" : "Skin (empty: by appearance)");
+        add("gui.halgventmod.npc.edit.slim", russian ? "Тонкие руки" : "Slim arms");
+        add("gui.halgventmod.npc.edit.route", russian ? "Маршрут (номер)" : "Route (number)");
+        add("gui.halgventmod.npc.edit.post", russian ? "Пост здесь" : "Post here");
+        add("gui.halgventmod.npc.edit.reroll", russian ? "Новая личность" : "New identity");
+        add("gui.halgventmod.npc.edit.save", russian ? "Сохранить" : "Save");
+        add("gui.halgventmod.npc.edit.remove", russian ? "Убрать" : "Remove");
+        add("npc.halgventmod.edit.saved", russian ? "НПС сохранён" : "NPC saved");
+        add("npc.halgventmod.edit.post_set", russian ? "Место работы — здесь" : "Workplace set here");
         add("hud.halgventmod.use.lock_key", russian ? "Запереть или отпереть: Shift+%s" : "Lock or unlock: Shift+%s");
         add("message.halgventmod.heal_no_item", russian
                 ? "Нужна повязка или лечебная мазь" : "You need a bandage or a healing salve");

@@ -218,6 +218,7 @@ public final class ModBlocks {
         com.nrdhvnstd.halgventmod.smithing.SmithingBlocks.init();
         com.nrdhvnstd.halgventmod.alchemy.AlchemyBlocks.init();
         com.nrdhvnstd.halgventmod.glass.GlassBlocks.init();
+        com.nrdhvnstd.halgventmod.trade.TradeBlocks.init();
         BLOCKS.register(modEventBus);
     }
 }

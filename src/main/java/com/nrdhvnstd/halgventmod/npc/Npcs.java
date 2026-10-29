@@ -1,10 +1,12 @@
 package com.nrdhvnstd.halgventmod.npc;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.Permissions;
 import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.network.NpcInfoPayload;
 import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.social.Social;
+import com.nrdhvnstd.halgventmod.trade.Shop;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,7 +25,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * НПС на E (docs/INTERACTION_E_SPEC.md, 3.4): в 2 блоках под прицелом — «[E] Поговорить», E — окно «Информация»
  * с именем и профессией. Пока заглушка: диалогов нет, настройщика НПС нет. Кто считается НПС — тег сущностей
- * halgventmod:npc (по умолчанию житель; администрация дописывает в датапаке).
+ * halgventmod:npc (свой НПС HalgNpc и житель; администрация дописывает в датапаке). План — docs/TZ_npc.md.
  */
 public final class Npcs {
     public static final TagKey<EntityType<?>> NPC =
@@ -38,18 +40,29 @@ public final class Npcs {
                 && !player.isSpectator() && !Downed.busy(player);
     }
 
-    /** InteractPayload: проверить и открыть «Информацию». Shift пока ничего не меняет. */
+    /** InteractPayload: проверить и открыть «Информацию». Shift у администрации открывает настройку НПС. */
     public static void handle(ServerPlayer player, int entityId, boolean shift) {
         Entity entity = player.level().getEntity(entityId);
         if (entity == null || !canTarget(player, entity) || !player.hasLineOfSight(entity)
                 || !Pickup.inReach(player, entity, Social.INTERACT_REACH + REACH_MARGIN)) {
             return;
         }
+        if (shift && Permissions.isAdmin(player) && entity instanceof HalgNpc npc) {
+            NpcEditing.open(player, npc); // Shift+E у администрации — настройка
+            return;
+        }
+        if (entity instanceof HalgNpc npc && npc.getRole() == NpcRole.MERCHANT) {
+            Shop.open(player, npc); // лавка: купить, продать, оставить запрос; не привязан — подсказка, как привязать
+            return;
+        }
         PacketDistributor.sendToPlayer(player, new NpcInfoPayload(entity.getDisplayName(), profession(entity)));
     }
 
-    // Профессия жителя — ванильным названием; у остальных пока не задаётся
+    // У своего НПС «профессия» — его роль; у жителя — ванильное название; у остальных пока не задаётся
     private static Component profession(Entity entity) {
+        if (entity instanceof HalgNpc npc) {
+            return npc.getRole().title();
+        }
         if (entity instanceof VillagerDataHolder villager) {
             VillagerProfession profession = villager.getVillagerData().getProfession();
             if (profession != VillagerProfession.NONE) {

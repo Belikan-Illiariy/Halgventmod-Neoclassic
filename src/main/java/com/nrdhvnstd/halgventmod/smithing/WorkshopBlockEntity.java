@@ -7,6 +7,8 @@ import com.nrdhvnstd.halgventmod.carpentry.Carpentry;
 import com.nrdhvnstd.halgventmod.leather.StationBlockEntity;
 import com.nrdhvnstd.halgventmod.menu.WorkshopMenu;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
+import com.nrdhvnstd.halgventmod.lock.Locks;
+import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
@@ -345,10 +347,12 @@ public abstract class WorkshopBlockEntity extends StationBlockEntity implements 
                 ItemStack stack = materials.getItem(i);
                 if (need.matches(stack)) {
                     int taken = Math.min(left, stack.getCount());
-                    if (need.role() == SmithProducts.Role.REPAIRED) {
+                    if (need.role() == SmithProducts.Role.REPAIRED || need.role() == SmithProducts.Role.TEMPLATE) {
                         repaired = stack.copyWithCount(1);
                     }
-                    stack.shrink(taken);
+                    if (need.role() != SmithProducts.Role.TEMPLATE) { // образец (ключ для копии) остаётся на станции
+                        stack.shrink(taken);
+                    }
                     left -= taken;
                 }
             }
@@ -364,6 +368,7 @@ public abstract class WorkshopBlockEntity extends StationBlockEntity implements 
                 yield GearQuality.set(current.result(grade), grade);
             }
             case REPAIR -> reforged(repaired);
+            case COPY -> Locks.copyKey(repaired);
             case INGOTS -> Smithing.setQuality(meltNeed.metal().ingot().copyWithCount(Math.max(1, ingots)), quality);
         };
         if (!crucible.isEmpty() && Crucible.total(Crucible.melt(crucible)) <= 0) {
@@ -373,7 +378,7 @@ public abstract class WorkshopBlockEntity extends StationBlockEntity implements 
         give(player, Hallmark.bind(result, player)); // клеймо — со знаком того, кто выковал
         Smithing.tell(player, "made", name);
         Smithing.say(player, current.kind() == SmithProducts.Result.PLAIN || current.kind() == SmithProducts.Result.REPAIR
-                || delta == 0 ? "worked" : delta > 0 ? "worked_clean" : "worked_rough", average);
+                || current.kind() == SmithProducts.Result.COPY || delta == 0 ? "worked" : delta > 0 ? "worked_clean" : "worked_rough", average);
         sound(casting() ? SoundEvents.LAVA_EXTINGUISH : SoundEvents.ANVIL_USE, 0.8F, 1.0F);
         changed();
         openMenu(player);

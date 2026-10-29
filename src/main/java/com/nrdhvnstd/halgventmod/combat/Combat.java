@@ -21,6 +21,7 @@ import com.nrdhvnstd.halgventmod.needs.Stamina;
 import com.nrdhvnstd.halgventmod.network.CombatHitPayload;
 import com.nrdhvnstd.halgventmod.network.CombatInputPayload;
 import com.nrdhvnstd.halgventmod.network.CombatStatePayload;
+import com.nrdhvnstd.halgventmod.npc.HalgNpc;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.Dullness;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
@@ -516,7 +517,7 @@ public final class Combat {
      */
     static float wound(LivingEntity attacker, LivingEntity target, DamageKind kind, float amount, HitZone zone,
                        float penetration, float accuracy, Vec3 point, long now) {
-        boolean layered = target instanceof Player; // слои брони — у игроков (у мобов — ванильная броня)
+        boolean layered = layered(target); // слои брони — у игроков и НПС (у прочих мобов — ванильная броня)
         DamagePipeline.Result result = through(attacker, target, kind, amount, zone, penetration, accuracy);
         if (result.body() < DEFLECTED) {
             deflected(attacker, target, kind, amount, zone, point);
@@ -531,10 +532,15 @@ public final class Combat {
         return hurt ? result.body() : 0;
     }
 
-    /** Урон сквозь броню: у игрока — 4 слоя, у остальных — урон телу по типу. Разбор слоёв — в отладку. */
+    /** Броня этой цели считается слоями, как у игрока: игрок и свой НПС (стражник в доспехах). */
+    static boolean layered(LivingEntity target) {
+        return target instanceof Player || target instanceof HalgNpc;
+    }
+
+    /** Урон сквозь броню: у игрока и НПС — 4 слоя, у остальных — урон телу по типу. Разбор слоёв — в отладку. */
     static DamagePipeline.Result through(LivingEntity attacker, LivingEntity target, DamageKind kind, float amount,
                                          HitZone zone, float penetration, float accuracy) {
-        DamagePipeline.Result result = target instanceof Player
+        DamagePipeline.Result result = layered(target)
                 ? DamagePipeline.apply(target, kind, amount, zone, penetration, accuracy, target.getRandom())
                 : new DamagePipeline.Result(amount * kind.body(), kind == DamageKind.BLUNT ? amount * kind.body() : 0,
                         0, amount * kind.body() * kind.pain(), List.of());

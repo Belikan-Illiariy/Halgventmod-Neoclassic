@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "cap": "minecraft:block/barrel_top", "side": "minecraft:block/barrel_side", "stand": "minecraft:block/spruce_planks", "tap": "minecraft:block/gold_block", "particle": "minecraft:block/barrel_side" },
+  "elements": [
+    { "from": [2, 0, 2], "to": [14, 3, 4], "faces": { "north": {"texture": "#stand"}, "south": {"texture": "#stand"}, "east": {"texture": "#stand"}, "west": {"texture": "#stand"}, "up": {"texture": "#stand"}, "down": {"texture": "#stand"} } },
+    { "from": [2, 0, 12], "to": [14, 3, 14], "faces": { "north": {"texture": "#stand"}, "south": {"texture": "#stand"}, "east": {"texture": "#stand"}, "west": {"texture": "#stand"}, "up": {"texture": "#stand"}, "down": {"texture": "#stand"} } },
+    { "from": [2, 3, 1], "to": [14, 15, 15], "faces": { "north": {"texture": "#cap"}, "south": {"texture": "#cap"}, "east": {"texture": "#side", "rotation": 90}, "west": {"texture": "#side", "rotation": 90}, "up": {"texture": "#side"}, "down": {"texture": "#side"} } },
+    { "from": [7, 6, -1], "to": [9, 7, 1], "faces": { "north": {"texture": "#tap"}, "south": {"texture": "#tap"}, "east": {"texture": "#tap"}, "west": {"texture": "#tap"}, "up": {"texture": "#tap"}, "down": {"texture": "#tap"} } },
+    { "from": [7.5, 7, -0.5], "to": [8.5, 9, 0.5], "faces": { "north": {"texture": "#tap"}, "south": {"texture": "#tap"}, "east": {"texture": "#tap"}, "west": {"texture": "#tap"}, "up": {"texture": "#tap"}, "down": {"texture": "#tap"} } }
+  ]
+}

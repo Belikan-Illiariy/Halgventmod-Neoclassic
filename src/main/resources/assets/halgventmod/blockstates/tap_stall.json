@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "halgventmod:block/tap_stall" },
+    "facing=east": { "model": "halgventmod:block/tap_stall", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/tap_stall", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/tap_stall", "y": 270 }
+  }
+}

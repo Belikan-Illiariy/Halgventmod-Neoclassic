@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "halgventmod:weapon_stall" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ],
+  "random_sequence": "halgventmod:blocks/weapon_stall"
+}

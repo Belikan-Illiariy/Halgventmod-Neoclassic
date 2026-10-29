@@ -3,8 +3,10 @@ package com.nrdhvnstd.halgventmod.client.character;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -49,6 +51,8 @@ public final class AppearanceSkins {
     private static final int NO_TINT = -1;
 
     private static final Map<String, PlayerSkin> CACHE = new HashMap<>();
+    // Обличья, что не собрались: не пробовать каждый кадр до перезагрузки ресурсов (F3+T)
+    private static final Set<String> FAILED = new HashSet<>();
     private static int nextId;
 
     // Окно создания персонажа: облик, который сейчас выбирают, — на время рисования фигурки
@@ -71,15 +75,27 @@ public final class AppearanceSkins {
             CharacterData data = player.getExistingDataOrNull(ModAttachments.CHARACTER);
             appearance = data == null || data.appearance().isEmpty() ? Appearance.DEFAULT : data.appearance();
         }
+        return skinOf(appearance);
+    }
+
+    /** Скин по облику (для НПС); null — собрать пока нельзя (не поток отрисовки). */
+    @Nullable
+    public static PlayerSkin skinOf(Map<String, String> appearance) {
         String key = Appearance.key(appearance);
         PlayerSkin skin = CACHE.get(key);
-        if (skin == null && RenderSystem.isOnRenderThread()) {
+        if (skin == null && RenderSystem.isOnRenderThread() && !FAILED.contains(key)) {
             skin = build(appearance);
-            CACHE.put(key, skin);
+            if (skin == null) {
+                FAILED.add(key); // ванильный скин до перезагрузки ресурсов
+            } else {
+                CACHE.put(key, skin);
+            }
         }
         return skin;
     }
 
+    // null — не прочитался слой тела (например, jar мода подменили при запущенной игре): лучше ванильный скин, чем пустой
+    @Nullable
     private static PlayerSkin build(Map<String, String> appearance) {
         Minecraft minecraft = Minecraft.getInstance();
         ResourceManager manager = minecraft.getResourceManager();
@@ -87,7 +103,10 @@ public final class AppearanceSkins {
         int hair = Appearance.hairColor(appearance);
 
         NativeImage image = new NativeImage(SIZE, SIZE, true);
-        draw(image, manager, "body/" + sex, Appearance.skinColor(appearance));
+        if (!draw(image, manager, "body/" + sex, Appearance.skinColor(appearance))) {
+            image.close();
+            return null;
+        }
         draw(image, manager, "face/" + sex, NO_TINT);
         draw(image, manager, "eyes", Appearance.eyeColor(appearance));
         draw(image, manager, "brows", hair);
@@ -104,11 +123,11 @@ public final class AppearanceSkins {
         return new PlayerSkin(id, null, null, null, slim ? PlayerSkin.Model.SLIM : PlayerSkin.Model.WIDE, false);
     }
 
-    /** Наложить слой поверх (с учётом прозрачности); tint — RGB, на который умножается серый слой. */
-    private static void draw(NativeImage target, ResourceManager manager, String layer, int tint) {
+    /** Наложить слой поверх (с учётом прозрачности); tint — RGB, на который умножается серый слой. false — слоя нет. */
+    private static boolean draw(NativeImage target, ResourceManager manager, String layer, int tint) {
         NativeImage image = read(manager, layer);
         if (image == null) {
-            return;
+            return false;
         }
         try {
             for (int y = 0; y < SIZE; y++) {
@@ -143,6 +162,7 @@ public final class AppearanceSkins {
         } finally {
             image.close();
         }
+        return true;
     }
 
     @Nullable
@@ -173,6 +193,7 @@ public final class AppearanceSkins {
             Minecraft.getInstance().getTextureManager().release(skin.texture()); // закрывает и картинку
         }
         CACHE.clear();
+        FAILED.clear();
     }
 
     @SubscribeEvent

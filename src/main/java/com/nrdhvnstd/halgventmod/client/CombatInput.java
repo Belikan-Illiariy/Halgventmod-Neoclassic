@@ -5,6 +5,7 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.pickup.Pickup;
 import com.nrdhvnstd.halgventmod.combat.AttackKind;
 import com.nrdhvnstd.halgventmod.combat.Phase;
 import com.nrdhvnstd.halgventmod.combat.StrikeSide;
@@ -16,6 +17,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -84,7 +86,7 @@ public final class CombatInput {
             block(false);
             return;
         }
-        block(minecraft.options.keyUse.isDown());
+        block(minecraft.options.keyUse.isDown() && !aimsAtMenu(minecraft));
         if (feint > 0) {
             send(CombatInputPayload.Action.FEINT, AttackKind.SLASH);
         }
@@ -200,9 +202,15 @@ public final class CombatInput {
         if (event.isAttack()) {
             event.setSwingHand(false);
             event.setCanceled(true);
-        } else if (event.isUseItem()) {
+        } else if (event.isUseItem() && !aimsAtMenu(minecraft)) {
             event.setSwingHand(false);
             event.setCanceled(true); // ПКМ с оружием — блок (onClientTick), а не ванильное использование
         }
+    }
+
+    // Под прицелом блок с окном (станция, прилавок, печь): ПКМ открывает его, а не поднимает блок оружием
+    private static boolean aimsAtMenu(Minecraft minecraft) {
+        return minecraft.level != null && minecraft.hitResult instanceof BlockHitResult hit
+                && hit.getType() == HitResult.Type.BLOCK && Pickup.opensMenu(minecraft.level, hit.getBlockPos());
     }
 }

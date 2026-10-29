@@ -39,6 +39,8 @@ public class WinePressBlockEntity extends StationBlockEntity {
     public static final float SPILL_CHANCE = 0.25F;
     public static final int JUICE_PER_BOTTLE = 2;
     public static final int MAX_JUICE = 16;
+    /** Событие блока «нажали»: у клиентов ворот с винтом делает треть оборота (client/brewing/WinePressRenderer). */
+    public static final int PRESS_EVENT = 1;
 
     @Nullable
     private Item fruit;
@@ -46,6 +48,10 @@ public class WinePressBlockEntity extends StationBlockEntity {
     private int presses;
     private int juice;
     private String juiceKind = "";
+
+    // Только у клиента: сколько раз крутили ворот и когда последний раз (время мира) — для отрисовки
+    private int turns;
+    private long turnStart = Long.MIN_VALUE;
 
     public WinePressBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.WINE_PRESS.get(), pos, state);
@@ -160,6 +166,7 @@ public class WinePressBlockEntity extends StationBlockEntity {
             return true;
         }
         boolean steady = strike(player, hand, ItemStack.EMPTY);
+        level.blockEvent(worldPosition, getBlockState().getBlock(), PRESS_EVENT, 0); // клиенты крутят ворот
         sound(SoundEvents.SLIME_SQUISH, 0.6F, 0.8F + 0.3F * level.random.nextFloat());
         crumbs(new ItemStack(fruit), 0.9, 4);
         if (!steady && level.random.nextFloat() < SPILL_CHANCE) {
@@ -180,6 +187,26 @@ public class WinePressBlockEntity extends StationBlockEntity {
         }
         changed();
         return true;
+    }
+
+    @Override
+    public boolean triggerEvent(int id, int param) {
+        if (id == PRESS_EVENT) {
+            if (level != null && level.isClientSide) {
+                turns++;
+                turnStart = level.getGameTime();
+            }
+            return true;
+        }
+        return super.triggerEvent(id, param);
+    }
+
+    public int turns() {
+        return turns;
+    }
+
+    public long turnStart() {
+        return turnStart;
     }
 
     @Override

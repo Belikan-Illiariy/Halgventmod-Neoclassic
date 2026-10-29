@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "conquest:block/wine_press" },
-    "facing=east": { "model": "conquest:block/wine_press", "y": 90 },
-    "facing=south": { "model": "conquest:block/wine_press", "y": 180 },
-    "facing=west": { "model": "conquest:block/wine_press", "y": 270 }
+    "facing=north": { "model": "halgventmod:block/wine_press_frame" },
+    "facing=east": { "model": "halgventmod:block/wine_press_frame", "y": 90 },
+    "facing=south": { "model": "halgventmod:block/wine_press_frame", "y": 180 },
+    "facing=west": { "model": "halgventmod:block/wine_press_frame", "y": 270 }
   }
 }
