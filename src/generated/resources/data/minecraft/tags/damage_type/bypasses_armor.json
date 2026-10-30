@@ -4,6 +4,7 @@
     "halgventmod:cutting",
     "halgventmod:piercing",
     "halgventmod:blunt",
-    "halgventmod:penetrating"
+    "halgventmod:penetrating",
+    "halgventmod:bleeding"
   ]
 }

@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.network.ArmorStatsSyncPayload;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
 
@@ -23,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Параметры вещи брони для боя (ТЗ боя, 7.3): КБ (покрытие), твёрдость 0–3, износ и сопротивления пяти типам урона.
@@ -156,7 +160,35 @@ public final class ArmorStats {
             });
             overrides = Map.copyOf(loaded);
             generation++;
+            Map<String, String> sync = new HashMap<>();
+            loaded.forEach((id, json) -> sync.put(id.toString(), GSON.toJson(json)));
+            syncPayload = new ArmorStatsSyncPayload(Map.copyOf(sync));
             HalgventMod.LOGGER.info("Параметров брони из файлов: {}", overrides.size());
         }
+    }
+
+    // Клиенту — для подсказки (на сервере без них клиент видел бы только значения по материалу)
+    private static ArmorStatsSyncPayload syncPayload = new ArmorStatsSyncPayload(Map.of());
+
+    @SubscribeEvent
+    public static void onDatapackSync(OnDatapackSyncEvent event) {
+        event.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, syncPayload));
+    }
+
+    /** Только клиент: параметры с сервера. */
+    public static void applyClient(Map<String, String> items) {
+        Map<ResourceLocation, JsonObject> loaded = new HashMap<>();
+        items.forEach((id, json) -> {
+            ResourceLocation location = ResourceLocation.tryParse(id);
+            if (location != null) {
+                try {
+                    loaded.put(location, JsonParser.parseString(json).getAsJsonObject());
+                } catch (RuntimeException e) {
+                    HalgventMod.LOGGER.warn("Параметры брони {} с сервера не прочитаны: {}", id, e.getMessage());
+                }
+            }
+        });
+        overrides = Map.copyOf(loaded);
+        generation++;
     }
 }

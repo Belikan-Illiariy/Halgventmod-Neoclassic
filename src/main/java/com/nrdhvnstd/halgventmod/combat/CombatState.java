@@ -1,5 +1,9 @@
 package com.nrdhvnstd.halgventmod.combat;
 
+import java.util.ArrayDeque;
+
+import javax.annotation.Nullable;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.world.item.Item;
@@ -47,6 +51,23 @@ public final class CombatState {
     public long guardSince;                         // когда поднялся блок
     public boolean gripSeen;                        // какой хват был в руке в прошлом кадре
     public long gripChangedAt = Long.MIN_VALUE / 2; // когда сменился
+    public long hitStopAt = Long.MIN_VALUE / 2;     // удар попал: анимация на миг замирает с этого тика
+    public long recoilAt = Long.MIN_VALUE / 2;      // клинок отбросило (блок, парирование): с этого тика
+    public float recoilPower;                       // и насколько сильно, 0…1
+    public long engagedUntil;                       // в бою до этого тика: оружие в стойке (client/anim/CombatClips)
+    public boolean engaged;                         // захватил цель: оружие в стойке state.side (сервер и клиенты)
+    public String move = "";                        // приём (комбо) текущего удара — для клиентов (ComboMoves.Combo.move)
+    @Nullable public ComboMoves.Combo comboMove;    // только сервер: приём текущего удара
+    public final ArrayDeque<StrikeSide> history = new ArrayDeque<>(); // стороны последних ударов
+    public long lastStrikeAt = Long.MIN_VALUE / 2;  // когда начат последний удар
+    public String reaction = "";                    // только клиент: короткая анимация отдачи (неидеальный блок)
+    public long reactionAt = Long.MIN_VALUE / 2;    // … с этого тика
+    @Nullable public HitZone hurtZone;              // только клиент: куда попали (реакция тела)
+    public long hurtAt = Long.MIN_VALUE / 2;        // … когда
+    // Выносливость бойца-не-игрока (НПС, мобы с ИИ боя — Fighter): шкала, пауза до восстановления, одышка до тика
+    public float stamina = Fighter.NPC_MAX;
+    public int staminaDelay;
+    public long windedUntil;
     long inputTick;                                 // ограничение частоты пакетов ввода
     int inputCount;
 

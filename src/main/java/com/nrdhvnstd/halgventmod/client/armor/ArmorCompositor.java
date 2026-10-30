@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Blood;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
@@ -68,8 +69,8 @@ public final class ArmorCompositor {
     /** Ключ кэша склеек. */
     sealed interface Key permits Recipe, PieceRecipe {}
 
-    /** Рецепт образа одной плоскости. */
-    public record Recipe(ArmorSlot.Plane plane, List<Layer> layers) implements Key {}
+    /** Рецепт образа одной плоскости; blood — сколько на ней крови, 0…3 (combat/Blood). */
+    public record Recipe(ArmorSlot.Plane plane, List<Layer> layers, int blood) implements Key {}
 
     /** Текстура окрашенной детали или плаща: основа → покрытие (если покрашена) → overlay. */
     public record PieceRecipe(Layer layer) implements Key {}
@@ -140,10 +141,13 @@ public final class ArmorCompositor {
         }
         worn.sort(Comparator.comparingInt(slot -> order(armor.get(slot), slot)));
         List<Layer> layers = new ArrayList<>(worn.size());
+        float blood = 0;
         for (ArmorSlot slot : worn) {
             layers.add(layer(armor.get(slot), slot));
+            blood = Math.max(blood, Blood.level(armor.get(slot)));
         }
-        return new Recipe(plane, List.copyOf(layers));
+        int stains = blood < Blood.VISIBLE ? 0 : Math.min(3, 1 + (int) ((blood - Blood.VISIBLE) / ((1 - Blood.VISIBLE) / 3)));
+        return new Recipe(plane, List.copyOf(layers), stains);
     }
 
     private static Layer layer(ItemStack stack, ArmorSlot slot) {
@@ -192,6 +196,9 @@ public final class ArmorCompositor {
         for (Layer layer : recipe.layers()) {
             paintLayer(canvas, layer);
         }
+        if (recipe.blood() > 0) {
+            stain(canvas, recipe.blood(), recipe.plane().ordinal());
+        }
         int covers = 0;
         if (recipe.plane() == ArmorSlot.Plane.OUTER) {
             covers |= opaque(canvas, HEAD_AREA) ? COVERS_HEAD : 0;
@@ -202,6 +209,62 @@ public final class ArmorCompositor {
         }
 
         return register(canvas, covers);
+    }
+
+    /**
+     * Кровь на броне (по образцу KCC, BloodiedTextureCache): поверх склейки — бурые пятна и брызги по непрозрачным
+     * пикселям. Пятна — крупный шум (кляксы) плюс мелкий (брызги); чем больше крови (1…3), тем ниже порог — пятен больше.
+     * Одинаковые для одного уровня — склейка кэшируется.
+     */
+    private static void stain(NativeImage canvas, int level, int seed) {
+        float threshold = switch (level) {
+            case 1 -> 0.72F;
+            case 2 -> 0.6F;
+            default -> 0.48F;
+        };
+        for (int y = 0; y < canvas.getHeight(); y++) {
+            for (int x = 0; x < canvas.getWidth(); x++) {
+                int pixel = canvas.getPixelRGBA(x, y); // ABGR
+                if ((pixel >>> 24) == 0) {
+                    continue;
+                }
+                float n = 0.65F * smoothNoise(x / 5.0F, y / 5.0F, seed) + 0.35F * hash(x, y, seed + 7);
+                if (n < threshold) {
+                    continue;
+                }
+                float strength = Math.min(1, (n - threshold) / 0.12F) * BLOOD_ALPHA;
+                // Сухая — темнее и буроватая, свежая — краснее; берём середину
+                int r = (int) ((pixel & 0xFF) * (1 - strength) + BLOOD_R * strength);
+                int g = (int) ((pixel >> 8 & 0xFF) * (1 - strength) + BLOOD_G * strength);
+                int b = (int) ((pixel >> 16 & 0xFF) * (1 - strength) + BLOOD_B * strength);
+                canvas.setPixelRGBA(x, y, (pixel & 0xFF000000) | b << 16 | g << 8 | r);
+            }
+        }
+    }
+
+    private static final int BLOOD_R = 0x6E, BLOOD_G = 0x0C, BLOOD_B = 0x0A;
+    private static final float BLOOD_ALPHA = 0.85F;
+
+    // Значение шума 0…1 в целой точке
+    private static float hash(int x, int y, int seed) {
+        int h = x * 374761393 + y * 668265263 + seed * 2147483647;
+        h = (h ^ (h >>> 13)) * 1274126177;
+        return ((h ^ (h >>> 16)) & 0xFFFF) / 65535.0F;
+    }
+
+    // Гладкий шум (билинейный по сетке) — кляксы
+    private static float smoothNoise(float x, float y, int seed) {
+        int x0 = (int) Math.floor(x);
+        int y0 = (int) Math.floor(y);
+        float fx = x - x0;
+        float fy = y - y0;
+        float a = hash(x0, y0, seed);
+        float b = hash(x0 + 1, y0, seed);
+        float c = hash(x0, y0 + 1, seed);
+        float d = hash(x0 + 1, y0 + 1, seed);
+        float top = a + (b - a) * fx;
+        float bottom = c + (d - c) * fx;
+        return top + (bottom - top) * fy;
     }
 
     // Холст детали — размера её текстуры (у деталей он любой)

@@ -60,7 +60,7 @@ public final class Defense {
     public static final int GUARD_BREAK_STUN = 16;
     public static final double BLOCK_MOVE = -0.3;         // ходьба в блоке ×0.7
     public static final double STUN_MOVE = -0.5;          // в оглушении ×0.5
-    public static final float BLOCK_REGEN = 0.5F;         // восстановление выносливости в блоке
+    public static final float BLOCK_DRAIN = 0.1F;         // поднятый блок тратит выносливость за тик (2 в секунду) ⚠️
     // Контратака (5.3): тот же удар в ответ, начатый не раньше COUNTER_WINDOW тиков назад
     public static final int COUNTER_WINDOW = 4;
     public static final float COUNTER_STAMINA = 8;
@@ -79,9 +79,9 @@ public final class Defense {
     /** Каждый тик бойца: поднять блок, если кнопка зажата и можно; опустить, если нельзя. */
     static void tickGuard(LivingEntity entity, CombatState state, long now) {
         boolean can = state.blockHeld && state.phase == Phase.IDLE && now >= state.blockLockedUntil
-                && !(entity instanceof Player player && Combat.busy(player));
+                && !Fighter.busy(entity);
         if (can && !state.blocking) {
-            WeaponProfile profile = entity instanceof Player player ? guardProfile(player) : null;
+            WeaponProfile profile = guardProfile(entity);
             state.blocking = true;
             state.blockStart = now + (profile != null ? profile.blockRaise() : 0); // с этого тика блок держит
             entity.setSprinting(false);
@@ -123,9 +123,10 @@ public final class Defense {
     static float defend(LivingEntity attacker, LivingEntity target, CombatState attack, DamageKind kind, float raw,
                         Vec3 point, long now) {
         CombatState guard = Combat.state(target);
-        if (!guard.blocking || now < guard.blockStart || !(target instanceof Player defender) || !inFront(target, attacker)) {
+        if (!guard.blocking || now < guard.blockStart || !inFront(target, attacker)) {
             return 1.0F;
         }
+        LivingEntity defender = target; // игрок, НПС или моб с ИИ боя (выносливость — Fighter)
         // Удар, сбивающий блок (щитом — этап 6): как пинок по блоку
         if (attack.current.effect().equals("guard_break")) {
             guard.blockLockedUntil = now + Kick.KICK_STUN;
@@ -144,6 +145,11 @@ public final class Defense {
             return 1.0F;
         }
         boolean parry = now - guard.blockStart < PARRY_WINDOW;
+        // Мастер-удар (рипост после парирования) обычный блок не держит — только встречное парирование (как в KCD)
+        if (attack.riposte && !parry) {
+            Combat.debugBoth(attacker, target, Component.translatable("combat.halgventmod.debug.master_through"));
+            return 1.0F;
+        }
         float cost = cost(attacker, defender, attack, kind, raw) * (parry ? PARRY_COST : 1.0F);
         return resolve(attacker, defender, guard, cost, parry, kind, point, now,
                 extra -> Combat.recoil(attacker, attack, extra, now));
@@ -169,12 +175,12 @@ public final class Defense {
     }
 
     // Хватило выносливости — удар принят (атакующий отлетает: recoil(лишние тики возврата)); нет — сбой блока
-    private static float resolve(LivingEntity attacker, Player defender, CombatState guard, float cost, boolean parry,
+    private static float resolve(LivingEntity attacker, LivingEntity defender, CombatState guard, float cost, boolean parry,
                                  DamageKind kind, Vec3 point, long now, IntConsumer recoil) {
         LivingEntity target = defender;
-        float stamina = Stamina.exhausted(defender) ? 0 : Stamina.get(defender);
+        float stamina = Fighter.exhausted(defender) ? 0 : Fighter.stamina(defender);
         if (stamina >= cost) {
-            Stamina.spend(defender, cost);
+            Fighter.spend(defender, cost);
             wearShield(defender, cost);
             outcome(attacker, target, parry ? CombatHitPayload.Outcome.PARRY : CombatHitPayload.Outcome.BLOCK, kind, point);
             SoundPlay.atChest(target, blockSound(defender), SoundSource.PLAYERS, 1.0F, 0.1F);
@@ -187,7 +193,7 @@ public final class Defense {
             return 0;
         }
         // Сбой блока: выносливость кончилась, остаток урона — в тело, блок отключён, оглушение
-        Stamina.spend(defender, cost);
+        Fighter.spend(defender, cost);
         wearShield(defender, cost);
         guard.blockLockedUntil = now + GUARD_BREAK_LOCK;
         lower(target, guard);
@@ -207,13 +213,14 @@ public final class Defense {
     static boolean counter(LivingEntity attacker, LivingEntity target, CombatState attack, DamageKind kind, Vec3 point, long now) {
         CombatState guard = Combat.state(target);
         boolean stab = attack.current.shape() == AttackKind.STAB;
-        if (!(target instanceof Player defender) || guard.phase != Phase.WINDUP || guard.current == null
+        LivingEntity defender = target;
+        if (guard.phase != Phase.WINDUP || guard.current == null
                 || (guard.current.shape() == AttackKind.STAB) != stab || (!stab && guard.side != attack.side)
                 || now - guard.phaseStart > COUNTER_WINDOW
-                || !inFront(target, attacker) || Stamina.exhausted(defender) || Stamina.get(defender) < COUNTER_STAMINA) {
+                || !inFront(target, attacker) || Fighter.exhausted(defender) || Fighter.stamina(defender) < COUNTER_STAMINA) {
             return false;
         }
-        Stamina.spend(defender, COUNTER_STAMINA);
+        Fighter.spend(defender, COUNTER_STAMINA);
         guard.counter = true;
         guard.charging = false;
         outcome(attacker, target, CombatHitPayload.Outcome.COUNTER, kind, point);
@@ -225,12 +232,13 @@ public final class Defense {
     }
 
     /** Цена блока (5.1): урон × 0.6 × тип × заряд × оружие блокирующего × особый удар (булава ×2) × (1 − сегмент). */
-    static float cost(LivingEntity attacker, Player defender, CombatState attack, DamageKind kind, float raw) {
+    static float cost(LivingEntity attacker, LivingEntity defender, CombatState attack, DamageKind kind, float raw) {
         WeaponClass weaponClass = attack.profile.weaponClass();
         float type = kind == DamageKind.BLUNT ? BLUNT_COST
                 : weaponClass == WeaponClass.AXE || weaponClass == WeaponClass.GREATAXE ? AXE_COST : 1.0F;
         WeaponProfile own = guardProfile(defender);
         return raw * BLOCK_COST * type * (attack.heavy ? HEAVY_BLOCK : 1.0F) * (own != null ? own.blockCost() : 1.0F)
+                * Injuries.blockCost(defender) // рана руки — держать тяжелее
                 * attack.current.blockCost();
     }
 
@@ -246,12 +254,12 @@ public final class Defense {
     }
 
     /** Чем блокирует: щит во второй руке, иначе оружие в основной. */
-    static WeaponProfile guardProfile(Player player) {
+    static WeaponProfile guardProfile(LivingEntity player) {
         WeaponProfile shield = WeaponProfiles.hasShield(player) ? WeaponProfiles.ofClass(player, WeaponClass.SHIELD) : null;
         return shield != null ? shield : WeaponProfiles.of(player, player.getMainHandItem());
     }
 
-    private static SoundEvent blockSound(Player player) {
+    private static SoundEvent blockSound(LivingEntity player) {
         if (!WeaponProfiles.hasShield(player)) {
             return ModSounds.COMBAT_BLOCK_WEAPON.get();
         }
@@ -260,9 +268,9 @@ public final class Defense {
     }
 
     // Щит принял удар — теряет прочность по цене блока; разбился — звук
-    private static void wearShield(Player player, float cost) {
+    private static void wearShield(LivingEntity player, float cost) {
         ItemStack shield = player.getOffhandItem();
-        if (!WeaponProfiles.hasShield(player) || !shield.isDamageableItem() || player.getAbilities().instabuild) {
+        if (!WeaponProfiles.hasShield(player) || !shield.isDamageableItem() || (player instanceof Player creative && creative.getAbilities().instabuild)) {
             return;
         }
         shield.hurtAndBreak(Math.max(1, Math.round(cost * SHIELD_WEAR)), player, EquipmentSlot.OFFHAND);

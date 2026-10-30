@@ -28,6 +28,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.nrdhvnstd.halgventmod.client.WoundLayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.HumanoidArm;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
 /** Подключение отрисовки брони и снаряжения: слои на игроке и на стойке для брони, рука от первого лица, скрытие второго слоя скина, кэш. */
@@ -50,6 +54,7 @@ public final class ArmorRenderEvents {
                 continue;
             }
             boolean slim = skin == PlayerSkin.Model.SLIM;
+            renderer.addLayer(new WoundLayer<>(renderer)); // раны на коже — под бронёй
             ArmorLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> layer = new ArmorLayer<>(renderer,
                     bake(context, slim ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR),
                     bake(context, slim ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR),
@@ -96,6 +101,15 @@ public final class ArmorRenderEvents {
         if (legs != null && legs.covers(ArmorCompositor.COVERS_LEGS)) {
             model.rightPants.visible = false;
             model.leftPants.visible = false;
+        }
+    }
+
+    /** Рукав и перчатка на руке в уже поставленной позе (руки боя от первого лица). */
+    public static void renderPosedArm(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player,
+                                      HumanoidArm arm) {
+        ArmorLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> layer = LAYERS.get(player.getSkin().model());
+        if (layer != null) {
+            layer.renderPosedArm(poseStack, buffer, light, player, arm);
         }
     }
 

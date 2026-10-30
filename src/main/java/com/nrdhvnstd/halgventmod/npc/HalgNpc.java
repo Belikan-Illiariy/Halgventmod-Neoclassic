@@ -25,8 +25,13 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import com.nrdhvnstd.halgventmod.combat.CombatAiGoal;
+import com.nrdhvnstd.halgventmod.combat.Bleeding;
+import com.nrdhvnstd.halgventmod.combat.Injuries;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -48,7 +53,12 @@ import net.minecraft.world.phys.AABB;
  */
 public class HalgNpc extends PathfinderMob {
     // Меняйте здесь
-    private static final double MAX_HEALTH = 20;
+    private static final double MAX_HEALTH = 100;          // как у игрока: урон оружия боя рассчитан под 100 ⚠️
+    private static final int HEAL_EVERY = 40;               // вне боя +1 здоровья раз в 2 секунды ⚠️
+    private static final int HEAL_AFTER = 200;              // … если 10 секунд не били
+    private static final int SELF_BANDAGE_AFTER = 60;       // кровотечение — перевязывается через 3 секунды после боя
+    private static final float AGGRESSION_MIN = 0.35F, AGGRESSION_MAX = 0.95F; // нрав стражника в бою ⚠️
+    private float aggression = -1;
     private static final double MOVEMENT_SPEED = 0.3;     // ⚠️ было 0,25
     private static final float LOOK_DISTANCE = 6.0F;
     private static final double ATTACK_DAMAGE = 3;      // кулаком; с оружием урон считает бой по профилю
@@ -143,10 +153,22 @@ public class HalgNpc extends PathfinderMob {
                 AVOID_DISTANCE, WALK_SPEED, FLEE_SPEED, EntitySelector.NO_CREATIVE_OR_SPECTATOR::test));
         goalSelector.addGoal(3, new SleepInBedGoal(this));
         // Стражник: бьёт нарушителя (бой и броня — боевая система), без розыска ходит по маршруту
-        goalSelector.addGoal(2, new MeleeAttackGoal(this, CHASE_SPEED, true) {
+        // С оружием — боевой ИИ (стороны, блок, парирование, приёмы); безоружный — ванильная атака
+        goalSelector.addGoal(2, new CombatAiGoal(this, CombatAiGoal.GUARD, CHASE_SPEED) {
             @Override
             public boolean canUse() {
                 return getRole() == NpcRole.GUARD && super.canUse();
+            }
+
+            @Override
+            protected Skill skill() {
+                return CombatAiGoal.guard(aggression()); // у каждого стражника свой нрав
+            }
+        });
+        goalSelector.addGoal(2, new MeleeAttackGoal(this, CHASE_SPEED, true) {
+            @Override
+            public boolean canUse() {
+                return getRole() == NpcRole.GUARD && !CombatAiGoal.armed(HalgNpc.this) && super.canUse();
             }
         });
         targetSelector.addGoal(1, new PursueOffenderGoal(this));
@@ -237,9 +259,28 @@ public class HalgNpc extends PathfinderMob {
     }
 
     // Из яйца: роль приходит в данных яйца уже после создания, личность выдаём на первом тике
+    /** Нрав в бою 0…1 (CombatAiGoal.guard): выпадает случайно при первом обращении и хранится в мире. */
+    public float aggression() {
+        if (aggression < 0) {
+            aggression = AGGRESSION_MIN + getRandom().nextFloat() * (AGGRESSION_MAX - AGGRESSION_MIN);
+        }
+        return aggression;
+    }
+
     @Override
     public void tick() {
         super.tick();
+        // Бой кончился, а кровь течёт — перевязывается сам (повязка у НПС всегда при себе)
+        if (!level().isClientSide && getTarget() == null && Bleeding.level(this) > 0
+                && tickCount - getLastHurtByMobTimestamp() > SELF_BANDAGE_AFTER) {
+            swing(InteractionHand.OFF_HAND);
+            Injuries.treat(this);
+        }
+        // Вне боя (нет цели и давно не били) раны понемногу заживают
+        if (!level().isClientSide && tickCount % HEAL_EVERY == 0 && getTarget() == null && getHealth() < getMaxHealth()
+                && tickCount - getLastHurtByMobTimestamp() > HEAL_AFTER) {
+            heal(1);
+        }
         if (identityPending && !level().isClientSide) {
             identityPending = false;
             NpcTemplate source = NpcTemplates.random(getRole(), getRandom());
@@ -476,6 +517,7 @@ public class HalgNpc extends PathfinderMob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("Role", getRole().id());
+        tag.putFloat("Aggression", aggression());
         tag.putString("Skin", getSkin());
         tag.put("Appearance", entityData.get(APPEARANCE).copy());
         tag.putBoolean("Slim", isSlim());
@@ -494,6 +536,14 @@ public class HalgNpc extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        // Поставленные до 0.1.4 сохранили здоровье 20 — до нынешнего
+        AttributeInstance health = getAttribute(Attributes.MAX_HEALTH);
+        if (health != null && health.getBaseValue() < MAX_HEALTH) {
+            float share = getHealth() / (float) health.getBaseValue();
+            health.setBaseValue(MAX_HEALTH);
+            setHealth(share * (float) MAX_HEALTH);
+        }
+        aggression = tag.contains("Aggression") ? tag.getFloat("Aggression") : -1; // старым — выпадет заново
         NpcRole role = NpcRole.byId(tag.getString("Role"));
         setRole(role == null ? NpcRole.CITIZEN : role);
         setSkin(tag.getString("Skin"));

@@ -6,6 +6,7 @@ import com.nrdhvnstd.halgventmod.combat.CombatState;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.character.CharacterData;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
+import com.nrdhvnstd.halgventmod.combat.Wounds;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.draw.Drawing;
 import com.nrdhvnstd.halgventmod.downed.DownedData;
@@ -131,9 +132,17 @@ public final class ModAttachments {
                     .build());
 
     // Опьянение и похмелье (brewing/Intoxication). Сохраняется; после смерти — трезв
+    // Видимые раны (combat/Wounds): сохраняются, видны всем, кто видит; после смерти — нет
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<List<Wounds.Wound>>> WOUNDS =
+            ATTACHMENTS.register("wounds", () -> AttachmentType.<List<Wounds.Wound>>builder(() -> List.of())
+                    .serialize(Wounds.CODEC)
+                    .sync(Wounds.SYNC)
+                    .build());
+
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Intoxication.Data>> INTOXICATION =
             ATTACHMENTS.register("intoxication", () -> AttachmentType.builder(() -> Intoxication.Data.NONE)
                     .serialize(Intoxication.Data.CODEC)
+                    .sync(Intoxication.SYNC) // своему клиенту — уровень хмеля для качки камеры
                     .build());
 
     // Мешок, кандалы, наручники на игроке — маска для клиентов (social/Restraint). Не сохраняется:

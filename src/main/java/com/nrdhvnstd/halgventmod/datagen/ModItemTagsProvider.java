@@ -34,6 +34,8 @@ public class ModItemTagsProvider extends ItemTagsProvider {
         // Свои лопата и топор — тоже лопата и топор: ил, куча углежога, колода для колки, звуки удара, зачарования
         tag(ItemTags.SHOVELS).add(ModItems.SHOVEL.get());
         tag(ItemTags.AXES).add(ModItems.AXE.get());
+        // Доски мода — в обычные рецепты вместо досок любого дерева и в топливо
+        tag(ItemTags.PLANKS).add(ModItems.BOARDS.get());
         // Щиты боя (combat/Defense): во второй руке — блок щитом, удар щитом на R
         tag(WeaponProfiles.SHIELDS).add(Items.SHIELD);
     }

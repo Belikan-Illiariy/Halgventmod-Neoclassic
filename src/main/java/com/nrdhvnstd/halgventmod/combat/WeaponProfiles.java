@@ -117,7 +117,7 @@ public final class WeaponProfiles {
 
     /** Профиль класса (щит, кулак) или null. */
     @Nullable
-    public static WeaponProfile ofClass(Player player, WeaponClass weaponClass) {
+    public static WeaponProfile ofClass(LivingEntity player, WeaponClass weaponClass) {
         return (player.level().isClientSide ? client : server).classes().get(weaponClass);
     }
 

@@ -201,7 +201,23 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
         parent.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
         ModelPart source = arm == HumanoidArm.RIGHT ? parent.rightArm : parent.leftArm;
         source.xRot = 0.0F;
+        renderArm(poseStack, buffer, packedLight, armor, arm, source);
+    }
 
+    /**
+     * Рукав и перчатка на руке в позе, которую уже поставили модели игрока (руки боя от первого лица,
+     * client/anim/FirstPersonCombat).
+     */
+    public void renderPosedArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T player, HumanoidArm arm) {
+        ArmorInventory armor = armorOf(player);
+        if (armor != null) {
+            M parent = getParentModel();
+            renderArm(poseStack, buffer, packedLight, armor, arm, arm == HumanoidArm.RIGHT ? parent.rightArm : parent.leftArm);
+        }
+    }
+
+    private void renderArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorInventory armor,
+                           HumanoidArm arm, ModelPart source) {
         ArmorCompositor.Composite composite = ArmorCompositor.get(armor, ArmorSlot.Plane.OUTER);
         if (composite != null && composite.covers(ArmorCompositor.COVERS_ARMS)) {
             ModelPart target = arm == HumanoidArm.RIGHT ? outerModel.rightArm : outerModel.leftArm;

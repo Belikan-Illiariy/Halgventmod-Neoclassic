@@ -33,6 +33,13 @@ import net.minecraft.world.item.ItemStack;
  * Тело = дошедшее своим типом × «урон телу» типа + дробящая отдача × 0.7. Разбор каждого слоя — для /combat debug.
  */
 public final class DamagePipeline {
+    // Удар вскользь по металлу ⚠️: шанс = база + за каждую единицу твёрдости сверх пробивания, не больше предела
+    public static final float GLANCE_BASE = 0.15F;
+    public static final float GLANCE_PER_HARDNESS = 0.2F;
+    public static final float GLANCE_MAX = 0.6F;
+    public static final float GLANCE_MAIL = 0.5F;      // кольчуга — вдвое реже
+    public static final float GLANCE_WEAR = 0.1F;      // соскользнувший удар чуть царапает броню
+
     private DamagePipeline() {}
 
     /**
@@ -51,9 +58,23 @@ public final class DamagePipeline {
         Map<ArmorSlot, Float> wear = new EnumMap<>(ArmorSlot.class);
         for (ArmorLayers.Summary layer : ArmorLayers.of(target, zone.bodyPart())) {
             Component name = Component.translatable(layer.layer().langKey());
-            if (random.nextFloat() >= layer.coverage() - accuracy) {
+            if (random.nextFloat() >= layer.coverage() * zone.coverage(target) - accuracy) { // шея, лицо, суставы — щели
                 lines.add(Component.translatable("combat.halgventmod.debug.layer_gap", name));
                 continue;
+            }
+            // Металл может принять удар вскользь: клинок соскакивает, не пробив, — тем вернее, чем твёрже он против
+            // пробивания оружия; кольчуга — вдвое реже, дробящий не соскальзывает (мнёт)
+            if (kind != DamageKind.BLUNT && layer.layer().metal()) {
+                float chance = Mth.clamp(GLANCE_BASE + GLANCE_PER_HARDNESS * (layer.hardness() - penetration), 0, GLANCE_MAX)
+                        * (layer.layer() == ArmorLayers.Layer.MAIL ? GLANCE_MAIL : 1.0F);
+                if (random.nextFloat() < chance) {
+                    for (ArmorLayers.Piece piece : layer.pieces()) {
+                        wear.merge(piece.slot(), own * GLANCE_WEAR * piece.durabilityLoss() * piece.share(), Float::sum);
+                    }
+                    wear(target, wear, random);
+                    lines.add(Component.translatable("combat.halgventmod.debug.glance", name, Math.round(chance * 100)));
+                    return new Result(0, 0, amount, amount * Combat.METAL_PAIN, lines);
+                }
             }
             float before = own + blunt;
             blunt *= 1.0F - layer.resist(DamageKind.BLUNT);

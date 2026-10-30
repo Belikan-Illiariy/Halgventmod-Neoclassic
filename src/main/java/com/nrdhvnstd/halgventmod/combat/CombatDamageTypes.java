@@ -32,6 +32,10 @@ public final class CombatDamageTypes {
         }
     }
 
+    /** Кровотечение (combat/Bleeding): мимо брони, без виновника. */
+    public static final ResourceKey<DamageType> BLEEDING = ResourceKey.create(Registries.DAMAGE_TYPE,
+            ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "bleeding"));
+
     private CombatDamageTypes() {}
 
     public static ResourceKey<DamageType> key(DamageKind kind) {
@@ -43,12 +47,19 @@ public final class CombatDamageTypes {
         for (DamageKind kind : DamageKind.values()) {
             context.register(key(kind), new DamageType(HalgventMod.MODID + "." + kind.id(), DamageScaling.NEVER, 0.1F));
         }
+        context.register(BLEEDING, new DamageType(HalgventMod.MODID + ".bleeding", DamageScaling.NEVER, 0.0F));
     }
 
     /** Источник урона боя: тип по удару, атакующий — и причина, и прямой виновник. */
     public static DamageSource source(LivingEntity attacker, DamageKind kind) {
         return new DamageSource(attacker.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
                 .getHolderOrThrow(key(kind)), attacker);
+    }
+
+    /** Источник урона кровотечения. */
+    public static DamageSource bleeding(LivingEntity entity) {
+        return new DamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                .getHolderOrThrow(BLEEDING));
     }
 
     /** Тип урона боя у источника или null — урон не из боя. */

@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.nrdhvnstd.halgventmod.client.anim.CombatClips;
 import com.nrdhvnstd.halgventmod.combat.AttackKind;
 import com.nrdhvnstd.halgventmod.combat.Combat;
 import com.nrdhvnstd.halgventmod.combat.CombatState;
@@ -13,6 +14,7 @@ import com.nrdhvnstd.halgventmod.combat.WeaponProfile;
 import com.nrdhvnstd.halgventmod.combat.WeaponProfiles;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
@@ -45,6 +47,19 @@ public final class CombatAnimation {
     private static final float ALT_TILT = 30;             // второй хват меча (полумеч) — клинок наклонён
     private static final float PIVOT_X = 0.35F, PIVOT_Y = -0.35F, PIVOT_Z = -0.25F; // «плечо» от первого лица
     private static final float HAND_X = 0.56F, HAND_Y = -0.52F, HAND_Z = -0.72F;   // кисть от первого лица (ваниль)
+    // Сочность
+    private static final float ANTICIPATION = 0.15F;      // замах перелетает и оседает (доля позы)
+    private static final float FOLLOW = 0.15F;            // после удара клинок проносится дальше пути на эту долю
+    private static final int HITSTOP = 2;                 // попал — анимация бьющего замирает на столько тиков
+    private static final int RECOIL_TICKS = 7;            // клинок отброшен блоком: столько тиков возвращается
+    private static final float RECOIL_DEGREES = 35;       // от первого лица
+    private static final float RECOIL_ARM = 0.9F;         // от третьего, радиан
+    private static final float TREMBLE_DEGREES = 1.6F;    // дрожь заряженного замаха
+    private static final float LEAN = 0.22F;              // наклон корпуса в удар от третьего лица, радиан
+    private static final float STEP = 0.45F;              // шаг вперёд при уколе
+    // Реакция тела на попадание ⚠️
+    private static final float HURT_TICKS = 8;
+    private static final float HURT_HEAD = 0.6F, HURT_BODY = 0.35F, HURT_ARM = 0.7F, HURT_LEG = 0.6F;
 
     private CombatAnimation() {}
 
@@ -52,13 +67,32 @@ public final class CombatAnimation {
     public enum Kind { NONE, SWING, GUARD, KICK, STAGGER }
 
     public record Pose(Kind kind, AttackKind shape, StrikeSide side, float path, float blend, float charge,
-                       float shake, boolean twoHanded) {
-        static final Pose NONE = new Pose(Kind.NONE, AttackKind.SLASH, StrikeSide.RIGHT, 0, 0, 0, 0, false);
+                       float shake, boolean twoHanded, float recoil) {
+        static final Pose NONE = new Pose(Kind.NONE, AttackKind.SLASH, StrikeSide.RIGHT, 0, 0, 0, 0, false, 0);
+
+        Pose(Kind kind, AttackKind shape, StrikeSide side, float path, float blend, float charge, float shake,
+             boolean twoHanded) {
+            this(kind, shape, side, path, blend, charge, shake, twoHanded, 0);
+        }
+
+        Pose withRecoil(float recoil) {
+            return recoil <= 0 || kind == Kind.NONE ? this
+                    : new Pose(kind, shape, side, path, blend, charge, shake, twoHanded, recoil);
+        }
     }
 
     public static Pose of(LivingEntity entity, float partialTick) {
         CombatState state = entity.getData(ModAttachments.COMBAT);
         double now = entity.level().getGameTime() + partialTick;
+        if (now >= state.hitStopAt && now < state.hitStopAt + HITSTOP) {
+            now = state.hitStopAt; // попал — клинок на миг увяз
+        }
+        float sinceRecoil = (float) (now - state.recoilAt) / RECOIL_TICKS;
+        float recoil = sinceRecoil >= 0 && sinceRecoil < 1 ? state.recoilPower * (1 - sinceRecoil) * (1 - sinceRecoil) : 0;
+        return pose(entity, state, now).withRecoil(recoil);
+    }
+
+    private static Pose pose(LivingEntity entity, CombatState state, double now) {
         float length = Math.max(1, state.phaseEnd - state.phaseStart);
         float progress = Mth.clamp((float) (now - state.phaseStart) / length, 0, 1);
         WeaponProfile profile = WeaponProfiles.of(entity, entity.getMainHandItem());
@@ -67,13 +101,16 @@ public final class CombatAnimation {
         StrikeSide side = state.side;
         return switch (state.phase) {
             case WINDUP -> state.heavy
-                    // Заряд: замах дошёл и тянется дальше, пока держат
+                    // Заряд: замах дошёл и тянется дальше, пока держат (дрожит от напряжения)
                     ? new Pose(Kind.SWING, shape, side, 0, 1, Math.min(1, progress * 2), 0, twoHanded)
-                    : new Pose(Kind.SWING, shape, side, 0, ease(progress), 0, 0, twoHanded);
+                    // Замах с перелётом: рука уходит чуть дальше и оседает — видно, что сейчас ударит
+                    : new Pose(Kind.SWING, shape, side, 0, overshoot(progress), 0, 0, twoHanded);
             case RELEASE -> new Pose(Kind.SWING, shape, side, progress, 1, 0, 0, twoHanded);
             case RECOVERY -> state.prevPhase == Phase.KICK
                     ? new Pose(Kind.KICK, shape, side, 0, 1 - ease(progress), 0, 0, twoHanded)
-                    : new Pose(Kind.SWING, shape, side, 1, 1 - ease(progress), 0, 0, twoHanded);
+                    // Проносит: клинок по инерции уходит дальше конца пути и только потом возвращается
+                    : new Pose(Kind.SWING, shape, side, 1 + FOLLOW * ease(Math.min(1, progress * 3)),
+                            1 - ease(progress), 0, 0, twoHanded);
             case KICK -> new Pose(Kind.KICK, shape, side, 0, ease(progress), 0, 0, twoHanded);
             case FLINCH -> new Pose(Kind.STAGGER, shape, side, 0, 1 - progress, 0, 0.6F * (1 - progress), twoHanded);
             case STUN -> new Pose(Kind.STAGGER, shape, side, 0, 1, 0, 1 - progress * 0.5F, twoHanded);
@@ -93,6 +130,20 @@ public final class CombatAnimation {
 
     private static float ease(float t) {
         return t * t * (3 - 2 * t);
+    }
+
+    // Как ease, но с перелётом на ANTICIPATION в середине и возвратом к 1 в конце
+    private static float overshoot(float t) {
+        return ease(t) + Mth.sin(t * Mth.PI) * t * ANTICIPATION;
+    }
+
+    // Дрожь напряжения: две частоты, чтобы не было ровным
+    private static float tremble(LivingEntity entity, Pose pose) {
+        if (pose.charge() <= 0) {
+            return 0;
+        }
+        float time = entity.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+        return (Mth.sin(time * 4.1F) + 0.5F * Mth.sin(time * 9.7F)) * pose.charge();
     }
 
     private static boolean vertical(StrikeSide side) {
@@ -168,6 +219,14 @@ public final class CombatAnimation {
             default -> {
             }
         }
+        if (now.kind() == Kind.SWING) {
+            pose.mulPose(Axis.ZP.rotationDegrees(tremble(player, now) * TREMBLE_DEGREES));
+        }
+        if (now.recoil() > 0) {
+            // Клинок отбросило: рука уходит вверх и назад, к себе
+            pose.translate(0, 0.08 * now.recoil(), 0.12 * now.recoil());
+            pose.mulPose(Axis.XP.rotationDegrees(RECOIL_DEGREES * now.recoil()));
+        }
         pose.translate(-PIVOT_X, -PIVOT_Y, -PIVOT_Z);
     }
 
@@ -199,8 +258,56 @@ public final class CombatAnimation {
 
     /** Поставить руки, корпус и ногу модели (после ванильной позы). */
     public static void thirdPerson(HumanoidModel<?> model, LivingEntity entity, float ageInTicks) {
+        pose(model, entity, ageInTicks);
+        hurt(model, entity, Mth.clamp(ageInTicks - entity.tickCount, 0, 1));
+    }
+
+    /**
+     * Тело дёргается от попадания — по части тела (по образцу KCC ClientHitReactionState), поверх любой позы, гаснет за
+     * HURT_TICKS: голову откидывает, от удара в корпус сгибается, рука отлетает, нога подгибается.
+     */
+    private static void hurt(HumanoidModel<?> model, LivingEntity entity, float partialTick) {
+        CombatState state = entity.getData(ModAttachments.COMBAT);
+        float since = (float) (entity.level().getGameTime() + partialTick - state.hurtAt);
+        if (state.hurtZone == null || since < 0 || since > HURT_TICKS) {
+            return;
+        }
+        float k = (float) Math.sin(Math.min(1, since / 2.0F) * Math.PI / 2) * (1 - since / HURT_TICKS); // резко и плавно назад
+        switch (state.hurtZone) {
+            case CROWN, FACE, NECK -> {
+                model.head.xRot -= HURT_HEAD * k;
+                model.body.xRot -= HURT_BODY * 0.5F * k;
+            }
+            case CHEST, ABDOMEN -> {
+                model.body.xRot += HURT_BODY * k;
+                model.head.xRot += HURT_BODY * 0.6F * k;
+                model.rightArm.xRot -= 0.3F * k;
+                model.leftArm.xRot -= 0.3F * k;
+            }
+            case ARM, HAND -> {
+                model.rightArm.zRot += HURT_ARM * k;
+                model.leftArm.zRot -= HURT_ARM * 0.5F * k;
+            }
+            case THIGH, KNEE, SHIN, FOOT -> {
+                model.rightLeg.xRot += HURT_LEG * k;
+                model.body.xRot += HURT_BODY * 0.5F * k;
+            }
+        }
+    }
+
+    private static void pose(HumanoidModel<?> model, LivingEntity entity, float ageInTicks) {
         float partialTick = Mth.clamp(ageInTicks - entity.tickCount, 0, 1);
         Pose now = of(entity, partialTick);
+        // Есть анимация KCC (удар, блок, стойка, оглушение) — она; наши позы — для укола, пинка, кулака и щита
+        CombatClips.Active clip = CombatClips.of(entity, partialTick);
+        if (clip != null) {
+            CombatClips.apply(model, entity, clip);
+            if (now.recoil() > 0) {
+                model.rightArm.xRot -= RECOIL_ARM * now.recoil();
+                model.leftArm.xRot -= RECOIL_ARM * now.recoil();
+            }
+            return;
+        }
         if (now.kind() == Kind.NONE) {
             return;
         }
@@ -225,6 +332,17 @@ public final class CombatAnimation {
                     arm(model.rightArm, w, SIDE_ARM_RAISE + look, angle, 0);
                     twist(model, angle * TWIST * w);
                 }
+                // Корпус подаётся в удар: сверху, снизу и укол — наклон вперёд на середине пути; укол — шаг
+                float arc = Mth.sin(Mth.clamp(now.path(), 0, 1) * Mth.PI) * w;
+                if (now.shape() == AttackKind.STAB || vertical(now.side())) {
+                    model.body.xRot += LEAN * arc;
+                    model.head.xRot += LEAN * 0.5F * arc;
+                }
+                if (now.shape() == AttackKind.STAB) {
+                    model.leftLeg.xRot = Mth.lerp(arc, model.leftLeg.xRot, -STEP);
+                    model.rightLeg.xRot = Mth.lerp(arc, model.rightLeg.xRot, STEP * 0.6F);
+                }
+                model.rightArm.zRot += tremble(entity, now) * 0.03F;
                 if (now.twoHanded()) {
                     model.leftArm.xRot = model.rightArm.xRot;
                     model.leftArm.yRot = model.rightArm.yRot + 0.55F;
@@ -267,6 +385,14 @@ public final class CombatAnimation {
             }
             default -> {
             }
+        }
+        if (now.recoil() > 0) {
+            // Отбросило: рука с оружием вскинута назад, корпус откинут
+            model.rightArm.xRot -= RECOIL_ARM * now.recoil();
+            if (now.twoHanded()) {
+                model.leftArm.xRot -= RECOIL_ARM * now.recoil();
+            }
+            model.body.xRot -= 0.15F * now.recoil();
         }
     }
 

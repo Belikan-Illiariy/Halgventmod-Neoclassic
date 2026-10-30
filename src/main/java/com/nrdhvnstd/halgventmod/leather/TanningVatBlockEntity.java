@@ -14,6 +14,7 @@ import com.nrdhvnstd.halgventmod.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import com.nrdhvnstd.halgventmod.combat.Blood;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -248,6 +249,15 @@ public class TanningVatBlockEntity extends StationBlockEntity {
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
+        // Чистая вода отмывает кровь (combat/Blood): вещь в руке, а Shift+E пустой рукой — всю надетую броню
+        if (solution == Solution.WATER && items().isEmpty()) {
+            boolean washed = stack.isEmpty() ? player.isShiftKeyDown() && Blood.washArmor(player, 1) : Blood.wash(stack);
+            if (washed) {
+                sound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.2F);
+                player.displayClientMessage(Component.translatable("message.halgventmod.blood.washed"), true);
+                return true;
+            }
+        }
         if (stack.isEmpty()) {
             return takeOut(player);
         }

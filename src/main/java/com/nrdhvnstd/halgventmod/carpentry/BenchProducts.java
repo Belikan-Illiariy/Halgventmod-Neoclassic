@@ -69,7 +69,7 @@ public final class BenchProducts {
         }
 
         private Product planks(int count) {
-            needs.add(new Need(stack -> stack.is(ItemTags.PLANKS), () -> new ItemStack(Items.OAK_PLANKS), count));
+            needs.add(new Need(stack -> stack.is(ItemTags.PLANKS), () -> new ItemStack(ModItems.BOARDS.get()), count)); // доски мода в теге досок
             return this;
         }
 

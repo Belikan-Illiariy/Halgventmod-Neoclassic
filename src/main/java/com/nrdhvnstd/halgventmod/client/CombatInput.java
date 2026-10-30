@@ -34,7 +34,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * в своём замахе ПКМ — финт. Финт — ещё и отдельная клавиша.
  *
  * Сторона удара и блока — по движению мыши за последние FLICK_TICKS тиков перед кликом (как в Mount &amp; Blade):
- * мышь влево — слева, вправо — справа, вверх — сверху, вниз — снизу; мышь стоит — удар справа, блок — прежний.
+ * мышь влево — слева, вправо — справа, вверх — сверху, вниз — снизу; мышь стоит — со стороны стойки (последнее
+ * заметное движение, как в KCD; индикатор у прицела). В захвате цели (CombatLock) мышь не крутит камеру, а только
+ * выбирает сторону.
  * Пока блок зажат, его сторона меняется только резким движением (BLOCK_SWITCH), чтобы не прыгала, когда ведёшь
  * взглядом противника.
  */
@@ -53,6 +55,11 @@ public final class CombatInput {
     private static int cursor;
     private static float lastYaw, lastPitch;
     private static StrikeSide blockSide = StrikeSide.UP; // сторона блока, которую знает сервер
+    // Стойка (как в KCD): выбранная мышью сторона держится, пока её не сменят другим движением; удар и блок без
+    // свежего рывка идут с неё. В захвате цели мышь не крутит камеру — её движение копится здесь (MouseHandlerMixin)
+    private static final float STANCE_SWITCH = 3.0F;   // смена стойки — движение не меньше этого за окно ⚠️
+    private static StrikeSide stance = StrikeSide.RIGHT;
+    private static float virtualYaw, virtualPitch;
 
     private CombatInput() {}
 
@@ -117,7 +124,7 @@ public final class CombatInput {
             blockSent = down;
             if (down) {
                 StrikeSide side = flick(FLICK_MIN);
-                blockSide = side != null ? side : blockSide;
+                blockSide = side != null ? side : stance; // без рывка — со стороны стойки
             }
             send(down ? CombatInputPayload.Action.BLOCK_DOWN : CombatInputPayload.Action.BLOCK_UP, AttackKind.SLASH, blockSide);
         } else if (down) {
@@ -131,13 +138,48 @@ public final class CombatInput {
         }
     }
 
-    // Поворот камеры за тик — это и есть движение мыши
+    // Поворот камеры за тик — это и есть движение мыши; в захвате цели камеру ведёт захват, а мышь копится отдельно
     private static void track(LocalPlayer player) {
-        YAW[cursor] = Mth.wrapDegrees(player.getYRot() - lastYaw);
-        PITCH[cursor] = player.getXRot() - lastPitch;
+        if (CombatLock.locked()) {
+            YAW[cursor] = virtualYaw;
+            PITCH[cursor] = virtualPitch;
+        } else {
+            YAW[cursor] = Mth.wrapDegrees(player.getYRot() - lastYaw);
+            PITCH[cursor] = player.getXRot() - lastPitch;
+        }
+        virtualYaw = 0;
+        virtualPitch = 0;
         cursor = (cursor + 1) % FLICK_TICKS;
         lastYaw = player.getYRot();
         lastPitch = player.getXRot();
+        // Стойка — за движением мыши
+        StrikeSide side = flick(STANCE_SWITCH);
+        if (side != null && side != stance) {
+            stance = side;
+            if (CombatLock.locked()) {
+                send(CombatInputPayload.Action.STANCE_ON, AttackKind.SLASH, stance);
+            }
+        }
+    }
+
+    /** Движение мыши в захвате цели — не в камеру, а в выбор стороны (как Entity.turn: 0,15° на единицу). */
+    public static void virtualTurn(double yaw, double pitch) {
+        virtualYaw += (float) (yaw * 0.15);
+        virtualPitch += (float) (pitch * 0.15);
+    }
+
+    /** Выбранная мышью сторона (стойка): индикатор у прицела, удар и блок без свежего рывка. */
+    public static StrikeSide stance() {
+        return stance;
+    }
+
+    /** Захват цели взят или отпущен (CombatLock): сервер покажет стойку другим. */
+    static void stanceChanged(boolean on) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.getData(ModAttachments.COMBAT).engaged = on;
+        }
+        send(on ? CombatInputPayload.Action.STANCE_ON : CombatInputPayload.Action.STANCE_OFF, AttackKind.SLASH, stance);
     }
 
     /** Куда двинули мышь за окно, или null — почти не двигали. Рыскание вправо растёт, взгляд вверх — тангаж меньше. */
@@ -166,7 +208,7 @@ public final class CombatInput {
             player.getData(ModAttachments.COMBAT).sprintLockUntil = player.level().getGameTime() + SPRINT_GUESS;
         }
         StrikeSide side = flick(FLICK_MIN);
-        send(CombatInputPayload.Action.ATTACK_START, kind, side != null ? side : StrikeSide.RIGHT);
+        send(CombatInputPayload.Action.ATTACK_START, kind, side != null ? side : stance); // без рывка — из стойки
         held = key;
         // Быстрый щелчок: нажал и отпустил внутри одного тика
         if (!key.isDown()) {

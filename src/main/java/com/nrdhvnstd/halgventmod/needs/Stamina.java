@@ -2,6 +2,7 @@ package com.nrdhvnstd.halgventmod.needs;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.combat.Combat;
+import com.nrdhvnstd.halgventmod.combat.Injuries;
 import com.nrdhvnstd.halgventmod.combat.Defense;
 import com.nrdhvnstd.halgventmod.food.FoodEffects;
 import com.nrdhvnstd.halgventmod.brewing.Intoxication;
@@ -55,6 +56,7 @@ public final class Stamina {
     public static final float REGEN_PER_TICK = 0.5F;     // 10 в секунду: с нуля до полной за 10 секунд
     public static final float VIGOR_REGEN = 1.3F;        // «Бодрость» (крапивный отвар) — восстановление ×1,3 ⚠️
     public static final float SPRINT_MIN = 15.0F;        // начать бег можно только с 15 и выше
+    public static final float COMBAT_REGEN = 0.75F;      // в бою (Pain.inCombat) восстановление медленнее ⚠️
 
     // Изнеможение
     public static final int EXHAUSTED_TICKS = 40;        // 2 секунды
@@ -68,7 +70,8 @@ public final class Stamina {
 
     /** Сколько выносливости помещается: после горячего сложного блюда — больше (FoodEffects). */
     public static float max(Player player) {
-        return MAX + (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_MAX : 0) - Pain.staminaPenalty(player);
+        return MAX + (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_MAX : 0) - Pain.staminaPenalty(player)
+                - Injuries.staminaPenalty(player); // раны корпуса и головы
     }
 
     public static boolean exhausted(Player player) {
@@ -79,6 +82,7 @@ public final class Stamina {
     public static boolean canSprint(Player player) {
         return !exhausted(player) && !Combat.state(player).blocking // в блоке бег нельзя (бой, 5.1)
                 && !Pain.noSprint(player) // и от мучительной боли
+                && !Injuries.noSprint(player) // и с тяжёлой раной ноги
                 && player.level().getGameTime() >= Combat.state(player).sprintLockUntil // и после удара с разбега
                 && (player.isSprinting() ? get(player) > 0 : get(player) >= SPRINT_MIN);
     }
@@ -126,6 +130,9 @@ public final class Stamina {
             return; // во время изнеможения не тратится и не восстанавливается
         }
 
+        if (Combat.state(player).blocking) {
+            spend(player, Defense.BLOCK_DRAIN); // поднятый блок держать тяжело — шкала медленно тает
+        }
         if (!player.isPassenger()) {
             if (player.isSprinting()) {
                 spend(player, SPRINT_PER_TICK);
@@ -142,7 +149,7 @@ public final class Stamina {
             float regen = REGEN_PER_TICK * Intoxication.staminaFactor(player)
                     * (FoodEffects.wellFed(player) ? FoodEffects.WELL_FED_STAMINA_REGEN : 1.0F)
                     * (player.hasEffect(ModEffects.VIGOR) ? VIGOR_REGEN : 1.0F)
-                    * (Combat.state(player).blocking ? Defense.BLOCK_REGEN : 1.0F) // в блоке — вдвое медленнее
+                    * (Pain.inCombat(player) ? COMBAT_REGEN : 1.0F) // в бою — медленнее
                     * Pain.regenFactor(player);
             data.level = Math.min(data.level + regen, max(player));
         } else if (data.level > max(player)) {

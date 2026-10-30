@@ -10,6 +10,7 @@ import com.nrdhvnstd.halgventmod.client.character.AppearanceSkins;
 import com.nrdhvnstd.halgventmod.npc.HalgNpc;
 import com.nrdhvnstd.halgventmod.registry.ModEntities;
 
+import com.nrdhvnstd.halgventmod.client.WoundLayer;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -40,6 +41,7 @@ public class NpcRenderer extends HumanoidMobRenderer<HalgNpc, PlayerModel<HalgNp
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), SHADOW_RADIUS);
         wideModel = model;
         slimModel = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+        addLayer(new WoundLayer<>(this)); // раны на коже — под бронёй
         NpcArmor.addLayers(this, context); // броня — как у игрока
     }
 

@@ -33,5 +33,9 @@ public class ModDamageTypeTagsProvider extends TagsProvider<DamageType> {
             tag(DamageTypeTags.BYPASSES_ARMOR).add(CombatDamageTypes.key(kind));
             tag(DamageTypeTags.IS_PLAYER_ATTACK).add(CombatDamageTypes.key(kind));
         }
+        // Кровотечение — кровь течёт и под латами, щит не держит, не толкает
+        tag(DamageTypeTags.BYPASSES_ARMOR).add(CombatDamageTypes.BLEEDING);
+        tag(DamageTypeTags.BYPASSES_SHIELD).add(CombatDamageTypes.BLEEDING);
+        tag(DamageTypeTags.NO_KNOCKBACK).add(CombatDamageTypes.BLEEDING);
     }
 }

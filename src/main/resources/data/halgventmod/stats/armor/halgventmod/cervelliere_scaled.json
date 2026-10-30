@@ -1,0 +1,1 @@
+{ "hardness": 2.0, "coverage": 70, "durability_loss": 0.5, "resist": { "chopping": 0.65, "cutting": 0.80, "piercing": 0.40, "blunt": 0.20, "penetrating": 0.45 } }
