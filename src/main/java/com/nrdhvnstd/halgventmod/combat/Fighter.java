@@ -37,7 +37,7 @@ public final class Fighter {
             return;
         }
         CombatState state = Combat.state(entity);
-        state.stamina -= amount;
+        state.stamina -= Stamina.cost(amount);
         state.staminaDelay = NPC_REGEN_DELAY;
         if (state.stamina <= 0) {
             state.stamina = 0;

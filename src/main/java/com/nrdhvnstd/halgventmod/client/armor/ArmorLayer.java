@@ -1,5 +1,6 @@
 package com.nrdhvnstd.halgventmod.client.armor;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -10,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.client.SeveredHeads;
 import com.nrdhvnstd.halgventmod.client.armor.geo.GeoModel;
 import com.nrdhvnstd.halgventmod.client.armor.geo.GeoModelLoader;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
@@ -47,6 +49,8 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
     private final HumanoidModel<T> legsModel;
     private final HumanoidModel<T> outerModel;
     private final ModelPart cape; // своя копия ванильного плаща игрока: 10×16×1, развёртка 64×32
+    private boolean headless;     // у этого тела отрублена голова: шлем не рисуем (client/SeveredHeads)
+    private static ArmorLayer<?, ?> any; // любой: модели брони у всех одинаковы, нужен шлему отлетевшей головы
 
     public ArmorLayer(RenderLayerParent<T, M> parent, HumanoidModel<T> legsModel, HumanoidModel<T> outerModel,
                       ModelPart cape) {
@@ -54,6 +58,7 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
         this.legsModel = legsModel;
         this.outerModel = outerModel;
         this.cape = cape;
+        any = this;
     }
 
     @Override
@@ -64,12 +69,45 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
         if (armor == null) {
             return;
         }
+        headless = SeveredHeads.isSevered(entity);
         renderPlane(poseStack, buffer, packedLight, armor, ArmorSlot.Plane.LEGS, legsModel);
         renderPlane(poseStack, buffer, packedLight, armor, ArmorSlot.Plane.OUTER, outerModel);
         renderDetails(poseStack, buffer, packedLight, armor, null, visorProgress(entity, armor, ageInTicks));
+        headless = false;
         // Невидимый игрок плащ прячет, как ванильный; невидимая стойка — манекен, плащ на ней виден
         if (!(entity instanceof AbstractClientPlayer) || !entity.isInvisible()) {
             renderCape(poseStack, buffer, packedLight, entity, armor, partialTick);
+        }
+    }
+
+    /** Шлем на отлетевшей голове: поза — уже в середине шеи, как у самой головы (client/SeveredHeads). */
+    public static void renderHelmet(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorInventory armor) {
+        if (any != null) {
+            any.helmet(poseStack, buffer, packedLight, armor);
+        }
+    }
+
+    private void helmet(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorInventory armor) {
+        ArmorCompositor.Composite composite = ArmorCompositor.get(armor, ArmorSlot.Plane.OUTER);
+        if (composite != null && composite.covers(ArmorCompositor.COVERS_HEAD)) {
+            VertexConsumer consumer = buffer.getBuffer(RenderType.armorCutoutNoCull(composite.texture()));
+            for (ModelPart part : List.of(outerModel.head, outerModel.hat)) {
+                part.resetPose();
+                part.visible = true;
+                part.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
+            }
+        }
+        for (ArmorLook.Detail detail : ArmorLook.of(armor).details) {
+            GeoModel model = GeoModelLoader.get(detail.model());
+            if (model == null) {
+                continue;
+            }
+            VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutout(detail.texture()));
+            for (GeoModel.Attachment attachment : model.attachments()) {
+                if (attachment.part(getParentModel()) == getParentModel().head) {
+                    model.render(attachment, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, Map.of());
+                }
+            }
         }
     }
 
@@ -148,6 +186,9 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
             // лежат в одном месте; без отсечения они бы мерцали, а так каждая видна со своей стороны
             VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutout(detail.texture()));
             for (GeoModel.Attachment attachment : model.attachments()) {
+                if (headless && attachment.part(getParentModel()) == getParentModel().head) {
+                    continue; // шлем улетел вместе с головой
+                }
                 if (onlyAttachment != null && attachment != onlyAttachment) {
                     continue;
                 }
@@ -171,8 +212,8 @@ public class ArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> exte
         model.setAllVisible(false);
         if (plane == ArmorSlot.Plane.OUTER) {
             // Голова, туловище, руки с кистями; hat — второй слой шлема на полпикселя дальше (накладки, нащёчники)
-            model.head.visible = true;
-            model.hat.visible = true;
+            model.head.visible = !headless;
+            model.hat.visible = !headless;
             model.body.visible = true;
             model.rightArm.visible = true;
             model.leftArm.visible = true;

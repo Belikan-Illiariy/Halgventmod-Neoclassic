@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.item.Category;
+import com.nrdhvnstd.halgventmod.item.ConquestWeapons;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -41,6 +42,10 @@ public final class ModCreativeTabs {
                             .withTabsBefore(after)
                             .icon(() -> icon(category))
                             .displayItems((parameters, output) -> {
+                                // Оружие из Conquest Medieval Arms — в нашей же вкладке
+                                if (category == Category.WEAPONS) {
+                                    ConquestWeapons.items().forEach(output::accept);
+                                }
                                 for (ModItems.Definition def : ModItems.definitions()) {
                                     if (def.category() == category) {
                                         output.accept(def.item().get());

@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public enum DamageKind {
     //          урон телу  боль   кровотечение  отдача при непробитии (ТЗ боя, 7.2) ⚠️
-    CHOPPING   (1.0F,      1.0F,  0.10F,        0.50F),
+    CHOPPING   (1.0F,      1.0F,  0.10F,        0.30F),
     CUTTING    (0.8F,      0.9F,  0.15F,        0.20F),
     PIERCING   (1.1F,      0.8F,  0.08F,        0.30F),
     BLUNT      (0.7F,      1.5F,  0.00F,        0.00F),

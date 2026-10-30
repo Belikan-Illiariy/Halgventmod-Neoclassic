@@ -14,7 +14,8 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.common.util.TriState;
 
 /**
- * Ники над головами игроков: прячет по режиму /nametags, а у игрока в капюшоне или с опущенным забралом — всегда
+ * Ники над головами игроков: видны только в творческом режиме (в остальных имя показывает подсказка под прицелом,
+ * client/social/SocialMenuHud); прячет ещё по режиму /nametags, а у игрока в капюшоне или с опущенным забралом — всегда
  * (лица не видно; администраторы видят). Ники мобов и именованных предметов не трогает.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID, value = Dist.CLIENT)
@@ -28,7 +29,7 @@ public final class NameTagsRender {
             return;
         }
         boolean admin = Permissions.isAdmin(viewer);
-        if (!NameTags.clientMode.visibleTo(viewer) || (FaceCover.hidden(target) && !admin)) {
+        if (!viewer.isCreative() || !NameTags.clientMode.visibleTo(viewer) || (FaceCover.hidden(target) && !admin)) {
             event.setCanRender(TriState.FALSE);
         }
     }

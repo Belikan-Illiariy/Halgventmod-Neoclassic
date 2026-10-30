@@ -5,6 +5,7 @@ import java.util.Map;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
 import com.nrdhvnstd.halgventmod.gear.GearSlot;
+import com.nrdhvnstd.halgventmod.item.ConquestWeapons;
 import com.nrdhvnstd.halgventmod.item.Category;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
@@ -33,6 +34,9 @@ public class ModLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        if (russian) {
+            ConquestWeapons.translations().forEach(this::add); // оружие Conquest Medieval Arms
+        }
         // Вкладки: по одной на категорию
         for (Category category : Category.values()) {
             add(category.langKey(), russian ? category.nameRu() : category.nameEn());
@@ -127,8 +131,8 @@ public class ModLanguageProvider extends LanguageProvider {
                 russian ? "Ники над головами теперь: %s" : "Name tags are now: %s");
         add("command.halgventmod.nametags.mode.off", russian ? "отключены" : "off");
         add("command.halgventmod.nametags.mode.admins",
-                russian ? "видны только администраторам" : "visible to admins only");
-        add("command.halgventmod.nametags.mode.all", russian ? "видны всем" : "visible to everyone");
+                russian ? "видны только администраторам в творческом режиме" : "visible to admins in creative mode only");
+        add("command.halgventmod.nametags.mode.all", russian ? "видны всем в творческом режиме" : "visible to everyone in creative mode");
 
         // Каналы чата
         add("chat.halgventmod.global", russian ? "[Глобальный] %s: %s" : "[Global] %s: %s");
@@ -766,6 +770,8 @@ public class ModLanguageProvider extends LanguageProvider {
                 ? "Броня и руки НПС — как в инвентаре: тяните вещи из своего инвентаря, Shift+клик надевает."
                 : "The NPC's armor and hands work like an inventory: drag items from yours, Shift+click equips.");
         add("npc.halgventmod.crime.seen", russian ? "Стража заметила вас!" : "The guards saw you!");
+        add("npc.halgventmod.crime.violent", russian ? "Вы подняли руку на горожан — стража убьёт вас!" : "You attacked townsfolk: the guards will kill you!");
+        add("message.halgventmod.downed.rose", russian ? "Вы пришли в себя, кровь запеклась" : "You came to; the bleeding has clotted");
         add("gui.halgventmod.lockpick.title", russian ? "Взлом замка" : "Lockpicking");
         add("gui.halgventmod.lockpick.pins", russian ? "Штифтов: %s из %s" : "Pins: %s of %s");
         add("gui.halgventmod.lockpick.durability", russian ? "Прочность отмычки" : "Pick strength");
@@ -933,8 +939,6 @@ public class ModLanguageProvider extends LanguageProvider {
     // Бой (docs/TZ_chivalry_combat.md)
     private void combatTranslations() {
         add("key.categories.halgventmod.combat", russian ? "Halgventmod: бой" : "Halgventmod: Combat");
-        add("key.halgventmod.stab", russian ? "Укол" : "Stab");
-        add("key.halgventmod.special", russian ? "Особый удар" : "Special Attack");
         add("key.halgventmod.feint", russian ? "Финт" : "Feint");
         add("key.halgventmod.kick", russian ? "Пинок" : "Kick");
         add("key.halgventmod.grip", russian ? "Сменить хват" : "Switch Grip");

@@ -25,6 +25,7 @@ import com.nrdhvnstd.halgventmod.needs.Stamina;
 import com.nrdhvnstd.halgventmod.network.CombatHitPayload;
 import com.nrdhvnstd.halgventmod.network.CombatInputPayload;
 import com.nrdhvnstd.halgventmod.network.CombatStatePayload;
+import com.nrdhvnstd.halgventmod.npc.Crimes;
 import com.nrdhvnstd.halgventmod.npc.HalgNpc;
 import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.Dullness;
@@ -354,7 +355,7 @@ public final class Combat {
                 state.history.removeFirst();
             }
             ComboMoves.Combo found = ComboMoves.match(state.history, profile.weaponClass());
-            if (found != null && Fighter.stamina(player) >= found.stamina()) {
+            if (found != null && Fighter.stamina(player) >= Stamina.cost(found.stamina())) {
                 state.comboMove = found;
                 state.move = found.move();
                 state.history.clear();
@@ -566,7 +567,8 @@ public final class Combat {
     /** Можно ли этому бить эту цель — правила те же, что у ванильного удара (AttackEntityEvent). */
     static boolean allowed(LivingEntity attacker, LivingEntity target) {
         if (!(attacker instanceof Player player)) {
-            return true;
+            // Стражник лежачего нарушителя не трогает: клинок мог быть уже в движении, когда тот упал
+            return !(attacker instanceof HalgNpc && target instanceof Player victim && Downed.isDowned(victim) && !Crimes.isViolent(victim));
         }
         ownHit = true;
         try {
@@ -583,6 +585,7 @@ public final class Combat {
      */
     static float wound(LivingEntity attacker, LivingEntity target, DamageKind kind, float amount, HitZone zone,
                        float penetration, float accuracy, Vec3 point, long now) {
+        boolean wasDowned = target instanceof Player victim && Downed.isDowned(victim);
         boolean layered = layered(target); // слои брони — у игроков и НПС (у прочих мобов — ванильная броня)
         DamagePipeline.Result result = through(attacker, target, kind, amount, zone, penetration, accuracy);
         if (result.body() < DEFLECTED) {
@@ -595,6 +598,9 @@ public final class Combat {
                 : attacker.damageSources().mobAttack(attacker);
         boolean hurt = target.hurt(source, result.body());
         landed(attacker, target, kind, amount, result, zone, point, now, hurt);
+        if (hurt) {
+            Severing.check(attacker, target, kind, zone, point, source, wasDowned);
+        }
         return hurt ? result.body() : 0;
     }
 
@@ -748,12 +754,12 @@ public final class Combat {
         ItemStack weapon = entity.getMainHandItem();
         if (entity instanceof Player player) {
             Pain.markCombat(player);
-            // Контратака оплачена, когда отбила удар (Defense.counter)
-            Fighter.spend(player, state.counter ? 0 : attack.stamina() * (state.heavy ? HEAVY_STAMINA : 1.0F)
-                    * (state.riposte ? Defense.RIPOSTE_STAMINA : 1.0F)
-                    * (state.attack == AttackKind.SPRINT ? SPRINT_STAMINA : 1.0F)
-                    + (state.comboMove != null ? state.comboMove.stamina() : 0)); // приём — дороже
         }
+        // Контратака оплачена, когда отбила удар (Defense.counter)
+        Fighter.spend(entity, state.counter ? 0 : attack.stamina() * (state.heavy ? HEAVY_STAMINA : 1.0F)
+                * (state.riposte ? Defense.RIPOSTE_STAMINA : 1.0F)
+                * (state.attack == AttackKind.SPRINT ? SPRINT_STAMINA : 1.0F)
+                + (state.comboMove != null ? state.comboMove.stamina() : 0)); // приём — дороже
         if (state.comboMove != null && state.comboMove.lunge()) {
             // Выпад приёма: шаг вперёд по взгляду
             Vec3 look = entity.getLookAngle().multiply(1, 0, 1).normalize();

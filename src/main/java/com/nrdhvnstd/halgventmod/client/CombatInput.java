@@ -77,8 +77,6 @@ public final class CombatInput {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         // Клики своих клавиш копятся, пока не забраны: забираем всегда, чтобы не сработали разом потом
-        int stab = clicks(ModKeys.STAB);
-        int special = clicks(ModKeys.SPECIAL);
         int feint = clicks(ModKeys.FEINT);
         int kick = clicks(ModKeys.KICK);
         int grip = clicks(ModKeys.GRIP);
@@ -111,10 +109,6 @@ public final class CombatInput {
         // Одно нажатие за тик; лишние клики того же тика сервер всё равно не примет (удар уже идёт)
         if (slash > 0) {
             start(player, minecraft.options.keyAttack, AttackKind.SLASH);
-        } else if (stab > 0) {
-            start(player, ModKeys.STAB, AttackKind.STAB);
-        } else if (special > 0) {
-            start(player, ModKeys.SPECIAL, AttackKind.SPECIAL);
         }
     }
 

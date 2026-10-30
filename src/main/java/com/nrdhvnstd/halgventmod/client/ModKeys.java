@@ -42,13 +42,9 @@ public final class ModKeys {
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
 
     // Бой (docs/TZ_chivalry_combat.md, 2). Удар — ванильная «Атака» (ЛКМ), сторона — по движению мыши перед кликом;
-    // блок — ванильное «Использовать» (ПКМ), сторона — так же. Укол — на боковой кнопке мыши (KeyMigration снимает
+    // блок — ванильное «Использовать» (ПКМ), сторона — так же (KeyMigration снимает
     // со средней кнопки ванильное «Выбрать блок», с F — «Поменять руки»)
     public static final String COMBAT_CATEGORY = "key.categories.halgventmod.combat";
-    public static final KeyMapping STAB = new KeyMapping("key.halgventmod.stab",
-            KeyConflictContext.IN_GAME, InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_4, COMBAT_CATEGORY);
-    public static final KeyMapping SPECIAL = new KeyMapping("key.halgventmod.special",
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, COMBAT_CATEGORY);
     // Финт — ПКМ во время замаха; отдельная клавиша по умолчанию не назначена
     public static final KeyMapping FEINT = new KeyMapping("key.halgventmod.feint",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), COMBAT_CATEGORY);
@@ -73,8 +69,6 @@ public final class ModKeys {
         event.register(CODEX);
         event.register(PICKUP);
         event.register(VISOR);
-        event.register(STAB);
-        event.register(SPECIAL);
         event.register(FEINT);
         event.register(KICK);
         event.register(GRIP);

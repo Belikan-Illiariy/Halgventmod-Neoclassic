@@ -27,7 +27,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * в WITNESS_RANGE блоков и в прямой видимости игрока, — игрок объявляется в розыске на WANTED_TICKS: все стражники,
  * которые сами увидят его в этом радиусе, идут бить (PursueOffenderGoal). Если не видел никто — ничего не было.
  * Увидевший стражник зовёт на помощь всю стражу в 64 блоках (callForHelp): она бежит к месту (RespondToAlarmGoal).
- * Сбит нарушитель с ног, вышел или розыск кончился — розыск и тревога снимаются, стража возвращается на маршруты.
+ * Обычное правонарушение: сбит нарушитель с ног, вышел или розыск кончился — розыск и тревога снимаются, стража
+ * возвращается на маршруты, лежачего не трогает. Насилие над стражей и горожанами (удар по НПС): стража не отступает, пока
+ * не убьёт, — добивает и лежачего, выход из игры и «Повержен» розыск не снимают (только смерть и срок).
  * Розыск хранится в памяти сервера и со сбросом сервера пропадает.
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
@@ -43,6 +45,7 @@ public final class Crimes {
     private static final int CLEANUP_INTERVAL = 10;
 
     private static final Map<UUID, Long> WANTED = new HashMap<>();
+    private static final Map<UUID, Long> VIOLENT = new HashMap<>(); // кого убивают до конца, до какого тика
     private static long lastCall = Long.MIN_VALUE / 2;
 
     private Crimes() {}
@@ -60,9 +63,21 @@ public final class Crimes {
         return true;
     }
 
+    /** Применил насилие к страже или горожанам, и это видели: убивают до конца. */
+    public static boolean isViolent(Player player) {
+        Long until = VIOLENT.get(player.getUUID());
+        return until != null && player.level().getGameTime() < until;
+    }
+
+    /** Стража вправе бить этого игрока сейчас: он в розыске, а лежачего — только если применял насилие. */
+    public static boolean shouldAttack(Player player) {
+        return isWanted(player) && (!Downed.isDowned(player) || isViolent(player));
+    }
+
     /** Снять розыск: нарушитель наказан (стражник сбил его с ног) или прощён. */
     public static void pardon(Player player) {
         WANTED.remove(player.getUUID());
+        VIOLENT.remove(player.getUUID());
     }
 
     /** Есть ли сейчас хоть кто-то в розыске (иначе тревога не нужна). */
@@ -98,7 +113,11 @@ public final class Crimes {
         while (it.hasNext()) {
             Map.Entry<UUID, Long> entry = it.next();
             ServerPlayer player = event.getServer().getPlayerList().getPlayer(entry.getKey());
-            if (player == null || Downed.isDowned(player) || player.level().getGameTime() >= entry.getValue()) {
+            boolean violent = VIOLENT.containsKey(entry.getKey());
+            long now = event.getServer().overworld().getGameTime();
+            // Насильника не отпускают ни «Повержен», ни выход из игры — только срок
+            if (now >= entry.getValue() || (!violent && (player == null || Downed.isDowned(player)))) {
+                VIOLENT.remove(entry.getKey());
                 it.remove();
             }
         }
@@ -106,6 +125,10 @@ public final class Crimes {
 
     /** Игрок совершил правонарушение: если его видит стражник — розыск, и видевшие идут за ним. */
     public static void committed(ServerPlayer offender) {
+        committed(offender, false);
+    }
+
+    private static void committed(ServerPlayer offender, boolean violent) {
         if (offender.isSpectator()) {
             return;
         }
@@ -119,9 +142,15 @@ public final class Crimes {
         }
         boolean fresh = !isWanted(offender);
         WANTED.put(offender.getUUID(), offender.level().getGameTime() + WANTED_TICKS);
+        boolean freshViolence = violent && !isViolent(offender);
+        if (violent) {
+            VIOLENT.put(offender.getUUID(), offender.level().getGameTime() + WANTED_TICKS);
+        }
         witnesses.forEach(guard -> guard.setTarget(offender));
         callForHelp(offender, witnesses.get(0));
-        if (fresh) {
+        if (freshViolence) {
+            offender.displayClientMessage(Component.translatable("npc.halgventmod.crime.violent"), true);
+        } else if (fresh) {
             offender.displayClientMessage(Component.translatable("npc.halgventmod.crime.seen"), true);
         }
     }
@@ -135,15 +164,18 @@ public final class Crimes {
     @SubscribeEvent
     public static void onDamage(LivingDamageEvent.Post event) {
         if (event.getEntity() instanceof HalgNpc && event.getSource().getEntity() instanceof ServerPlayer player) {
-            committed(player);
+            committed(player, true);
         }
     }
 
     // Смертельный удар тоже виден: бывает, что урон добивает раньше, чем отработает Post
     @SubscribeEvent
     public static void onDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer dead) {
+            pardon(dead); // умер — расплатился; «Повержен» сюда не доходит, его смерть отменена раньше
+        }
         if (event.getEntity() instanceof HalgNpc && event.getSource().getEntity() instanceof ServerPlayer player) {
-            committed(player);
+            committed(player, true);
         }
     }
 }

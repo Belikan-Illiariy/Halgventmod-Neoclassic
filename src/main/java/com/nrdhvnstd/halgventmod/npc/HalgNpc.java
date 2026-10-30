@@ -59,15 +59,15 @@ public class HalgNpc extends PathfinderMob {
     private static final int SELF_BANDAGE_AFTER = 60;       // кровотечение — перевязывается через 3 секунды после боя
     private static final float AGGRESSION_MIN = 0.35F, AGGRESSION_MAX = 0.95F; // нрав стражника в бою ⚠️
     private float aggression = -1;
-    private static final double MOVEMENT_SPEED = 0.3;     // ⚠️ было 0,25
+    private static final double MOVEMENT_SPEED = 0.3;     // шаг 3,9 блока/с, чуть медленнее игрока (4,3): у моба скорость идёт в квадрате
     private static final float LOOK_DISTANCE = 6.0F;
     private static final double ATTACK_DAMAGE = 3;      // кулаком; с оружием урон считает бой по профилю
-    private static final double CHASE_SPEED = 1.35;     // стражник за нарушителем
+    private static final double CHASE_SPEED = 1.14;     // стражник за нарушителем: бег 5,1 блока/с, чуть медленнее игрока (5,6)
     private static final double FOLLOW_RANGE = 48;      // дальность поиска пути
     private static final double WALK_SPEED = 1.0;       // множители скорости
     private static final double STROLL_SPEED = 1.0;
-    private static final double FLEE_SPEED = 1.4;
-    private static final double PANIC_SPEED = 1.5;
+    private static final double FLEE_SPEED = 1.14;
+    private static final double PANIC_SPEED = 1.14;
     private static final float AVOID_DISTANCE = 10.0F;  // от чудовища, блоков
     private static final int ROUTINE_INTERVAL = 20;     // как часто пересчитывать распорядок, тиков
     private static final double DORMANT_RANGE = 48;     // дальше от игроков НПС «спят»
@@ -270,6 +270,10 @@ public class HalgNpc extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
+        // Цель снимается и тут: зачинщик мог быть выставлен стражнику прямо (Crimes.committed), минуя цель-поиск. Невиновных не бьют
+        if (!level().isClientSide && getRole() == NpcRole.GUARD && getTarget() instanceof Player player && !Crimes.shouldAttack(player)) {
+            setTarget(null);
+        }
         // Бой кончился, а кровь течёт — перевязывается сам (повязка у НПС всегда при себе)
         if (!level().isClientSide && getTarget() == null && Bleeding.level(this) > 0
                 && tickCount - getLastHurtByMobTimestamp() > SELF_BANDAGE_AFTER) {
@@ -536,6 +540,11 @@ public class HalgNpc extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        // Поставленные раньше сохранили старую скорость — до нынешней
+        AttributeInstance speed = getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed != null) {
+            speed.setBaseValue(MOVEMENT_SPEED);
+        }
         // Поставленные до 0.1.4 сохранили здоровье 20 — до нынешнего
         AttributeInstance health = getAttribute(Attributes.MAX_HEALTH);
         if (health != null && health.getBaseValue() < MAX_HEALTH) {

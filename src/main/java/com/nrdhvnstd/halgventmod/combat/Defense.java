@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -22,12 +23,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -78,7 +81,8 @@ public final class Defense {
     /** Каждый тик бойца: поднять блок, если кнопка зажата и можно; опустить, если нельзя. */
     static void tickGuard(LivingEntity entity, CombatState state, long now) {
         boolean can = state.blockHeld && state.phase == Phase.IDLE && now >= state.blockLockedUntil
-                && !Fighter.busy(entity);
+                && !Fighter.busy(entity)
+                && (!entity.isUsingItem() || entity.getUseItem().getUseAnimation() == UseAnim.BLOCK); // пьёт или ест — не блок
         if (can && !state.blocking) {
             WeaponProfile profile = guardProfile(entity);
             state.blocking = true;
@@ -178,7 +182,7 @@ public final class Defense {
                                  DamageKind kind, Vec3 point, long now, IntConsumer recoil) {
         LivingEntity target = defender;
         float stamina = Fighter.exhausted(defender) ? 0 : Fighter.stamina(defender);
-        if (stamina >= cost) {
+        if (stamina >= Stamina.cost(cost)) {
             Fighter.spend(defender, cost);
             wearShield(defender, cost);
             outcome(attacker, target, parry ? CombatHitPayload.Outcome.PARRY : CombatHitPayload.Outcome.BLOCK, kind, point);
@@ -199,7 +203,7 @@ public final class Defense {
         Combat.stun(target, guard, GUARD_BREAK_STUN, now);
         outcome(attacker, target, CombatHitPayload.Outcome.GUARD_BREAK, kind, point);
         SoundPlay.atChest(target, ModSounds.COMBAT_BLOCK_BROKEN.get(), SoundSource.PLAYERS, 1.0F, 0.1F);
-        float pass = cost <= 0 ? 1.0F : 1.0F - stamina / cost;
+        float pass = cost <= 0 ? 1.0F : 1.0F - stamina / Stamina.cost(cost);
         Combat.debugBoth(attacker, target, Component.translatable("combat.halgventmod.debug.guard_break",
                 String.format("%.0f", pass * 100)));
         return pass;
@@ -216,7 +220,7 @@ public final class Defense {
         if (guard.phase != Phase.WINDUP || guard.current == null
                 || (guard.current.shape() == AttackKind.STAB) != stab || (!stab && guard.side != attack.side)
                 || now - guard.phaseStart > COUNTER_WINDOW
-                || !inFront(target, attacker) || Fighter.exhausted(defender) || Fighter.stamina(defender) < COUNTER_STAMINA) {
+                || !inFront(target, attacker) || Fighter.exhausted(defender) || Fighter.stamina(defender) < Stamina.cost(COUNTER_STAMINA)) {
             return false;
         }
         Fighter.spend(defender, COUNTER_STAMINA);
@@ -298,7 +302,7 @@ public final class Defense {
         float stamina = Stamina.exhausted(defender) ? 0 : Stamina.get(defender);
         Stamina.spend(defender, cost);
         wearShield(defender, cost);
-        if (stamina >= cost) {
+        if (stamina >= Stamina.cost(cost)) {
             SoundPlay.atChest(defender, blockSound(defender), SoundSource.PLAYERS, 1.0F, 0.1F);
             Combat.debug(defender, Component.translatable("combat.halgventmod.debug.arrow_block", String.format("%.1f", cost)));
             event.setCanceled(true); // стрела отскакивает
@@ -308,9 +312,17 @@ public final class Defense {
         lower(defender, guard);
         Combat.stun(defender, guard, GUARD_BREAK_STUN, now);
         SoundPlay.atChest(defender, ModSounds.COMBAT_BLOCK_BROKEN.get(), SoundSource.PLAYERS, 1.0F, 0.1F);
-        float pass = cost <= 0 ? 1.0F : 1.0F - stamina / cost;
+        float pass = cost <= 0 ? 1.0F : 1.0F - stamina / Stamina.cost(cost);
         Combat.debug(defender, Component.translatable("combat.halgventmod.debug.guard_break", String.format("%.0f", pass * 100)));
         event.setAmount(event.getAmount() * pass);
+    }
+
+    // Ванильный подъём щита у игрока отключён: он замедлял шаг ещё в 5 раз и спорил с позой боя. Блок ведёт ПКМ (Combat)
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onUseShield(PlayerInteractEvent.RightClickItem event) {
+        if (event.getHand() == InteractionHand.OFF_HAND && event.getItemStack().is(WeaponProfiles.SHIELDS)) {
+            event.setCanceled(true);
+        }
     }
 
     // Ванильный блок щитом у игроков не работает — щитом блокирует бой

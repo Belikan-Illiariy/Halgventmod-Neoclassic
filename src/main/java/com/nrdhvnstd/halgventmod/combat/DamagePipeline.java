@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Удар сквозь броню (ТЗ боя, 7.3–7.4): снаружи внутрь — накидка → латы → кольчуга → поддоспех → тело. На каждом слое:
  * <ol>
- *   <li>попал ли в слой — шанс «покрытие − точность оружия», мимо — в щель к следующему;</li>
+ *   <li>попал ли в твёрдый слой — шанс «покрытие − точность оружия», свой бросок у лат и у кольчуги; мимо — в щель к следующему. Ткань щелей не имеет;</li>
  *   <li>дробящий не пробивает — гасится сопротивлением дробящему;</li>
  *   <li>остальные: доля пробития p = 0.5 + (пробивание − твёрдость) / 2 (ткань — всегда 1); пробитое идёт дальше своим
  *       типом за вычетом сопротивления, непробитое × отдача типа — дальше дробящим;</li>
@@ -58,7 +58,8 @@ public final class DamagePipeline {
         Map<ArmorSlot, Float> wear = new EnumMap<>(ArmorSlot.class);
         for (ArmorLayers.Summary layer : ArmorLayers.of(target, zone.bodyPart())) {
             Component name = Component.translatable(layer.layer().langKey());
-            if (random.nextFloat() >= layer.coverage() * zone.coverage(target) - accuracy) { // шея, лицо, суставы — щели
+            // Щели только в твёрдом (латы и кольчуга — у каждого свой бросок: шея, лицо, суставы); ткань мягкая, закрывает сплошь
+            if (!layer.layer().cloth() && random.nextFloat() >= layer.coverage() * zone.coverage(target) - accuracy) {
                 lines.add(Component.translatable("combat.halgventmod.debug.layer_gap", name));
                 continue;
             }
