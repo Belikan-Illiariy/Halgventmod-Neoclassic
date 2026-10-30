@@ -131,7 +131,7 @@ public final class Stamina {
         }
 
         if (Combat.state(player).blocking) {
-            spend(player, Defense.BLOCK_DRAIN); // поднятый блок держать тяжело — шкала медленно тает
+            return; // в поднятом блоке шкала замирает: не тратится и не восстанавливается
         }
         if (!player.isPassenger()) {
             if (player.isSprinting()) {

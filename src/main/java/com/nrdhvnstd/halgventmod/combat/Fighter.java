@@ -49,8 +49,9 @@ public final class Fighter {
     public static void regen(LivingEntity entity) {
         CombatState state = Combat.state(entity);
         if (state.blocking) {
-            spend(entity, Defense.BLOCK_DRAIN); // поднятый блок тает, как у игрока
-        } else if (state.staminaDelay > 0) {
+            return; // в поднятом блоке шкала замирает, как у игрока
+        }
+        if (state.staminaDelay > 0) {
             state.staminaDelay--;
         } else {
             state.stamina = Math.min(NPC_MAX, state.stamina + NPC_REGEN * Stamina.COMBAT_REGEN); // он всегда в бою
