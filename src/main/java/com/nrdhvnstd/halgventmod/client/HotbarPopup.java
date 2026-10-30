@@ -1,6 +1,10 @@
 package com.nrdhvnstd.halgventmod.client;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Combat;
+import com.nrdhvnstd.halgventmod.combat.CombatState;
+import com.nrdhvnstd.halgventmod.combat.Phase;
+import com.nrdhvnstd.halgventmod.needs.Pain;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -36,6 +40,11 @@ public final class HotbarPopup {
     private static int lastHurtTime;
     private static float shown;                     // 0 — спрятан, 1 — на месте
     private static float shownBefore;
+    // Шкалы (NeedsHud) в бою не прячутся: бил, блокировал, держал стойку или по тебе попали —
+    // ещё Pain.IN_COMBAT тиков на месте, даже когда хотбар уехал
+    private static int combatTicks = Pain.IN_COMBAT;
+    private static float bars;
+    private static float barsBefore;
 
     private HotbarPopup() {}
 
@@ -70,6 +79,11 @@ public final class HotbarPopup {
         return Mth.lerp(delta.getGameTimeDeltaPartialTick(false), shownBefore, shown);
     }
 
+    /** Насколько выехали шкалы потребностей: как хотбар, но в бою — всегда на месте. */
+    public static float barsVisible(DeltaTracker delta) {
+        return Mth.lerp(delta.getGameTimeDeltaPartialTick(false), barsBefore, bars);
+    }
+
     /** Показать хотбар заново на HOTBAR_HIDE_DELAY. */
     public static void wake() {
         idleTicks = 0;
@@ -88,6 +102,13 @@ public final class HotbarPopup {
         float health = player.getHealth();
         if ((lastHealth >= 0 && health < lastHealth) || player.hurtTime > lastHurtTime) {
             wake();
+            combatTicks = 0;
+        }
+        CombatState combat = Combat.state(player);
+        if (combat.phase != Phase.IDLE || combat.blocking || combat.engaged) {
+            combatTicks = 0;
+        } else if (combatTicks < Pain.IN_COMBAT) {
+            combatTicks++;
         }
         lastHealth = health;
         lastHurtTime = player.hurtTime;
@@ -109,6 +130,8 @@ public final class HotbarPopup {
         shownBefore = shown;
         float target = idleTicks < HOTBAR_HIDE_DELAY ? 1 : 0;
         shown = Mth.approach(shown, target, 1.0F / SLIDE_TICKS);
+        barsBefore = bars;
+        bars = Mth.approach(bars, combatTicks < Pain.IN_COMBAT ? 1 : target, 1.0F / SLIDE_TICKS);
     }
 
     // Колёсико в мире: ваниль тут же листает карманы, а мы показываем хотбар

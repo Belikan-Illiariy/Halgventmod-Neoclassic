@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.combat;
 import java.util.Set;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.registry.ModEffects;
 
 import net.minecraft.core.particles.BlockParticleOption;
@@ -25,7 +26,7 @@ import net.neoforged.neoforge.common.EffectCure;
  * Кровотечение (эффект halgventmod:bleeding): рубящая и режущая рана открывает его с шансом оружия (BleedEvent,
  * Combat.landed), сильная — сразу на две ступени; новые раны добавляют ступени (до {@link #MAX_LEVEL}). Каждая ступень —
  * {@link #DAMAGE_PER_LEVEL} здоровья в секунду мимо брони; само не останавливается — нужна повязка (Injuries.treat,
- * себе или другому), иначе смерть (у игрока — сначала «Повержен»). Молоко не помогает. С тела капает кровь.
+ * себе или другому), иначе смерть (игрок сначала «Повержен», и лёжа уже не истекает). Молоко не помогает. С тела капает кровь.
  * НПС перевязываются сами, когда бой кончился (HalgNpc).
  */
 @EventBusSubscriber(modid = HalgventMod.MODID)
@@ -51,7 +52,8 @@ public final class Bleeding {
 
         @Override
         public boolean applyEffectTick(LivingEntity entity, int amplifier) {
-            if (!entity.level().isClientSide) {
+            // «Повержен» — у него своё время до смерти, кровь не добивает
+            if (!entity.level().isClientSide && !(entity instanceof Player player && Downed.isDowned(player))) {
                 entity.hurt(CombatDamageTypes.bleeding(entity), DAMAGE_PER_LEVEL * (amplifier + 1));
             }
             return true;

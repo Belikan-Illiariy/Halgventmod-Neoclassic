@@ -60,7 +60,6 @@ public final class Defense {
     public static final int GUARD_BREAK_STUN = 16;
     public static final double BLOCK_MOVE = -0.3;         // ходьба в блоке ×0.7
     public static final double STUN_MOVE = -0.5;          // в оглушении ×0.5
-    public static final float BLOCK_DRAIN = 0.1F;         // поднятый блок тратит выносливость за тик (2 в секунду) ⚠️
     // Контратака (5.3): тот же удар в ответ, начатый не раньше COUNTER_WINDOW тиков назад
     public static final int COUNTER_WINDOW = 4;
     public static final float COUNTER_STAMINA = 8;

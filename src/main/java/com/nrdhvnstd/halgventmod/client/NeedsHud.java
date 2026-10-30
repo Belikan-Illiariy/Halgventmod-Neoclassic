@@ -201,10 +201,10 @@ public final class NeedsHud {
         RenderSystem.disableBlend();
     }
 
-    // Шкалы прячутся вместе с хотбаром (HotbarPopup): каждая уезжает вниз за край экрана.
+    // Шкалы прячутся вместе с хотбаром (HotbarPopup), но в бою остаются: каждая уезжает вниз за край экрана.
     // Место под шкалу (leftHeight / rightHeight) занято всё равно — пузыри воздуха и прочее не прыгают
     private static int slide(GuiGraphics graphics, DeltaTracker delta, int y) {
-        float hidden = 1 - HotbarPopup.visible(delta);
+        float hidden = 1 - HotbarPopup.barsVisible(delta);
         return y + Math.round(hidden * (graphics.guiHeight() - y));
     }
 
