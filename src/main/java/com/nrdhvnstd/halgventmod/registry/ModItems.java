@@ -1304,6 +1304,13 @@ public final class ModItems {
                     "Comes off when an unbarked log is split on a chopping block. Four pieces in a water vat make the tanning liquor.")
             .grams(200)
             .register();
+    public static final DeferredItem<Item> BOARDS = item("boards", "Доски", "Boards", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Пиленые доски — из бревна любого дерева на пильных козлах. Идут на верстак плотника, в обычные рецепты вместо досок и в огонь.",
+                    "Sawn boards: from a log of any wood on a sawhorse. Used at the carpenter's bench, in regular recipes instead of planks, and as fuel.")
+            .kg(1.0)
+            .register();
     public static final DeferredItem<Item> ALUM = item("alum", "Квасцы", "Alum", Gender.PL)
             .traits(ModTraits.UNCOMMON)
             .category(Category.MINERALS)

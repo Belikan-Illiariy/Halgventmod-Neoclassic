@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
@@ -126,10 +125,9 @@ public class SawhorseBlockEntity extends StationBlockEntity {
     }
 
     private void finish(Player player) {
-        Item planks = Carpentry.planksOf(log);
         int boards = Carpentry.CUTS + 1 - crooked;
         if (boards > 0) {
-            give(player, new ItemStack(planks == null ? Items.OAK_PLANKS : planks, boards));
+            give(player, new ItemStack(ModItems.BOARDS.get(), boards)); // доски одни на любое дерево
         }
         if (crooked > 0) {
             // Горбыль: горящее дерево — на дрова, багровое и искажённое — только на палки

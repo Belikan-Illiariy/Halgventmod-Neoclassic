@@ -57,6 +57,10 @@ public final class ModKeys {
     public static final KeyMapping GRIP = new KeyMapping("key.halgventmod.grip",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, COMBAT_CATEGORY);
 
+    // Захват цели (CombatLock): камера держит противника, мышь выбирает сторону удара — как в KCD
+    public static final KeyMapping LOCK_ON = new KeyMapping("key.halgventmod.lock_on",
+            KeyConflictContext.IN_GAME, InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_MIDDLE, COMBAT_CATEGORY);
+
     private ModKeys() {}
 
     @SubscribeEvent
@@ -74,5 +78,6 @@ public final class ModKeys {
         event.register(FEINT);
         event.register(KICK);
         event.register(GRIP);
+        event.register(LOCK_ON);
     }
 }

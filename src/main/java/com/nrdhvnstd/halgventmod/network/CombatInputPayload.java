@@ -20,7 +20,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record CombatInputPayload(Action action, AttackKind attack, StrikeSide side) implements CustomPacketPayload {
     /** BLOCK_SIDE — блок зажат, сторону сменили движением мыши. side — сторона удара или блока (по мыши). */
     public enum Action {
-        ATTACK_START, ATTACK_RELEASE, FEINT, BLOCK_DOWN, BLOCK_UP, BLOCK_SIDE, KICK, GRIP;
+        ATTACK_START, ATTACK_RELEASE, FEINT, BLOCK_DOWN, BLOCK_UP, BLOCK_SIDE, KICK, GRIP,
+        STANCE_ON, STANCE_OFF; // захват цели: оружие в стойке выбранной стороны (видно другим) и выход из неё
 
         private static final IntFunction<Action> BY_ID =
                 ByIdMap.continuous(Action::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);

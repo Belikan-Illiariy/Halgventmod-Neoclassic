@@ -80,7 +80,10 @@ public class ModLanguageProvider extends LanguageProvider {
         add("gui.halgventmod.clear_inventory",
                 russian ? "Shift+щелчок — очистить весь инвентарь" : "Shift+click to clear the whole inventory");
         add("tooltip.halgventmod.armor_slot", russian ? "Слот: %s" : "Slot: %s");
-        add("tooltip.halgventmod.protection", russian ? "Защита: %s, твёрдость %s" : "Protection: %s, toughness %s");
+        add("tooltip.halgventmod.protection", russian ? "Вне боя: защита %s, стойкость %s" : "Outside combat: armor %s, toughness %s");
+        add("tooltip.halgventmod.armor.combat", russian ? "В бою: твёрдость %s, покрытие %s" : "In combat: hardness %s, coverage %s");
+        add("tooltip.halgventmod.armor.resist", russian ? "Держит: рубящий %s%%, режущий %s%%, колющий %s%%, дробящий %s%%, стрелы %s%%"
+                : "Stops: chopping %s%%, cutting %s%%, piercing %s%%, blunt %s%%, arrows %s%%");
         add("tooltip.halgventmod.visor_raised", russian ? "Забрало поднято" : "Visor raised");
         add("tooltip.halgventmod.visor_lowered", russian ? "Забрало опущено" : "Visor lowered");
         add("message.halgventmod.hood_over_helmet",
@@ -631,6 +634,21 @@ public class ModLanguageProvider extends LanguageProvider {
         // Социальные взаимодействия (social/Social, docs/TZ_social_interactions.md)
         add(ModEffects.BAGGED.get(), russian ? "Мешок на голове" : "Bagged");
         add(ModEffects.SHACKLED.get(), russian ? "В кандалах" : "Shackled");
+        add(ModEffects.BLEEDING.get(), russian ? "Кровотечение" : "Bleeding");
+        add("message.halgventmod.bleeding.start", russian ? "Вы истекаете кровью! Перевяжитесь" : "You are bleeding! Bandage the wound");
+        add("message.halgventmod.bleeding.worse", russian ? "Кровь хлещет сильнее!" : "The bleeding gets worse!");
+        add("message.halgventmod.bleeding.stopped", russian ? "Кровь остановлена" : "The bleeding has stopped");
+        add("death.attack.halgventmod.bleeding", russian ? "%1$s истёк(ла) кровью" : "%1$s bled to death");
+        add("death.attack.halgventmod.bleeding.player", russian ? "%1$s истёк(ла) кровью" : "%1$s bled to death");
+        add(ModEffects.INJURY_HEAD.get(), russian ? "Сотрясение" : "Concussion");
+        add(ModEffects.INJURY_ARM.get(), russian ? "Рана руки" : "Wounded arm");
+        add(ModEffects.INJURY_TORSO.get(), russian ? "Рана корпуса" : "Wounded torso");
+        add(ModEffects.INJURY_LEG.get(), russian ? "Рана ноги" : "Wounded leg");
+        add("message.halgventmod.injury.new", russian ? "Травма: %s. Перевяжитесь" : "Injury: %s. Bandage it");
+        add("message.halgventmod.injury.severe", russian ? "Тяжёлая травма: %s! Нужна повязка" : "Severe injury: %s! You need a bandage");
+        add("message.halgventmod.blood.washed", russian ? "Кровь отмыта" : "The blood is washed off");
+        add("tooltip.halgventmod.blood.stained", russian ? "Окровавлено" : "Bloodstained");
+        add("tooltip.halgventmod.blood.soaked", russian ? "В крови" : "Soaked in blood");
         add(ModEffects.CUFFED.get(), russian ? "В наручниках" : "Handcuffed");
         add("hud.halgventmod.social.interact", russian ? "[%s] Взаимодействовать" : "[%s] Interact");
         add("social.halgventmod.unknown", russian ? "Неизвестный в шлеме" : "Stranger in a helmet");
@@ -920,6 +938,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("key.halgventmod.feint", russian ? "Финт" : "Feint");
         add("key.halgventmod.kick", russian ? "Пинок" : "Kick");
         add("key.halgventmod.grip", russian ? "Сменить хват" : "Switch Grip");
+        add("key.halgventmod.lock_on", russian ? "Захват цели" : "Lock On");
         add("attack_kind.halgventmod.slash", russian ? "взмах" : "slash");
         add("attack_kind.halgventmod.overhead", russian ? "удар сверху" : "overhead");
         add("attack_kind.halgventmod.stab", russian ? "укол" : "stab");
@@ -966,7 +985,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("combat.halgventmod.debug.block", russian ? "блок: −%s выносливости" : "block: −%s stamina");
         add("combat.halgventmod.debug.parry", russian ? "парирование: −%s выносливости, рипост" : "parry: −%s stamina, riposte");
         add("combat.halgventmod.debug.guard_break", russian ? "сбой блока: прошло %s%% урона" : "guard break: %s%% of damage through");
-        add("combat.halgventmod.debug.riposte", russian ? "рипост" : "riposte");
+        add("combat.halgventmod.debug.riposte", russian ? "мастер-удар" : "master strike");
         add("combat.halgventmod.debug.winded", russian ? "одышка" : "winded");
         add("combat.halgventmod.debug.shock", russian ? "болевой шок" : "pain shock");
         add("tooltip.halgventmod.weapon.attack", russian ? "%s: %s, %s" : "%s: %s, %s");
@@ -978,15 +997,27 @@ public class ModLanguageProvider extends LanguageProvider {
         add("combat.halgventmod.debug.grip_alt", russian ? "второй хват" : "alternate grip");
         add("combat.halgventmod.debug.grip_main", russian ? "обычный хват" : "normal grip");
         add("combat.halgventmod.debug.counter", russian ? "контратака" : "counterattack");
+        add("combat.halgventmod.debug.master_through", russian ? "Мастер-удар прошёл сквозь блок: держит только парирование" : "Master strike went through the block: only a parry stops it");
+        add("combat.halgventmod.debug.clash", russian ? "Клинки столкнулись" : "Blades clashed");
+        add("combat.halgventmod.debug.glance", russian ? "  %s: удар соскользнул (шанс %s%%)" : "  %s: the blow glanced off (%s%% chance)");
+        add("combat.halgventmod.debug.combo_move", russian ? "Приём: %s" : "Combo: %s");
         add("combat.halgventmod.debug.kick", russian ? "пинок: %s" : "kick: %s");
         add("combat.halgventmod.debug.kick_guard", russian ? "блок пробит" : "guard broken");
         add("combat.halgventmod.debug.flinch", russian ? "замах сбит" : "flinched");
         add("combat.halgventmod.debug.stun", russian ? "оглушение" : "stunned");
         add("combat.halgventmod.debug.arrow_block", russian ? "стрела отражена щитом: −%s выносливости" : "arrow blocked by shield: −%s stamina");
         add("combat.halgventmod.debug.wall", russian ? "клинок упёрся в стену" : "blade hit a wall");
-        add("hit_zone.halgventmod.head", russian ? "голова" : "head");
-        add("hit_zone.halgventmod.torso", russian ? "корпус" : "torso");
-        add("hit_zone.halgventmod.legs", russian ? "ноги" : "legs");
+        add("hit_zone.halgventmod.crown", russian ? "голова" : "head");
+        add("hit_zone.halgventmod.face", russian ? "лицо" : "face");
+        add("hit_zone.halgventmod.neck", russian ? "шея" : "neck");
+        add("hit_zone.halgventmod.chest", russian ? "грудь" : "chest");
+        add("hit_zone.halgventmod.abdomen", russian ? "живот" : "abdomen");
+        add("hit_zone.halgventmod.arm", russian ? "рука" : "arm");
+        add("hit_zone.halgventmod.hand", russian ? "кисть" : "hand");
+        add("hit_zone.halgventmod.thigh", russian ? "бедро" : "thigh");
+        add("hit_zone.halgventmod.knee", russian ? "колено" : "knee");
+        add("hit_zone.halgventmod.shin", russian ? "голень" : "shin");
+        add("hit_zone.halgventmod.foot", russian ? "ступня" : "foot");
     }
 
     private void alchemyTranslations() {
@@ -1737,6 +1768,9 @@ public class ModLanguageProvider extends LanguageProvider {
         drunk("cured", "Полегчало", "That's better");
         drunk("rotgut", "Сивуха! Мутит", "Rotgut! You feel sick");
         drunk("clear_head", "Вы протрезвели — голова ясная, похмелья нет", "You are sober — a clear head, no hangover");
+        drunk("stumble", "Вы споткнулись", "You stumbled");
+        drunk("blackout", "Вы отключились…", "You blacked out…");
+        drunk("vomit", "Перебрали — вас вырвало", "Too much — you threw up");
         add("gamerule.drunkChat", russian ? "Пьяные путают буквы в чате" : "Drunk players slur in chat");
 
         drink("must.apple", "Яблочный сок", "Apple juice");

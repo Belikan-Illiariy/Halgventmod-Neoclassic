@@ -13,6 +13,10 @@ import javax.annotation.Nullable;
 import com.mojang.brigadier.Command;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.Permissions;
+import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.combat.anim.AnimClip;
+import com.nrdhvnstd.halgventmod.combat.anim.BladePose;
+import com.nrdhvnstd.halgventmod.combat.anim.CombatMoves;
 import com.nrdhvnstd.halgventmod.character.CharacterCreation;
 import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.draw.Drawing;
@@ -37,6 +41,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -90,6 +95,14 @@ public final class Combat {
     public static final int HEAVY_MIN_HOLD = 6;
     public static final int HEAVY_MAX_EXTRA = 16;
     public static final float HEAVY_DAMAGE = 1.35F;
+    public static final float MASTER_DAMAGE = 1.4F;   // мастер-удар (рипост после парирования, KCC) ⚠️
+    public static final float CHARGED_VOLUME = 0.9F;  // звук набранного заряда
+    public static final double CLASH_DISTANCE = 0.15; // клинки ближе этого — столкнулись ⚠️
+    public static final int COMBO_GAP = 40;           // между ударами приёма не дольше стольких тиков (KCC) ⚠️
+    public static final double COMBO_LUNGE = 0.45;    // выпад приёма вперёд
+    public static final double COMBO_PULL = 0.35;     // подтянуть противника к себе
+    public static final int CLASH_RECOVERY = 6;       // и обоим столько тиков к возврату
+    public static final int GLANCE_RECOVERY = 4;      // клинок отскочил от лат — столько тиков к возврату
     public static final float HEAVY_STAMINA = 1.5F;
     // Финт и смена удара (4.4): можно, пока до конца замаха больше FEINT_LOCK тиков
     public static final int FEINT_LOCK = 3;
@@ -121,6 +134,9 @@ public final class Combat {
     public static final int GRIP_TICKS = 8;
     // Урон сквозь броню (7.4)
     public static final float DEFLECTED = 0.05F;     // меньше этого по телу — погашено бронёй целиком
+    public static final float GLANCE_RING = 0.35F;    // прошёл, но металл погасил больше этой доли — звенит ⚠️
+    public static final double DEFLECT_PUSH = 0.25;   // отражённый удар толкает цель на столько ⚠️
+    public static final float DEFLECT_PUSH_DAMAGE = 12.0F; // … если удар не слабее этого
     public static final float METAL_PAIN = 0.1F;     // боль от урона, погашенного металлом
     public static final float BLUNT_STAMINA = 0.5F;  // дробящий по телу снимает выносливость цели за единицу
     public static final float BLEED_MIN = 3;         // кровотечение — от такого урона по телу
@@ -144,7 +160,7 @@ public final class Combat {
 
     // ---------------------------------------------------------------- ввод
 
-    public static void input(ServerPlayer player, CombatInputPayload.Action action, AttackKind kind, StrikeSide side) {
+    public static void input(LivingEntity player, CombatInputPayload.Action action, AttackKind kind, StrikeSide side) {
         CombatState state = state(player);
         long now = player.level().getGameTime();
         if (state.inputTick != now) {
@@ -176,8 +192,28 @@ public final class Combat {
                 state.blockHeld = false;
                 Defense.lower(player, state);
             }
-            case KICK -> Kick.start(player, state, now);
+            case KICK -> {
+                if (player instanceof ServerPlayer server) {
+                    Kick.start(server, state, now);
+                }
+            }
             case GRIP -> grip(player, state, now);
+            case STANCE_ON -> {
+                // Захват цели: стойка стороны — видна другим (её же сторона станет стороной следующего удара)
+                if (!state.engaged || (state.phase == Phase.IDLE && state.side != side)) {
+                    state.engaged = true;
+                    if (state.phase == Phase.IDLE) {
+                        state.side = side;
+                    }
+                    sync(player, state);
+                }
+            }
+            case STANCE_OFF -> {
+                if (state.engaged) {
+                    state.engaged = false;
+                    sync(player, state);
+                }
+            }
             default -> {
                 // остальное — следующие этапы
             }
@@ -185,13 +221,13 @@ public final class Combat {
     }
 
     // Кнопка удара: в покое — удар; в замахе другая кнопка — смена удара; во время удара и в начале возврата — комбо
-    private static void attackPressed(ServerPlayer player, CombatState state, AttackKind kind, StrikeSide side, long now) {
+    private static void attackPressed(LivingEntity player, CombatState state, AttackKind kind, StrikeSide side, long now) {
         switch (state.phase) {
             case IDLE -> begin(player, state, kind, side, now, 1.0F, 0, null);
             case WINDUP -> {
                 // Смена удара: другая кнопка или та же с другой стороны
                 if (!sameAttack(state, kind, side) && canFeint(state, now) && canAct(player)) {
-                    Stamina.spend(player, FEINT_STAMINA);
+                    Fighter.spend(player, FEINT_STAMINA);
                     begin(player, state, kind, side, now, MORPH_WINDUP, state.combo, "combat.halgventmod.debug.morph");
                 }
             }
@@ -210,6 +246,13 @@ public final class Combat {
         }
     }
 
+    // Заряд набран: скрип хвата и короткий щелчок — оружие встало в замах (слышат и рядом)
+    private static void charged(LivingEntity entity) {
+        SoundPlay.at(entity, ModSounds.COMBAT_WEAPON_GRIP.get(), SoundSource.PLAYERS, CHARGED_VOLUME, 0.1F);
+        entity.level().playSound(null, entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.CROSSBOW_LOADING_END.value(),
+                SoundSource.PLAYERS, CHARGED_VOLUME * 0.5F, 0.6F + entity.getRandom().nextFloat() * 0.1F);
+    }
+
     // Тот же удар, что идёт: ЛКМ мышью вверх стал ударом сверху (begin) — это тоже он; у укола стороны нет
     private static boolean sameAttack(CombatState state, AttackKind kind, StrikeSide side) {
         boolean sameKind = kind == state.attack || (kind == AttackKind.SLASH && state.attack == AttackKind.OVERHEAD);
@@ -217,7 +260,7 @@ public final class Combat {
     }
 
     // Отпустил кнопку: короткое нажатие — обычный удар, долгое — заряженный; в продлённом замахе — бьёт сразу
-    private static void attackReleased(ServerPlayer player, CombatState state, long now) {
+    private static void attackReleased(LivingEntity player, CombatState state, long now) {
         if (state.queued != null) {
             state.queuedCharging = false;
             return;
@@ -231,6 +274,7 @@ public final class Combat {
         }
         if (now - state.phaseStart >= HEAVY_MIN_HOLD && !state.heavy) {
             state.heavy = true;
+            charged(player);
             sync(player, state);
         }
         if (now >= state.windupEnd) {
@@ -239,11 +283,11 @@ public final class Combat {
     }
 
     // Финт (4.4): замах отменён, пока не поздно; рипост и контратаку не финтят
-    private static void feint(ServerPlayer player, CombatState state, long now) {
+    private static void feint(LivingEntity player, CombatState state, long now) {
         if (state.phase != Phase.WINDUP || state.riposte || state.counter || !canFeint(state, now)) {
             return;
         }
-        Stamina.spend(player, FEINT_STAMINA);
+        Fighter.spend(player, FEINT_STAMINA);
         debug(player, Component.translatable("combat.halgventmod.debug.feint"));
         idle(player, state, now);
     }
@@ -256,7 +300,7 @@ public final class Combat {
      * Начать замах: windupFactor — доля полного замаха (смена удара, комбо), combo — номер удара в серии.
      * note — ключ пометки для отладки (смена удара) или null.
      */
-    private static void begin(ServerPlayer player, CombatState state, AttackKind kind, StrikeSide side, long now,
+    private static void begin(LivingEntity player, CombatState state, AttackKind kind, StrikeSide side, long now,
                               float windupFactor, int combo, @Nullable String note) {
         if (!canAct(player) || (kind == AttackKind.SPRINT && !player.isSprinting())) {
             return;
@@ -297,6 +341,26 @@ public final class Combat {
         state.current = attack;
         state.weapon = weapon.getItem();
         state.hit.clear();
+        // Комбо (KCC): стороны последних ударов; хвост совпал с приёмом своего оружия — этот удар приём
+        if (now - state.lastStrikeAt > COMBO_GAP) {
+            state.history.clear();
+        }
+        state.lastStrikeAt = now;
+        state.comboMove = null;
+        state.move = "";
+        if (!bash && !riposte && attack.shape() != AttackKind.STAB && (kind == AttackKind.SLASH || kind == AttackKind.OVERHEAD)) {
+            state.history.addLast(state.side);
+            while (state.history.size() > Math.max(1, ComboMoves.longest())) {
+                state.history.removeFirst();
+            }
+            ComboMoves.Combo found = ComboMoves.match(state.history, profile.weaponClass());
+            if (found != null && Fighter.stamina(player) >= found.stamina()) {
+                state.comboMove = found;
+                state.move = found.move();
+                state.history.clear();
+                debug(player, Component.translatable("combat.halgventmod.debug.combo_move", found.id()));
+            }
+        }
         if (kind == AttackKind.SPRINT) {
             player.setSprinting(false);
         }
@@ -314,10 +378,10 @@ public final class Combat {
     }
 
     // X: в покое сменить хват, если у профиля есть второй набор ударов (10); GRIP_TICKS ни удара, ни блока
-    private static void grip(ServerPlayer player, CombatState state, long now) {
+    private static void grip(LivingEntity player, CombatState state, long now) {
         ItemStack weapon = player.getMainHandItem();
         WeaponProfile profile = WeaponProfiles.of(player, weapon);
-        if (state.phase != Phase.IDLE || busy(player) || weapon.isEmpty() || profile == null || profile.altGrip().isEmpty()) {
+        if (state.phase != Phase.IDLE || Fighter.busy(player) || weapon.isEmpty() || profile == null || profile.altGrip().isEmpty()) {
             return;
         }
         if (altGrip(weapon)) {
@@ -332,13 +396,13 @@ public final class Combat {
     }
 
     /** Может ли боец сейчас начать удар (ТЗ боя, 4.8). */
-    static boolean canAct(ServerPlayer player) {
-        return !busy(player); // и при одышке: удар ослаблен (winded)
+    static boolean canAct(LivingEntity player) {
+        return !Fighter.busy(player); // и при одышке: удар ослаблен (winded)
     }
 
     /** Одышка: выносливость на нуле (или идёт изнеможение). */
     public static boolean winded(LivingEntity entity) {
-        return entity instanceof Player player && (Stamina.exhausted(player) || Stamina.get(player) <= 0);
+        return Fighter.exhausted(entity) || Fighter.stamina(entity) <= 0;
     }
 
     /** Ни бить, ни блокировать: оружие достаётся, повержен, несёт кого-то, создаёт персонажа, в наручниках с оружием. */
@@ -354,7 +418,8 @@ public final class Combat {
     private static int ticks(LivingEntity entity, WeaponProfile profile, int base) {
         float speed = (1.0F - CombatBonuses.swingSpeed(entity, profile.weaponClass()))
                 * (winded(entity) ? WINDED_SLOW : 1.0F)
-                * (entity instanceof Player player ? Pain.attackSlow(player) : 1.0F);
+                * (entity instanceof Player player ? Pain.attackSlow(player) : 1.0F)
+                * Injuries.swingSlow(entity); // рана руки
         return Math.max(1, Math.round(base * speed));
     }
 
@@ -463,6 +528,7 @@ public final class Combat {
                     long cap = state.windupEnd + HEAVY_MAX_EXTRA;
                     if (!state.heavy) {
                         state.heavy = true;
+                        charged(entity);
                         state.phaseEnd = cap;
                         sync(entity, state);
                         debug(entity, Component.translatable("combat.halgventmod.debug.charging"));
@@ -476,9 +542,9 @@ public final class Combat {
             }
             case RELEASE -> {
                 // Кнопку нажали во время удара — следующий удар серии без возврата
-                if (state.queued != null && entity instanceof ServerPlayer player) {
+                if (state.queued != null) {
                     AttackKind next = state.queued;
-                    begin(player, state, next, state.queuedSide, now, COMBO_WINDUP, state.combo + 1, null);
+                    begin(entity, state, next, state.queuedSide, now, COMBO_WINDUP, state.combo + 1, null);
                     if (state.phase == Phase.WINDUP && state.attack == next && state.phaseStart == now) {
                         return;
                     }
@@ -520,7 +586,7 @@ public final class Combat {
         boolean layered = layered(target); // слои брони — у игроков и НПС (у прочих мобов — ванильная броня)
         DamagePipeline.Result result = through(attacker, target, kind, amount, zone, penetration, accuracy);
         if (result.body() < DEFLECTED) {
-            deflected(attacker, target, kind, amount, zone, point);
+            deflected(attacker, target, kind, amount, zone, point, metalShare(result, amount));
             return 0;
         }
         target.invulnerableTime = 0; // в Chivalry неуязвимости после удара нет; каждый удар бьёт цель один раз
@@ -550,12 +616,44 @@ public final class Combat {
         return result;
     }
 
-    /** Броня погасила удар целиком: звук отражения. */
-    static void deflected(LivingEntity attacker, LivingEntity target, DamageKind kind, float amount, HitZone zone, Vec3 point) {
+    /**
+     * Броня погасила удар целиком: звук отражения, по шлему — звон, искры у клиентов (по доле металла), цель чуть
+     * отшатывается — удар в латы держит, но толкает.
+     */
+    static void deflected(LivingEntity attacker, LivingEntity target, DamageKind kind, float amount, HitZone zone, Vec3 point,
+                          float metal) {
         SoundPlay.atChest(target, ModSounds.COMBAT_HIT_DEFLECT.get(), SoundSource.PLAYERS, 1.0F, 0.1F);
+        if (metal > 0) {
+            ring(target, zone, metal);
+        }
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(attacker, new CombatHitPayload(attacker.getId(), target.getId(),
-                CombatHitPayload.Outcome.DEFLECT, zone, kind, point));
+                CombatHitPayload.Outcome.DEFLECT, zone, kind, point, metal));
+        // Клинок отскочил от металла — удар бьющего оборван, он уходит в возврат
+        CombatState swing = state(attacker);
+        if (metal > 0 && swing.phase == Phase.RELEASE && swing.current != null) {
+            recoil(attacker, swing, GLANCE_RECOVERY, attacker.level().getGameTime());
+        }
+        Vec3 away = target.position().subtract(attacker.position()).multiply(1, 0, 1);
+        if (away.lengthSqr() > 1.0E-4) {
+            Vec3 push = away.normalize().scale(DEFLECT_PUSH * Math.min(1.0F, amount / DEFLECT_PUSH_DAMAGE));
+            target.push(push.x, 0, push.z);
+            target.hurtMarked = true;
+        }
         debugBoth(attacker, target, Component.translatable("combat.halgventmod.debug.deflect", String.format("%.1f", amount)));
+    }
+
+    // Доля удара, погашенная металлом (латы, кольчуга), 0…1 — по ней сила искр и звона
+    static float metalShare(DamagePipeline.Result result, float amount) {
+        return amount <= 0 ? 0 : Mth.clamp(result.metalAbsorbed() / amount, 0.0F, 1.0F);
+    }
+
+    // Звон металла поверх звука удара: шлем гудит выше и дольше, латы — глуше
+    private static void ring(LivingEntity target, HitZone zone, float metal) {
+        boolean helmet = zone.bodyPart() == ArmorSlot.BodyPart.HEAD;
+        float volume = (helmet ? 0.35F : 0.22F) * (0.5F + 0.5F * metal);
+        float pitch = (helmet ? 1.9F : 1.45F) + target.getRandom().nextFloat() * 0.2F;
+        target.level().playSound(null, target.getX(), target.getEyeY() - (helmet ? 0 : 0.5), target.getZ(),
+                SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, volume, pitch);
     }
 
     /** Урон дошёл до тела: исход клиентам, боль, выносливость от дробящего, кровотечение, оглушение и сбитый замах. */
@@ -568,8 +666,15 @@ public final class Combat {
         if (!hurt) {
             return;
         }
+        Blood.onWound(attacker, target, kind, zone, result.body());   // кровь на оружие и броню
+        Injuries.onWound(target, zone, result.body());                // сильный удар — травма части тела
+        Wounds.onWound(target, kind, zone, result.body());            // рана видна на теле, пока не заживёт
+        float metal = metalShare(result, amount); // удар прошёл, но часть погасил металл — скользнул, искры
+        if (metal > GLANCE_RING) {
+            ring(target, zone, metal);
+        }
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(attacker, new CombatHitPayload(attacker.getId(), target.getId(),
-                CombatHitPayload.Outcome.HIT, zone, kind, point));
+                CombatHitPayload.Outcome.HIT, zone, kind, point, metal));
         if (target instanceof Player victim) {
             Pain.add(victim, result.pain());
             Pain.markCombat(victim);
@@ -644,23 +749,39 @@ public final class Combat {
         if (entity instanceof Player player) {
             Pain.markCombat(player);
             // Контратака оплачена, когда отбила удар (Defense.counter)
-            Stamina.spend(player, state.counter ? 0 : attack.stamina() * (state.heavy ? HEAVY_STAMINA : 1.0F)
+            Fighter.spend(player, state.counter ? 0 : attack.stamina() * (state.heavy ? HEAVY_STAMINA : 1.0F)
                     * (state.riposte ? Defense.RIPOSTE_STAMINA : 1.0F)
-                    * (state.attack == AttackKind.SPRINT ? SPRINT_STAMINA : 1.0F));
+                    * (state.attack == AttackKind.SPRINT ? SPRINT_STAMINA : 1.0F)
+                    + (state.comboMove != null ? state.comboMove.stamina() : 0)); // приём — дороже
+        }
+        if (state.comboMove != null && state.comboMove.lunge()) {
+            // Выпад приёма: шаг вперёд по взгляду
+            Vec3 look = entity.getLookAngle().multiply(1, 0, 1).normalize();
+            entity.push(look.x * COMBO_LUNGE, 0.05, look.z * COMBO_LUNGE);
+            entity.hurtMarked = true;
         }
         if (state.attack == AttackKind.SPRINT) {
             state.sprintLockUntil = entity.level().getGameTime() + SPRINT_LOCK;
         }
-        if (CombatSounds.swings(weapon) || state.heavy) { // заряженный — тяжёлый замах и у лёгкого оружия
-            SoundPlay.at(entity, state.heavy ? ModSounds.COMBAT_SWING_HEAVY.get() : CombatSounds.swingSound(weapon),
-                    SoundSource.PLAYERS, state.heavy ? CombatSounds.SWING_HEAVY_VOLUME : CombatSounds.swingVolume(weapon),
-                    CombatSounds.SWING_PITCH_SPREAD);
-        }
+        // Свист взмаха — у любого оружия боя (раньше — только у предметов из звуковых тегов, Conquest и ножи молчали);
+        // двуручное и заряженный — тяжёлый
+        boolean heavySwing = state.heavy || CombatSounds.swingSound(weapon) == ModSounds.COMBAT_SWING_HEAVY.get()
+                || (state.profile != null && state.profile.twoHanded());
+        SoundPlay.at(entity, heavySwing ? ModSounds.COMBAT_SWING_HEAVY.get() : ModSounds.COMBAT_SWING_LIGHT.get(),
+                SoundSource.PLAYERS, heavySwing ? CombatSounds.SWING_HEAVY_VOLUME : CombatSounds.SWING_LIGHT_VOLUME,
+                CombatSounds.SWING_PITCH_SPREAD);
     }
 
     // ---------------------------------------------------------------- трасса клинка (ТЗ боя, 6.2)
 
+    // Удар с анимацией KCC — клинок по её кадрам (что видно, то и бьёт); укол и оружие без анимаций — дуги SwingPath
     private static SwingPath.Blade blade(LivingEntity entity, CombatState state, float t) {
+        if (state.current.shape() != AttackKind.STAB) {
+            AnimClip clip = CombatMoves.attack(state.profile, state.side, state.heavy, state.riposte, state.move);
+            if (clip != null) {
+                return BladePose.blade(entity, clip, CombatMoves.releaseTime(clip, t), reach(state));
+            }
+        }
         return SwingPath.blade(entity, state.current.shape(), state.side, t, reach(state));
     }
 
@@ -703,6 +824,10 @@ public final class Combat {
                 && level.getBlockState(wall.getBlockPos()).isCollisionShapeFullBlock(level, wall.getBlockPos());
         double wallDistance = wallHit ? shoulder.distanceTo(wall.getLocation()) : Double.MAX_VALUE;
 
+        if (clash(entity, state, blade, now)) {
+            return; // клинок встретил клинок — удар кончился
+        }
+
         record Touch(LivingEntity target, Vec3 point, double distance) {}
         List<Touch> touches = new ArrayList<>();
         double radius = SwingPath.ARM + reach(state) + 2;
@@ -735,12 +860,84 @@ public final class Combat {
         }
     }
 
+    /**
+     * Столкновение клинков (по образцу KCC): чужой удар идёт в тот же миг, и клинки сошлись ближе CLASH_DISTANCE —
+     * звон, искры, обоих отбрасывает в возврат, удары пропали. Кто заметил первым (чей тик раньше), тот и решает за обоих.
+     */
+    private static boolean clash(LivingEntity entity, CombatState state, SwingPath.Blade blade, long now) {
+        if (state.phase != Phase.RELEASE || state.bash) {
+            return false;
+        }
+        double radius = reach(state) + SwingPath.ARM + 3;
+        for (LivingEntity other : entity.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(radius),
+                other -> other != entity && other.isAlive())) {
+            CombatState theirs = state(other);
+            if (theirs.phase != Phase.RELEASE || theirs.current == null || theirs.bash) {
+                continue;
+            }
+            long length = Math.max(1, theirs.phaseEnd - theirs.phaseStart);
+            SwingPath.Blade their = blade(other, theirs, (float) (now - theirs.phaseStart + 1) / length);
+            Vec3[] closest = closest(blade.hilt(), blade.tip(), their.hilt(), their.tip());
+            if (closest[0].distanceToSqr(closest[1]) > CLASH_DISTANCE * CLASH_DISTANCE) {
+                continue;
+            }
+            Vec3 point = closest[0].lerp(closest[1], 0.5);
+            entity.level().playSound(null, point.x, point.y, point.z, ModSounds.COMBAT_BLOCK_WEAPON.get(),
+                    SoundSource.PLAYERS, 1.0F, 0.9F + entity.getRandom().nextFloat() * 0.3F);
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new CombatHitPayload(entity.getId(), other.getId(),
+                    CombatHitPayload.Outcome.CLASH, HitZone.ARM, state.current.type(), point, 1.0F));
+            recoil(entity, state, CLASH_RECOVERY, now);
+            recoil(other, theirs, CLASH_RECOVERY, now);
+            debugBoth(entity, other, Component.translatable("combat.halgventmod.debug.clash"));
+            return true;
+        }
+        return false;
+    }
+
+    // Ближайшие точки двух отрезков (a0–a1 и b0–b1)
+    private static Vec3[] closest(Vec3 a0, Vec3 a1, Vec3 b0, Vec3 b1) {
+        Vec3 d1 = a1.subtract(a0);
+        Vec3 d2 = b1.subtract(b0);
+        Vec3 r = a0.subtract(b0);
+        double a = d1.lengthSqr();
+        double e = d2.lengthSqr();
+        double f = d2.dot(r);
+        double s;
+        double t;
+        if (a < 1.0E-8 && e < 1.0E-8) {
+            return new Vec3[] {a0, b0};
+        }
+        if (a < 1.0E-8) {
+            s = 0;
+            t = Mth.clamp(f / e, 0, 1);
+        } else {
+            double c = d1.dot(r);
+            if (e < 1.0E-8) {
+                t = 0;
+                s = Mth.clamp(-c / a, 0, 1);
+            } else {
+                double b = d1.dot(d2);
+                double denom = a * e - b * b;
+                s = denom > 1.0E-8 ? Mth.clamp((b * f - c * e) / denom, 0, 1) : 0;
+                t = (b * s + f) / e;
+                if (t < 0) {
+                    t = 0;
+                    s = Mth.clamp(-c / a, 0, 1);
+                } else if (t > 1) {
+                    t = 1;
+                    s = Mth.clamp((b - c) / a, 0, 1);
+                }
+            }
+        }
+        return new Vec3[] {a0.add(d1.scale(s)), b0.add(d2.scale(t))};
+    }
+
     // Клинок упёрся в стену: звук по материалу, длинный возврат, серия прервана
     private static void bounce(LivingEntity entity, CombatState state, BlockHitResult wall, long now) {
         Level level = entity.level();
         CombatSounds.wallHit(level, wall.getBlockPos(), level.getBlockState(wall.getBlockPos()), wall.getLocation());
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new CombatHitPayload(entity.getId(), -1,
-                CombatHitPayload.Outcome.WALL, HitZone.TORSO, state.current.type(), wall.getLocation()));
+                CombatHitPayload.Outcome.WALL, HitZone.CHEST, state.current.type(), wall.getLocation()));
         debug(entity, Component.translatable("combat.halgventmod.debug.wall"));
         state.queued = null;
         enter(entity, state, Phase.RECOVERY, ticks(entity, state.profile, state.current.recovery()) + WALL_RECOVERY, now);
@@ -763,11 +960,32 @@ public final class Combat {
             kind = DamageKind.BLUNT;
             factor *= SHAFT_DAMAGE;
         }
+        // Приём (комбо): свой тип урона и часть тела, куда он целит; противника подтягивает к себе
+        ComboMoves.Combo combo = state.comboMove;
+        if (combo != null) {
+            if (combo.type() != null) {
+                kind = combo.type();
+            }
+            if (combo.zone() != null) {
+                zone = combo.zone();
+                factor = zone.damage();
+            }
+            if (combo.pull()) {
+                Vec3 toward = attacker.position().subtract(target.position()).multiply(1, 0, 1);
+                if (toward.lengthSqr() > 1.0E-4) {
+                    Vec3 pull = toward.normalize().scale(COMBO_PULL);
+                    target.push(pull.x, 0, pull.z);
+                    target.hurtMarked = true;
+                }
+            }
+        }
         if (Defense.counter(attacker, target, state, kind, point, now)) {
             return;
         }
         float raw = attack.damage() * (state.heavy ? HEAVY_DAMAGE : 1.0F)
                 * (state.attack == AttackKind.SPRINT ? SPRINT_DAMAGE : 1.0F)
+                * (state.riposte ? MASTER_DAMAGE : 1.0F)
+                * (combo != null ? combo.damage() : 1.0F)
                 * GearQuality.get(weapon).damage() * Dullness.damageFactor(weapon)
                 * (1.0F + CombatBonuses.damage(attacker, weaponClass))
                 * (winded(attacker) ? WINDED_DAMAGE : 1.0F)

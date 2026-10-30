@@ -1,6 +1,8 @@
 package com.nrdhvnstd.halgventmod.registry;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Bleeding;
+import com.nrdhvnstd.halgventmod.combat.InjuryEffect;
 import com.nrdhvnstd.halgventmod.food.FoodEffect;
 import com.nrdhvnstd.halgventmod.needs.NeedEffect;
 import com.nrdhvnstd.halgventmod.needs.Starvation;
@@ -62,6 +64,22 @@ public final class ModEffects {
             EFFECTS.register("starvation", () -> need(0x8A6A3A, "starvation"));    // Голодание
     public static final DeferredHolder<MobEffect, MobEffect> DEHYDRATION =
             EFFECTS.register("dehydration", () -> need(0x6A8AAA, "dehydration"));  // Жажда
+
+    // Травмы по частям тела (combat/Injuries): сильный удар — травма на минуты, повязка снимает одну.
+    // Уровень (усиление) — тяжесть: тяжёлая вдвое сильнее ⚠️
+    // Кровотечение (combat/Bleeding): пока не перевяжут, уровень — ступени − 1
+    public static final DeferredHolder<MobEffect, MobEffect> BLEEDING =
+            EFFECTS.register("bleeding", Bleeding.Effect::new);
+    public static final DeferredHolder<MobEffect, MobEffect> INJURY_HEAD =
+            EFFECTS.register("injury_head", () -> new InjuryEffect(0x8A2020));                // Сотрясение
+    public static final DeferredHolder<MobEffect, MobEffect> INJURY_ARM =
+            EFFECTS.register("injury_arm", () -> new InjuryEffect(0xA03030));                 // Рана руки
+    public static final DeferredHolder<MobEffect, MobEffect> INJURY_TORSO =
+            EFFECTS.register("injury_torso", () -> new InjuryEffect(0x902828));               // Рана корпуса
+    public static final DeferredHolder<MobEffect, MobEffect> INJURY_LEG =
+            EFFECTS.register("injury_leg", () -> new InjuryEffect(0x7A2A2A)                   // Рана ноги: −15 % шага
+                    .addAttributeModifier(Attributes.MOVEMENT_SPEED, id("injury_leg"), -0.15,
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
     private ModEffects() {}
 

@@ -17,11 +17,12 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Сервер → бойцу и всем, кто его видит: новая фаза (ТЗ боя, 12.1) — для анимаций, звука и интерфейса.
- * start — серверный тик начала фазы, length — её длина в тиках.
+ * start — серверный тик начала фазы, length — её длина в тиках, move — приём (комбо: анимация, окно удара, анимация
+ * жертвы — ComboMoves.Combo.move) или пусто.
  */
 public record CombatStatePayload(int entityId, Phase phase, AttackKind attack, StrikeSide side, StrikeSide blockSide,
-                                 int flags, long start, int length) implements CustomPacketPayload {
-    public static final int HEAVY = 2, RIPOSTE = 4, BLOCKING = 8;
+                                 int flags, long start, int length, String move) implements CustomPacketPayload {
+    public static final int HEAVY = 2, RIPOSTE = 4, BLOCKING = 8, ENGAGED = 16;
 
     public static final Type<CombatStatePayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(HalgventMod.MODID, "combat_state"));
@@ -37,15 +38,18 @@ public record CombatStatePayload(int entityId, Phase phase, AttackKind attack, S
                 ByteBufCodecs.VAR_INT.encode(buf, payload.flags());
                 ByteBufCodecs.VAR_LONG.encode(buf, payload.start());
                 ByteBufCodecs.VAR_INT.encode(buf, payload.length());
+                ByteBufCodecs.STRING_UTF8.encode(buf, payload.move());
             },
             buf -> new CombatStatePayload(ByteBufCodecs.VAR_INT.decode(buf), Phase.STREAM_CODEC.decode(buf),
                     AttackKind.STREAM_CODEC.decode(buf), StrikeSide.STREAM_CODEC.decode(buf), StrikeSide.STREAM_CODEC.decode(buf),
-                    ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_INT.decode(buf)));
+                    ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf)));
 
     public static CombatStatePayload of(LivingEntity entity, CombatState state) {
-        int flags = (state.heavy ? HEAVY : 0) | (state.riposte ? RIPOSTE : 0) | (state.blocking ? BLOCKING : 0);
+        int flags = (state.heavy ? HEAVY : 0) | (state.riposte ? RIPOSTE : 0) | (state.blocking ? BLOCKING : 0)
+                | (state.engaged ? ENGAGED : 0);
         return new CombatStatePayload(entity.getId(), state.phase, state.attack, state.side, state.blockSide, flags, state.phaseStart,
-                (int) (state.phaseEnd - state.phaseStart));
+                (int) (state.phaseEnd - state.phaseStart), state.move);
     }
 
     @Override

@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +24,7 @@ import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 /**
- * Мобы и стрелы против игрока (ТЗ боя, 7.5, этап 10). Удар моба и стрела бьют как в ванили — тот же урон, тот же
+ * Мобы и стрелы против игрока (ТЗ боя, 7.5, этап 10); стрелы — и против НПС и мобов (части тела, у НПС — слои брони). Удар моба и стрела бьют как в ванили — тот же урон, тот же
  * источник (стрела втыкается, моб злится, сообщение о смерти ванильное), — но урон пересчитывается через бой:
  * блок и парирование (окно — от момента ванильного удара), зона, 4 слоя брони, боль. Ванильная броня для них
  * обнуляется — её работу делают слои.
@@ -41,9 +42,16 @@ public final class MobAttacks {
 
     private MobAttacks() {}
 
-    /** Этот урон по игроку бой пересчитывает: удар моба в ближнем бою или стрела. */
+    /**
+     * Этот урон бой пересчитывает: по игроку — удар моба в ближнем бою или стрела; по НПС и мобам — стрела (части тела,
+     * у НПС — слои брони, искры, кровь, травмы). Стойка для брони — не цель.
+     */
     public static boolean redirected(LivingEntity target, DamageSource source) {
-        return target instanceof Player && CombatDamageTypes.kindOf(source) == null && (arrow(source) != null || melee(source) != null);
+        if (CombatDamageTypes.kindOf(source) != null || target instanceof ArmorStand) {
+            return false;
+        }
+        AbstractArrow arrow = arrow(source);
+        return arrow != null ? arrow.getOwner() != target : target instanceof Player && melee(source) != null;
     }
 
     private static AbstractArrow arrow(DamageSource source) {
@@ -58,7 +66,8 @@ public final class MobAttacks {
     // После щита (Defense, HIGH) и качества лука (QualityEvents): урон уже со щитом и луком
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer target) || !redirected(target, event.getSource())) {
+        LivingEntity target = event.getEntity();
+        if (target.level().isClientSide || !redirected(target, event.getSource())) {
             return;
         }
         long now = target.level().getGameTime();
@@ -89,7 +98,7 @@ public final class MobAttacks {
                     : UNARMED_PENETRATION;
             accuracy = profile != null ? profile.accuracy() : MOB_ACCURACY;
             point = closest(target.getBoundingBox(), attacker.getEyePosition());
-            float pass = Defense.defendMob(attacker, target, kind, amount, point, now);
+            float pass = Defense.defendMob(attacker, (Player) target, kind, amount, point, now); // ближний — только по игроку
             if (pass <= 0) {
                 event.setCanceled(true);
                 return;
@@ -100,13 +109,15 @@ public final class MobAttacks {
         amount *= zone.damage();
         DamagePipeline.Result result = Combat.through(attacker, target, kind, amount, zone, penetration, accuracy);
         if (result.body() < Combat.DEFLECTED) {
-            Combat.deflected(attacker, target, kind, amount, zone, point);
+            Combat.deflected(attacker, target, kind, amount, zone, point, Combat.metalShare(result, amount));
             event.setCanceled(true);
             return;
         }
         event.setAmount(result.body());
-        // Ванильная броня второй раз не гасит — это сделали слои
-        event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> 0);
+        // Ванильная броня второй раз не гасит — это сделали слои (у мобов слоёв нет — их ванильная броня работает)
+        if (Combat.layered(target)) {
+            event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> 0);
+        }
         Combat.landed(attacker, target, kind, amount, result, zone, point, now, true);
     }
 

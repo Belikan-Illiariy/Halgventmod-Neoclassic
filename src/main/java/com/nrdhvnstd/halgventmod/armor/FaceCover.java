@@ -11,6 +11,13 @@ import net.minecraft.world.entity.LivingEntity;
 public final class FaceCover {
     private FaceCover() {}
 
+    /** Лицо закрыто металлом: глухой шлем или опущенное забрало (капюшон не в счёт) — удар в лицо идёт в шлем. */
+    public static boolean armored(LivingEntity entity) {
+        ArmorInventory armor = entity.getExistingDataOrNull(ModAttachments.ARMOR);
+        ModArmor.ArmorInfo helmet = armor == null ? null : ModArmor.get(armor.get(ArmorSlot.HELMET));
+        return helmet != null && (helmet.narrowView() || (helmet.visor() && !ModArmor.visorRaised(armor.get(ArmorSlot.HELMET))));
+    }
+
     public static boolean hidden(LivingEntity entity) {
         ArmorInventory armor = entity.getExistingDataOrNull(ModAttachments.ARMOR);
         if (armor == null) {

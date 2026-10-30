@@ -1,6 +1,7 @@
 package com.nrdhvnstd.halgventmod.needs;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.brewing.Intoxication;
 import com.nrdhvnstd.halgventmod.combat.Combat;
 import com.nrdhvnstd.halgventmod.food.Hunger;
 import com.nrdhvnstd.halgventmod.food.Thirst;
@@ -92,6 +93,7 @@ public final class Pain {
         if (player.level().isClientSide || amount <= 0 || player.getAbilities().invulnerable) {
             return;
         }
+        amount *= Intoxication.painFactor(player); // пьяному море по колено
         PainData data = player.getData(ModAttachments.PAIN);
         data.level = Math.min(MAX, data.level + amount);
         if (data.level >= MAX && data.shockTicks <= 0 && player.level().getGameTime() >= data.immuneUntil) {
@@ -103,6 +105,11 @@ public final class Pain {
     }
 
     /** Был в бою: сам бил или получил удар — боль спадает медленнее. */
+    /** В бою: бил или по нему били за последние IN_COMBAT тиков. */
+    public static boolean inCombat(Player player) {
+        return player.level().getGameTime() - player.getData(ModAttachments.PAIN).lastCombat < IN_COMBAT;
+    }
+
     public static void markCombat(Player player) {
         player.getData(ModAttachments.PAIN).lastCombat = player.level().getGameTime();
     }

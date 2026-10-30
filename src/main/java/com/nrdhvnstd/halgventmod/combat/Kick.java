@@ -68,7 +68,7 @@ public final class Kick {
         // Толчок — всегда, урон — дробящим сквозь броню корпуса
         target.knockback(KICK_PUSH, Mth.sin(player.getYRot() * Mth.DEG_TO_RAD), -Mth.cos(player.getYRot() * Mth.DEG_TO_RAD));
         Combat.debugBoth(player, target, Component.translatable("combat.halgventmod.debug.kick", target.getDisplayName()));
-        Combat.wound(player, target, DamageKind.BLUNT, KICK_DAMAGE, HitZone.TORSO, 0, 0, point, now);
+        Combat.wound(player, target, DamageKind.BLUNT, KICK_DAMAGE, HitZone.CHEST, 0, 0, point, now);
     }
 
     // Ближайший живой в конусе перед собой, в пределах KICK_REACH от глаз, без стены между

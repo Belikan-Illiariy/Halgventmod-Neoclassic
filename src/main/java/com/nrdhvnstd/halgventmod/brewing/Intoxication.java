@@ -8,14 +8,24 @@ import com.nrdhvnstd.halgventmod.food.Thirst;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
@@ -25,11 +35,15 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * Опьянение 0–100 (вложение halgventmod:intoxication). Каждый напиток прибавляет свою крепость (Brewing.strength),
  * хорошего качества — мягче. Хмель проходит сам: −{@link #SOBER_PER_MINUTE} в минуту.
  * <ul>
- *   <li><b>Навеселе</b> ({@link #TIPSY}+): выносливость восстанавливается быстрее (×{@link #TIPSY_STAMINA});</li>
- *   <li><b>Пьян</b> ({@link #DRUNK}+): время от времени мутит (Тошнота), в местном чате путаются буквы
- *       (правило drunkChat);</li>
- *   <li><b>Мертвецки пьян</b> ({@link #WASTED}+): медлительность, мутит чаще, в глазах темнеет.</li>
+ *   <li><b>Навеселе</b> ({@link #TIPSY}+): выносливость восстанавливается быстрее (×{@link #TIPSY_STAMINA}), камеру
+ *       чуть покачивает, изредка икота (её слышат все рядом);</li>
+ *   <li><b>Пьян</b> ({@link #DRUNK}+): качает сильнее, походку уводит вбок (client/DrunkEffects), боли набирается меньше
+ *       (×{@link #DRUNK_PAIN}, мертвецки — ×{@link #WASTED_PAIN}),
+ *       икает чаще, на бегу может споткнуться; в местном чате путаются буквы (правило drunkChat);</li>
+ *   <li><b>Мертвецки пьян</b> ({@link #WASTED}+): шатает, спотыкается часто, в глазах темнеет; от {@link #BLACKOUT_LEVEL}
+ *       можно отключиться на {@link #BLACKOUT_SECONDS} с.</li>
  * </ul>
+ * Выпил сверх 100 — <b>вырвало</b>: хмель падает до {@link #VOMIT_TO}, мутит и тянет есть.
  * Протрезвел после «Пьян» и выше — <b>похмелье</b> на {@link #HANGOVER_TICKS} тиков: усталость в руках, жажда вдвое.
  * Снимают кружкой пива («опохмелиться»), солониной, солёной рыбой или водой из горшка-отвара.
  * <p><b>Качество</b> (FoodQuality) выпитого:
@@ -49,12 +63,25 @@ public final class Intoxication {
     public static final float WASTED = 70;
     public static final float SOBER_PER_MINUTE = 4;
     public static final float TIPSY_STAMINA = 1.3F;
+    public static final float DRUNK_PAIN = 0.8F;            // пьяный набирает боли меньше
+    public static final float WASTED_PAIN = 0.65F;
     public static final int HANGOVER_TICKS = 20 * 60 * 20; // 20 минут
     public static final float STRENGTH_PER_STEP = 0.1F;     // хмель за ступень качества
     public static final float ROTGUT_CHANCE = 0.25F;        // сивуха: шанс, что замутит, за ступень ниже Посредственного
     public static final int ROTGUT_SECONDS = 15;
     public static final float HANGOVER_SKIP = 0.2F;         // хорошее: шанс обойтись без похмелья за ступень
     public static final float HANGOVER_LONGER = 0.25F;      // плохое: похмелье дольше за ступень
+    // Что творится с выпившим (раз в секунду; шанс 1 из N)
+    public static final int HICCUP_TIPSY = 60;              // икота навеселе
+    public static final int HICCUP_DRUNK = 25;              // икота пьяного
+    public static final int STUMBLE_DRUNK = 25;             // спотыкается на бегу пьяный
+    public static final int STUMBLE_WASTED = 8;             // … мертвецки пьяный
+    public static final double STUMBLE_PUSH = 0.35;         // толчок в сторону при спотыкании
+    public static final float BLACKOUT_LEVEL = 90;          // с какого хмеля можно отключиться
+    public static final int BLACKOUT_CHANCE = 40;
+    public static final int BLACKOUT_SECONDS = 8;
+    public static final float VOMIT_TO = 75;                // перебрал сверх 100 — вырвало, хмель падает до этого
+    public static final int VOMIT_SECONDS = 30;             // голод после рвоты
     public static final GameRules.Key<GameRules.BooleanValue> DRUNK_CHAT =
             GameRules.register("drunkChat", GameRules.Category.CHAT, GameRules.BooleanValue.create(true));
 
@@ -82,6 +109,19 @@ public final class Intoxication {
         }
     }
 
+    /** Своему клиенту — только уровень хмеля: по нему качается камера и ведёт походку (client/DrunkEffects). */
+    public static final AttachmentSyncHandler<Data> SYNC = new AttachmentSyncHandler<>() {
+        @Override
+        public void write(RegistryFriendlyByteBuf buf, Data data, boolean initialSync) {
+            buf.writeFloat(data.level());
+        }
+
+        @Override
+        public Data read(IAttachmentHolder holder, RegistryFriendlyByteBuf buf, Data previousValue) {
+            return new Data(buf.readFloat(), false, 0, 0, 0);
+        }
+    };
+
     public enum Stage { SOBER, TIPSY, DRUNK, WASTED }
 
     private Intoxication() {}
@@ -104,6 +144,12 @@ public final class Intoxication {
     /** Множитель восстановления выносливости (Stamina). */
     public static float staminaFactor(Player player) {
         return stage(player) == Stage.TIPSY ? TIPSY_STAMINA : 1.0F;
+    }
+
+    /** Множитель набираемой боли (needs/Pain): пьяному море по колено. */
+    public static float painFactor(Player player) {
+        Stage stage = stage(player);
+        return stage == Stage.WASTED ? WASTED_PAIN : stage == Stage.DRUNK ? DRUNK_PAIN : 1.0F;
     }
 
     public static boolean hungover(Player player) {
@@ -167,9 +213,13 @@ public final class Intoxication {
             player.displayClientMessage(Component.translatable("message.halgventmod.drunk.rotgut"), true);
         }
         Stage before = stage(data.level());
-        float level = Math.min(100, data.level() + strength);
+        float level = data.level() + strength;
+        if (level > 100) {
+            vomit(player); // перебрал — лишнее вышло
+            level = VOMIT_TO;
+        }
         boolean wasDrunk = data.wasDrunk() || level >= DRUNK;
-        player.setData(ModAttachments.INTOXICATION, new Data(level, wasDrunk, data.hangoverUntil(),
+        set(player, new Data(level, wasDrunk, data.hangoverUntil(),
                 data.drunk() + strength, data.qualitySum() + strength * quality));
         Stage after = stage(level);
         if (after != before) {
@@ -190,15 +240,22 @@ public final class Intoxication {
         if (data.level() > 0) {
             float level = Math.max(0, data.level() - SOBER_PER_MINUTE / 60.0F);
             Stage stage = stage(level);
-            if (stage == Stage.DRUNK && random.nextInt(40) == 0) {
-                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 6 * 20, 0, false, false));
-            } else if (stage == Stage.WASTED) {
-                player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
-                if (random.nextInt(15) == 0) {
-                    player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 8 * 20, 0, false, false));
-                }
+            // Камеру качает и походку ведёт клиент (DrunkEffects); здесь — то, что видят и слышат другие
+            int hiccup = stage == Stage.TIPSY ? HICCUP_TIPSY : stage.ordinal() >= Stage.DRUNK.ordinal() ? HICCUP_DRUNK : 0;
+            if (hiccup > 0 && random.nextInt(hiccup) == 0) {
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_BURP,
+                        SoundSource.PLAYERS, 0.5F, 1.7F + random.nextFloat() * 0.3F); // «ик!»
+            }
+            int stumble = stage == Stage.WASTED ? STUMBLE_WASTED : stage == Stage.DRUNK ? STUMBLE_DRUNK : 0;
+            if (stumble > 0 && player.isSprinting() && player.onGround() && random.nextInt(stumble) == 0) {
+                stumble(player, random);
+            }
+            if (stage == Stage.WASTED) {
                 if (random.nextInt(30) == 0) {
-                    player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 4 * 20, 0, false, false));
+                    player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 4 * 20, 0, false, false)); // в глазах темнеет
+                }
+                if (level >= BLACKOUT_LEVEL && random.nextInt(BLACKOUT_CHANCE) == 0) {
+                    blackout(player);
                 }
             }
             long hangover = data.hangoverUntil();
@@ -219,13 +276,55 @@ public final class Intoxication {
                 player.displayClientMessage(Component.translatable("message.halgventmod.drunk.sober"), true);
             }
             // Протрезвел — счёт выпитого заново
-            player.setData(ModAttachments.INTOXICATION, level <= 0 ? new Data(0, wasDrunk, hangover, 0, 0)
+            set(player, level <= 0 ? new Data(0, wasDrunk, hangover, 0, 0)
                     : new Data(level, wasDrunk, hangover, data.drunk(), data.qualitySum()));
         }
         if (data.hangoverUntil() > now) {
             player.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
             Thirst.addExhaustion(player, 0.05F); // жажда вдвое
         }
+    }
+
+    // Записать и отправить уровень своему клиенту
+    private static void set(ServerPlayer player, Data data) {
+        player.setData(ModAttachments.INTOXICATION, data);
+        player.syncData(ModAttachments.INTOXICATION);
+    }
+
+    // Споткнулся на бегу: бег сбит, толкнуло вбок, пару секунд не разогнаться
+    private static void stumble(ServerPlayer player, RandomSource random) {
+        player.setSprinting(false);
+        double angle = random.nextDouble() * Math.PI * 2;
+        player.setDeltaMovement(player.getDeltaMovement().add(Math.cos(angle) * STUMBLE_PUSH, 0.1, Math.sin(angle) * STUMBLE_PUSH));
+        player.hurtMarked = true;
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 2 * 20, 2, false, false));
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_SMALL_FALL,
+                SoundSource.PLAYERS, 0.8F, 0.9F);
+        player.displayClientMessage(Component.translatable("message.halgventmod.drunk.stumble"), true);
+    }
+
+    // Отключился: несколько секунд ни видеть, ни идти
+    private static void blackout(ServerPlayer player) {
+        int ticks = BLACKOUT_SECONDS * 20;
+        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, ticks, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ticks, 6, false, false));
+        player.setSprinting(false);
+        player.displayClientMessage(Component.translatable("message.halgventmod.drunk.blackout"), true);
+    }
+
+    // Перебрал: вырвало — мутит, тянет есть, лишний хмель вышел
+    private static void vomit(ServerPlayer player) {
+        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 6 * 20, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.HUNGER, VOMIT_SECONDS * 20, 1, false, false));
+        if (player.level() instanceof ServerLevel level) {
+            Vec3 look = player.getLookAngle();
+            level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ROTTEN_FLESH)),
+                    player.getX() + look.x * 0.5, player.getEyeY() - 0.3, player.getZ() + look.z * 0.5, 16,
+                    0.15, 0.1, 0.15, 0.08);
+        }
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_HURT_DROWN,
+                SoundSource.PLAYERS, 0.8F, 0.6F);
+        player.displayClientMessage(Component.translatable("message.halgventmod.drunk.vomit"), true);
     }
 
     /**
@@ -240,6 +339,9 @@ public final class Intoxication {
         float level = Math.max(data.wasDrunk() ? 0.01F : 0, data.level() - amount);
         player.setData(ModAttachments.INTOXICATION, new Data(level, data.wasDrunk(), data.hangoverUntil(), data.drunk(),
                 data.qualitySum()));
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.syncData(ModAttachments.INTOXICATION);
+        }
     }
 
     // ---------------------------------------------------------------- чат

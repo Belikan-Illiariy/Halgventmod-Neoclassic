@@ -21,10 +21,13 @@
     "ClientPacketListenerMixin",
     "CreativeModeInventoryScreenMixin",
     "HumanoidModelMixin",
+    "ItemInHandLayerMixin",
     "ItemInHandRendererMixin",
     "KeyboardHandlerMixin",
+    "LivingEntityRendererMixin",
     "LocalPlayerMixin",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -140,6 +140,13 @@ public final class ModComponents {
                     .networkSynchronized(ByteBufCodecs.BOOL)
                     .build());
 
+    // Кровь на оружии и броне 0…1 (combat/Blood): копится от ударов, отмывается водой
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> BLOOD =
+            COMPONENTS.register("blood", () -> DataComponentType.<Float>builder()
+                    .persistent(Codec.floatRange(0, 1))
+                    .networkSynchronized(ByteBufCodecs.FLOAT)
+                    .build());
+
     // Готовка (cooking/*): качество еды 0–4 (FoodQuality), видно признаком редкости
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> FOOD_QUALITY =
             COMPONENTS.register("food_quality", () -> DataComponentType.<Integer>builder()

@@ -1,0 +1,26 @@
+{
+  "_comment": "Комбо по образцу Kingdom Come Combat (MIT): последовательность сторон ударов (L — слева, R — справа, U — сверху, D — снизу; последняя — сам удар комбо), анимация, классы оружия (нет — любое с анимациями), урон ×, тип урона (нет — своего удара), часть тела, куда приходится удар, выносливость сверху, выпад вперёд, подтянуть противника. hit — окно удара в анимации (с), если в ней не размечено.",
+  "combos": {
+    "rossen":            { "sequence": "ULLR", "animation": "combo_rossen", "victim": "combo_rossen_hit", "classes": ["greatsword"], "damage": 1.0, "zone": "face", "stamina": 16, "pull": true, "hit": [0.7, 0.95] },
+    "falseedge_strike":  { "sequence": "DUL", "animation": "combo_falseedge_strike", "victim": "combo_falseedge_strike_hit", "classes": ["sword", "dagger", "knife"], "damage": 1.0, "zone": "crown", "stamina": 15, "pull": true, "hit": [0.65, 0.9] },
+    "strong_edge":       { "sequence": "LRDR", "animation": "combo_strong_edge", "victim": "combo_strong_edge_hit", "classes": ["sword", "dagger", "knife"], "damage": 1.0, "zone": "neck", "stamina": 35, "pull": true, "hit": [0.65, 0.9] },
+    "butcher":           { "sequence": "DRL", "animation": "combo_butcher_longsword", "classes": ["greatsword"], "damage": 1.0, "zone": "crown", "stamina": 50, "lunge": true },
+    "highspot_cut":      { "sequence": "DRRL", "animation": "combo_highspot_cut", "classes": ["sword", "dagger", "knife"], "damage": 1.0, "zone": "neck", "stamina": 12, "lunge": true },
+    "smash_attack":      { "sequence": "ULR", "animation": "combo_smash", "victim": "smash_hit", "classes": ["sword", "dagger", "knife"], "damage": 1.6, "type": "blunt", "zone": "face", "stamina": 8, "lunge": true },
+    "smash_attack_heavy":{ "sequence": "ULR", "animation": "combo_smash_heavy", "classes": ["axe", "mace", "greataxe", "greathammer"], "damage": 1.0, "zone": "face", "stamina": 12, "lunge": true },
+    "pommel_strike":     { "sequence": "DDR", "animation": "combo_smash", "victim": "smash_hit", "classes": ["greatsword"], "damage": 1.6, "type": "blunt", "zone": "face", "stamina": 8, "lunge": true },
+    "single_handed_thrust": { "sequence": "DLR", "animation": "combo_smash_heavy", "classes": ["sword"], "damage": 0.9, "type": "piercing", "zone": "face", "stamina": 9, "lunge": true },
+    "knee_break":        { "sequence": "LUL", "animation": "combo_knee_strike", "victim": "combo_knee_strike_hit", "classes": ["sword", "dagger", "knife"], "damage": 1.0, "type": "blunt", "zone": "knee", "stamina": 9, "pull": true, "hit": [0.85, 1.05] },
+    "knee_break_heavy":  { "sequence": "ULLR", "animation": "combo_knee_break_heavy", "victim": "combo_knee_break_heavy_hit", "classes": ["axe", "mace", "greataxe", "greathammer"], "damage": 1.0, "zone": "knee", "stamina": 25, "pull": true, "hit": [0.85, 1.05] },
+    "knee_break_longsword": { "sequence": "LULR", "animation": "combo_kneestrike_longsword", "victim": "combo_knee_strike_hit", "classes": ["greatsword"], "damage": 1.0, "type": "blunt", "zone": "knee", "stamina": 9, "pull": true, "hit": [0.9, 1.1] },
+    "fiore_half_sword":  { "sequence": "ULR", "animation": "combo_halfsword", "victim": "combo_halfsword_hit", "classes": ["greatsword"], "damage": 1.6, "type": "piercing", "zone": "chest", "stamina": 10, "pull": true, "hit": [0.55, 0.8] },
+    "horizontal_strike": { "sequence": "URL", "animation": "combo_horiztanl_strike_heavy", "classes": ["sword", "greatsword"], "damage": 1.1, "zone": "face", "stamina": 9 },
+    "horizontal_strike_heavy": { "sequence": "URL", "animation": "combo_horiztanl_strike_heavy", "classes": ["axe", "mace", "greataxe", "greathammer"], "damage": 1.1, "zone": "face", "stamina": 12 },
+    "brutal_up_strike":  { "sequence": "LRUL", "animation": "combo_brutal_up_strike", "classes": ["axe", "mace", "greataxe", "greathammer"], "damage": 1.1, "zone": "face", "stamina": 14, "lunge": true },
+    "short_strike":      { "sequence": "UUL", "animation": "combo_shortstrike_longsword", "classes": ["greatsword"], "damage": 1.3, "type": "piercing", "zone": "crown", "stamina": 8 },
+    "wrath_strike":      { "sequence": "RRRL", "animation": "combo_warth_strike", "classes": ["greatsword"], "damage": 1.5, "zone": "chest", "stamina": 18 },
+    "cleave_strike":     { "sequence": "LDR", "animation": "combo_cleave_longsword", "classes": ["greatsword"], "damage": 1.6, "zone": "crown", "stamina": 9 },
+    "combo_left":        { "sequence": "LRL", "animation": "combo_left", "damage": 1.4, "zone": "abdomen", "stamina": 8 },
+    "combo_right":       { "sequence": "RLR", "animation": "combo_right", "damage": 1.4, "zone": "abdomen", "stamina": 8 }
+  }
+}

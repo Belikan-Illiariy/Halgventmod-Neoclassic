@@ -6,12 +6,14 @@ import java.util.Optional;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorSlot;
+import com.nrdhvnstd.halgventmod.armor.ArmorStats;
 import com.nrdhvnstd.halgventmod.armor.ModArmor;
 import com.nrdhvnstd.halgventmod.banner.BannerEntry;
 import com.nrdhvnstd.halgventmod.banner.BannerRegistry;
 import com.nrdhvnstd.halgventmod.item.Gender;
 import com.nrdhvnstd.halgventmod.item.ModLore;
 import com.nrdhvnstd.halgventmod.item.ModTraits;
+import com.nrdhvnstd.halgventmod.quality.DamageKind;
 import com.nrdhvnstd.halgventmod.quality.GearQuality;
 import com.nrdhvnstd.halgventmod.quality.QualityDisplay;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
@@ -95,7 +97,19 @@ public final class ItemTooltipHandler {
             tooltip.add(index++, Component.translatable("tooltip.halgventmod.armor_slot",
                     Component.translatable(armorSlot.langKey())).withStyle(ChatFormatting.GRAY));
             ModArmor.ArmorInfo info = ModArmor.get(stack);
-            // Защита этого шлема сейчас: у забрала — в его нынешнем положении
+            // В бою (combat/DamagePipeline): твёрдость против пробивания, покрытие, что держит — с качеством и износом
+            if (info != null) {
+                ArmorStats.Stats stats = ArmorStats.of(stack); // разбита — null, об этом пишет строка износа
+                if (stats != null) {
+                    tooltip.add(index++, Component.translatable("tooltip.halgventmod.armor.combat",
+                            WeightText.decimal(stats.hardness()), Math.round(stats.coverage())).withStyle(ChatFormatting.GRAY));
+                    tooltip.add(index++, Component.translatable("tooltip.halgventmod.armor.resist",
+                            percent(stats, DamageKind.CHOPPING), percent(stats, DamageKind.CUTTING),
+                            percent(stats, DamageKind.PIERCING), percent(stats, DamageKind.BLUNT),
+                            percent(stats, DamageKind.PENETRATING)).withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+            // Вне боя (падение, взрыв, моб без боя): ванильные броня и стойкость; у забрала — в нынешнем положении
             ModArmor.Protection protection = info != null ? info.protection(stack) : ModArmor.Protection.NONE;
             if (!protection.isNone()) {
                 tooltip.add(index++, Component.translatable("tooltip.halgventmod.protection",
@@ -107,6 +121,10 @@ public final class ItemTooltipHandler {
                         .withStyle(ChatFormatting.GRAY));
             }
         }
+    }
+
+    private static int percent(ArmorStats.Stats stats, DamageKind kind) {
+        return Math.round(stats.resist()[kind.ordinal()] * 100);
     }
 
     private static Component traitsLine(List<String> traits, Gender gender) {

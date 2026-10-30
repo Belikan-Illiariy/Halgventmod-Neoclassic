@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.nrdhvnstd.halgventmod.combat.Injuries;
+import com.nrdhvnstd.halgventmod.combat.CombatDamageTypes;
 import com.nrdhvnstd.halgventmod.HalgventMod;
 import com.nrdhvnstd.halgventmod.armor.ArmorInventory;
 import com.nrdhvnstd.halgventmod.armor.ArmorRules;
@@ -92,7 +94,7 @@ public final class Social {
 
     /** Перевязать себя: предмет в руке, есть что лечить, руки свободны. */
     public static boolean canHealSelf(Player player) {
-        return player.isAlive() && !player.isSpectator() && !Downed.busy(player) && player.isHurt()
+        return player.isAlive() && !player.isSpectator() && !Downed.busy(player) && (player.isHurt() || Injuries.needsCare(player))
                 && Healing.heals(player.getMainHandItem());
     }
 
@@ -220,6 +222,7 @@ public final class Social {
         stack.consume(1, player);
         Downed.revive(target);
         target.heal(amount);
+        Injuries.treat(target); // и перевязать самую тяжёлую травму
         return true;
     }
 
@@ -232,8 +235,9 @@ public final class Social {
     // Урон тому, кто применяет, снимает или обыскивает, срывает действие сразу, без пустения шкалы (ТЗ 4.3)
     @SubscribeEvent
     public static void onDamage(LivingDamageEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || event.getNewDamage() <= 0) {
-            return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || event.getNewDamage() <= 0
+                || event.getSource().is(CombatDamageTypes.BLEEDING)) {
+            return; // своя кровь не срывает — иначе истекающему кровью не перевязаться
         }
         Apply apply = ACTIVE.remove(player.getUUID());
         if (apply != null) {

@@ -12,6 +12,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import com.nrdhvnstd.halgventmod.downed.Downed;
+import com.nrdhvnstd.halgventmod.combat.Injuries;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -80,7 +81,8 @@ public enum SocialAction {
      */
     public boolean fits(Player target) {
         return switch (this) {
-            case HEAL, CARRY -> Downed.isDowned(target);
+            case HEAL -> Downed.isDowned(target) || Injuries.needsCare(target); // повержен, кровь течёт, травмы, раны
+            case CARRY -> Downed.isDowned(target);
             case DROP -> false;
             default -> restraint == null || restraint.on(target) == removes;
         };
