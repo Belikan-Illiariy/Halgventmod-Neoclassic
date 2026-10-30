@@ -45,7 +45,7 @@ public final class FirstPersonCombat {
             return;
         }
         CombatClips.Active active = CombatClips.of(player, event.getPartialTick());
-        if (active == null || active.weight() <= 0.05F) {
+        if (active == null || active.strength() <= 0.05F) {
             return;
         }
         event.setCanceled(true); // обе ванильные руки — наши

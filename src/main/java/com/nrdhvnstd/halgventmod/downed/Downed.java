@@ -1,11 +1,18 @@
 package com.nrdhvnstd.halgventmod.downed;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+
 import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.HalgventMod;
+import com.nrdhvnstd.halgventmod.combat.Bleeding;
 import com.nrdhvnstd.halgventmod.registry.ModAttachments;
 
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -33,7 +40,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 /**
  * «Повержен» (docs/TZ_downed_and_hp.md, 3): смертельный урон не убивает — игрок падает и ползёт (поза плавания,
  * как ванильный ползок) на 2 минуты, медленно, без ударов, предметов, инвентаря и хотбара. Удержание E — «Сдаться»
- * (SurrenderPayload), таймер истёк — смерть. Поднимает другой игрок: «Вылечить» повязкой или мазью, «Нести» на плече
+ * (SurrenderPayload), таймер истёк — 60 % встать самому с остановленной кровью, иначе смерть. Поднимает другой игрок: «Вылечить» повязкой или мазью, «Нести» на плече
  * (social/Social). Второе падение за 10 минут, лава, пустота, утопление и удушье убивают сразу (TZ_character_fx).
  *
  * Несущий (раздел 6) не бьёт и не использует предметы; поверженный едет у него на плечах пассажиром,
@@ -44,6 +51,8 @@ public final class Downed {
     public static final int DOWNED_TICKS = 2400;          // 2 мин
     private static final int REPEAT_WINDOW = 12000;       // второе падение за 10 мин — сразу смерть (TZ_character_fx) ⚠️
     private static final float DOWNED_HEALTH = 1.0F;      // здоровье, с которым лежит: любой удар добивает
+    private static final float RISE_CHANCE = 0.6F;        // таймер истёк: столько шансов встать самому, иначе смерть ⚠️
+    private static final float RISE_HEALTH = 10.0F;       // с таким здоровьем встаёт ⚠️
     private static final double CRAWL_SPEED = 0.01;       // −99 % от шага (решение Bynelog)
     private static final double VANILLA_CRAWL = 0.3;      // ванильный ползок и так даёт 0,3 шага (Attributes.SNEAKING_SPEED)
 
@@ -52,6 +61,7 @@ public final class Downed {
 
     // Посадку и снятие с плеч делаем сами: слезть самому или сесть на кого-то поверженный не может
     private static boolean ours;
+    private static final Set<ServerPlayer> CARRYING = Collections.newSetFromMap(new WeakHashMap<>());
 
     private Downed() {}
 
@@ -139,6 +149,20 @@ public final class Downed {
         applyModifiers(player, false);
     }
 
+    // Таймер истёк, но выжил: встаёт сам с малым здоровьем, кровь запеклась
+    private static void rise(ServerPlayer player) {
+        player.syncData(ModAttachments.DOWNED);
+        applyModifiers(player, false);
+        if (player.getVehicle() != null) {
+            ours = true;
+            player.stopRiding();
+            ours = false;
+        }
+        Bleeding.stop(player);
+        player.setHealth(Math.max(player.getHealth(), RISE_HEALTH));
+        player.displayClientMessage(Component.translatable("message.halgventmod.downed.rose"), true);
+    }
+
     /** «Сдаться» — удержание E у поверженного (SurrenderPayload). */
     public static void surrender(ServerPlayer player) {
         if (isDowned(player)) {
@@ -164,11 +188,16 @@ public final class Downed {
             }
             return;
         }
+        syncCarrier(server);
         applyModifiers(server, downed);
         if (downed) {
             server.getData(ModAttachments.DOWNED).ticks--;
             if (!isDowned(server)) {
-                server.kill(); // таймер истёк
+                if (server.getRandom().nextFloat() < RISE_CHANCE) {
+                    rise(server); // отлежался: встал сам
+                } else {
+                    server.kill(); // таймер истёк
+                }
                 return;
             }
             if (server.containerMenu != server.inventoryMenu) {
@@ -181,6 +210,20 @@ public final class Downed {
         // Несущего повалили или убили — поверженный падает с плеч
         if (server.getVehicle() instanceof ServerPlayer carrier && (!carrier.isAlive() || isDowned(carrier))) {
             drop(carrier);
+        }
+    }
+
+    // Ваниль рассылает пассажиров только тем, кто видит сущность со стороны, а самому несущему — нет: его клиент не знал,
+    // что на плечах кто-то есть (не видел его на себе, не мог бросить). Шлём сами, когда это меняется — как бы ни менялось
+    private static void syncCarrier(ServerPlayer player) {
+        boolean carrying = carried(player) != null;
+        if (carrying != CARRYING.contains(player)) {
+            if (carrying) {
+                CARRYING.add(player);
+            } else {
+                CARRYING.remove(player);
+            }
+            player.connection.send(new ClientboundSetPassengersPacket(player));
         }
     }
 

@@ -5,13 +5,16 @@ import java.util.EnumSet;
 import java.util.List;
 
 import com.nrdhvnstd.halgventmod.combat.anim.CombatMoves;
+import com.nrdhvnstd.halgventmod.downed.Downed;
 import com.nrdhvnstd.halgventmod.network.CombatInputPayload;
+import com.nrdhvnstd.halgventmod.quality.DamageKind;
 
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -179,6 +182,15 @@ public class CombatAiGoal extends Goal {
         if (cooldown > 0) {
             cooldown--;
         }
+        // Лежачего добивают сверху; клинок по такой низкой цели может и пройти поверху — поэтому удар засчитывается сам
+        boolean finishing = target instanceof Player lying && Downed.isDowned(lying);
+        if (finishing) {
+            plan.clear();
+            if (me.phase == Phase.RELEASE && distance <= reach + 0.5 && target.isAlive()) {
+                target.invulnerableTime = 0;
+                target.hurt(CombatDamageTypes.source(mob, DamageKind.CHOPPING), target.getMaxHealth() * 100);
+            }
+        }
         if (me.phase == Phase.IDLE && !me.blockHeld && hold < 0 && cooldown <= 0 && distance <= reach && !tired) {
             if (plan.isEmpty() && profile != null && random.nextFloat() < skill().combo()) {
                 List<ComboMoves.Combo> combos = ComboMoves.forWeapon(profile.weaponClass());
@@ -187,10 +199,9 @@ public class CombatAiGoal extends Goal {
                 }
             }
             boolean planned = !plan.isEmpty();
-            StrikeSide side = planned ? plan.poll() : StrikeSide.values()[random.nextInt(StrikeSide.values().length)];
-            AttackKind kind = !planned && random.nextFloat() < skill().stab() ? AttackKind.STAB : AttackKind.SLASH;
-            input(CombatInputPayload.Action.ATTACK_START, kind, side);
-            hold = !planned && random.nextFloat() < skill().heavy() ? HEAVY_HOLD : 0;
+            StrikeSide side = finishing ? StrikeSide.UP : planned ? plan.poll() : StrikeSide.values()[random.nextInt(StrikeSide.values().length)];
+            input(CombatInputPayload.Action.ATTACK_START, AttackKind.SLASH, side);
+            hold = !planned && !finishing && random.nextFloat() < skill().heavy() ? HEAVY_HOLD : 0;
             cooldown = !plan.isEmpty() ? COMBO_STEP
                     : skill().minInterval() + random.nextInt(Math.max(1, skill().maxInterval() - skill().minInterval()));
         }

@@ -57,6 +57,7 @@ public final class Stamina {
     public static final float VIGOR_REGEN = 1.3F;        // «Бодрость» (крапивный отвар) — восстановление ×1,3 ⚠️
     public static final float SPRINT_MIN = 15.0F;        // начать бег можно только с 15 и выше
     public static final float COMBAT_REGEN = 0.75F;      // в бою (Pain.inCombat) восстановление медленнее ⚠️
+    public static final float COST_DIVISOR = 1.5F;       // все траты выносливости (игрок, НПС, мобы) делятся на это ⚠️
 
     // Изнеможение
     public static final int EXHAUSTED_TICKS = 40;        // 2 секунды
@@ -87,6 +88,11 @@ public final class Stamina {
                 && (player.isSprinting() ? get(player) > 0 : get(player) >= SPRINT_MIN);
     }
 
+    /** Сколько на деле снимет трата amount. */
+    public static float cost(float amount) {
+        return amount / COST_DIVISOR;
+    }
+
     /** Потратить выносливость. Перегруз увеличивает трату. Только на сервере. */
     public static void spend(Player player, float amount) {
         if (player.level().isClientSide || amount <= 0 || player.getAbilities().invulnerable) {
@@ -96,7 +102,7 @@ public final class Stamina {
         if (data.exhaustedTicks > 0) {
             return;
         }
-        data.level -= amount * (1.0F + player.getData(ModAttachments.OVERWEIGHT_PENALTY));
+        data.level -= cost(amount) * (1.0F + player.getData(ModAttachments.OVERWEIGHT_PENALTY));
         data.regenDelay = REGEN_DELAY;
         if (data.level <= 0) {
             data.level = 0;

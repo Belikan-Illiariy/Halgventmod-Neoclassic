@@ -47,6 +47,15 @@ public class ArmorInventory extends ItemStackHandler {
         super(ArmorSlot.COUNT);
     }
 
+    /** Копия вещей (тело убитого, отлетевшая голова: у живого броня потом меняется). */
+    public ArmorInventory copy() {
+        ArmorInventory copy = new ArmorInventory();
+        for (int i = 0; i < getSlots(); i++) {
+            copy.stacks.set(i, getStackInSlot(i).copy());
+        }
+        return copy;
+    }
+
     public ItemStack get(ArmorSlot slot) {
         return getStackInSlot(slot.ordinal());
     }

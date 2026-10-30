@@ -3,6 +3,7 @@ package com.nrdhvnstd.halgventmod.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nrdhvnstd.halgventmod.client.anim.CombatClips;
+import com.nrdhvnstd.halgventmod.npc.HalgNpc;
 import com.nrdhvnstd.halgventmod.combat.AttackKind;
 import com.nrdhvnstd.halgventmod.combat.Combat;
 import com.nrdhvnstd.halgventmod.combat.CombatState;
@@ -258,8 +259,18 @@ public final class CombatAnimation {
 
     /** Поставить руки, корпус и ногу модели (после ванильной позы). */
     public static void thirdPerson(HumanoidModel<?> model, LivingEntity entity, float ageInTicks) {
+        // Без головы: модель НПС общая, поэтому у остальных НПС голову возвращаем (игроку — PlayerRenderer каждый кадр)
+        if (SeveredHeads.isSevered(entity)) {
+            model.head.visible = false;
+            model.hat.visible = false;
+        } else if (entity instanceof HalgNpc) {
+            model.head.visible = true;
+            model.hat.visible = true;
+        }
+        model.head.zRot = 0; // модель общая на всех, а setupAnim наклон головы вбок не сбрасывает
         pose(model, entity, ageInTicks);
         hurt(model, entity, Mth.clamp(ageInTicks - entity.tickCount, 0, 1));
+        model.hat.copyFrom(model.head); // второй слой кожи идёт за головой
     }
 
     /**
@@ -380,7 +391,7 @@ public final class CombatAnimation {
                 float wobble = Mth.sin(time * 1.3F) * 0.25F * now.shake();
                 model.rightArm.xRot += 0.3F * now.shake() + wobble;
                 model.leftArm.xRot += 0.3F * now.shake() - wobble;
-                model.head.zRot += wobble * 0.5F;
+                model.head.zRot = wobble * 0.5F; // не «+=»: ваниль наклон головы не сбрасывает, он копился бы каждый кадр
                 twist(model, wobble * 0.4F);
             }
             default -> {

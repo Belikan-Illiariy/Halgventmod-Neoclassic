@@ -23,6 +23,7 @@
     "HumanoidModelMixin",
     "ItemInHandLayerMixin",
     "ItemInHandRendererMixin",
+    "ItemRendererMixin",
     "KeyboardHandlerMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",

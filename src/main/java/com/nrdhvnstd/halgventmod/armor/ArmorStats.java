@@ -53,12 +53,12 @@ public final class ArmorStats {
             return resist[kind.ordinal()];
         }
 
-        Stats scaled(float coverageFactor, float resistFactor) {
+        Stats scaled(float coverageFactor, float resistFactor, float hardnessFactor) {
             float[] scaled = new float[resist.length];
             for (int i = 0; i < resist.length; i++) {
                 scaled[i] = Math.min(MAX_RESIST, resist[i] * resistFactor);
             }
-            return new Stats(coverage * coverageFactor, hardness, durabilityLoss, scaled);
+            return new Stats(coverage * coverageFactor, hardness * hardnessFactor, durabilityLoss, scaled);
         }
     }
 
@@ -98,7 +98,8 @@ public final class ArmorStats {
         Stats base = base(info, BuiltInRegistries.ITEM.getKey(stack.getItem()));
         float condition = condition(stack);
         GearQuality.Grade grade = GearQuality.get(stack);
-        return base.scaled(grade.protection() * condition, grade.resistance() * condition);
+        // Твёрдость — от качества, но не от износа: помятые латы пропускают чаще, но мягче не становятся
+        return base.scaled(grade.protection() * condition, grade.resistance() * condition, grade.protection());
     }
 
     /** Без качества и износа: из JSON или по умолчанию. */
