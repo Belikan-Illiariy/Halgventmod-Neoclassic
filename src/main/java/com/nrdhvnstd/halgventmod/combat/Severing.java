@@ -11,7 +11,8 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Голова с плеч: рубящий или режущий удар, дошедший до тела, по голове или шее НПС, который от него умер, или по передней
+ * Голова с плеч: горизонтальный взмах (слева или справа) рубящим или режущим, дошедший до тела, по голове или шее НПС,
+ * который от него умер, или по передней
  * половине лежащего поверженного игрока (голова у него впереди, а не наверху) — того он сразу добивает. Голову и тело
  * без головы рисует клиент (client/SeveredHeads). Дробящий и колющий голову не отнимают.
  */
@@ -25,7 +26,10 @@ final class Severing {
     /** После нанесения урона; wasDowned — цель лежала повержена до удара. */
     static void check(LivingEntity attacker, LivingEntity target, DamageKind kind, HitZone zone, Vec3 point,
                       DamageSource source, boolean wasDowned) {
-        if ((kind != DamageKind.CHOPPING && kind != DamageKind.CUTTING) || !Blood.bleeds(target)) {
+        CombatState swing = Combat.state(attacker);
+        boolean horizontal = swing.current != null && swing.current.shape() == AttackKind.SLASH
+                && (swing.side == StrikeSide.LEFT || swing.side == StrikeSide.RIGHT);
+        if (!horizontal || (kind != DamageKind.CHOPPING && kind != DamageKind.CUTTING) || !Blood.bleeds(target)) {
             return;
         }
         if (wasDowned) {

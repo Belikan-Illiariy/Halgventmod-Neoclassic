@@ -93,7 +93,6 @@ public final class LeatherRenderers {
         private static final float TOP = 1.02F;
         private static final float HIDE_SCALE = 0.85F;
         private final ItemRenderer items;
-        private final ItemStack flesh = new ItemStack(ModItems.FLESH.get());
 
         BeamRenderer(BlockEntityRendererProvider.Context context) {
             this.items = context.getItemRenderer();
@@ -111,21 +110,6 @@ public final class LeatherRenderers {
             pose.translate(0.0F, TOP, 0.0F);
             lying(items, beam.hide(), pose, buffers, light, beam.getLevel(), HIDE_SCALE, 1);
             pose.popPose();
-
-            // Клочья мездры — по участкам сетки в осях мира (как их считает FleshingBeamBlockEntity)
-            int grid = FleshingBeamBlockEntity.GRID;
-            for (int cell = 0; cell < grid * grid; cell++) {
-                int layers = beam.flesh(cell);
-                if (layers <= 0) {
-                    continue;
-                }
-                pose.pushPose();
-                pose.translate(0.5F + FleshingBeamBlockEntity.cellCenter(cell % grid), TOP + 0.045F,
-                        0.5F + FleshingBeamBlockEntity.cellCenter(cell / grid));
-                pose.mulPose(Axis.YP.rotationDegrees(cell * 53));
-                lying(items, flesh, pose, buffers, light, beam.getLevel(), 0.14F + 0.06F * layers, 10 + cell);
-                pose.popPose();
-            }
         }
     }
 

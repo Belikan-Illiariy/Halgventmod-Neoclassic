@@ -1,18 +1,21 @@
 package com.nrdhvnstd.halgventmod.leather;
 
 import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import com.nrdhvnstd.halgventmod.food.Freshness;
+import com.nrdhvnstd.halgventmod.needs.Stamina;
+import com.nrdhvnstd.halgventmod.network.ScrapeOpenPayload;
 import com.nrdhvnstd.halgventmod.registry.ModBlockEntities;
 import com.nrdhvnstd.halgventmod.registry.ModComponents;
 import com.nrdhvnstd.halgventmod.registry.ModItems;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -20,40 +23,34 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Колода: на ней лежит одна шкура (или кусок сыромяти).
  * <ul>
  *   <li>соль по парной шкуре — солёная (хранится 16 суток);</li>
- *   <li>мездряк по парной или солёной — снять мездру. На шкуре лежат клочья мездры (сетка {@link #GRID}×{@link #GRID},
- *       у каждого клочка 1–{@link #MAX_THICKNESS} слоя): бить нужно точно по ним, каждый ровный удар снимает слой.
- *       Удар по чистому месту скребёт голую шкуру и может её прорезать;</li>
- *   <li>струг по золёной — снять волос ({@link #HAIR_STROKES} ударов), получается голье; с овцы падает шерсть;</li>
- *   <li>струг по сыромяти мелкой шкуры — пергамент ({@link #PARCHMENT_STROKES} удара);</li>
+ *   <li>мездряк по парной или солёной — мини-игра: снять мездру ({@link ScrapeJob#FLESH});</li>
+ *   <li>струг по золёной — мини-игра: снять волос, получается голье; с овцы падает шерсть ({@link ScrapeJob#HAIR});</li>
+ *   <li>струг по сыромяти мелкой шкуры — мини-игра: выскоблить пергамент ({@link ScrapeJob#PARCHMENT});</li>
  *   <li>пустая рука — забрать.</li>
  * </ul>
- * Ритм: удар до того, как замах восстановился, с шансом {@link #CUT_CHANCE} режет шкуру — качество −1
- * (не больше {@link #MAX_CUTS} раз за работу).
+ * За колодой работает один человек. Брошенная работа ничего не меняет. Каждый порез — качество −1,
+ * прореха в пергаменте — {@link #TEAR_PENALTY}.
  */
 public class FleshingBeamBlockEntity extends StationBlockEntity {
-    // Меняйте здесь
-    public static final int HAIR_STROKES = 5;
-    public static final int PARCHMENT_STROKES = 3;
-    public static final float CUT_CHANCE = 0.4F;
-    public static final float CLEAN_SPOT_CUT_CHANCE = 0.25F; // ровный удар мимо мездры (спешный — CUT_CHANCE)
-    public static final int MAX_CUTS = 2;
-    public static final int GRID = 3;              // участков по стороне шкуры
-    public static final float HIDE_HALF = 0.375F;  // полуширина шкуры на колоде, блоков
-    public static final int MIN_PATCHES = 3;
-    public static final int MAX_PATCHES = 6;
-    public static final int MAX_THICKNESS = 3;
+    // Меняйте здесь ⚠️
+    public static final int MAX_CUTS = 2;          // больше порезов качество не снимают
+    public static final int MAX_TEARS = 2;
+    public static final int TEAR_PENALTY = 2;      // качества за прореху
+    public static final double REACH = 6.0;
+    public static final int WORK_TIMEOUT = 20 * 60 * 3; // столько тиков колода занята, если работник пропал
 
     private ItemStack hide = ItemStack.EMPTY;
-    private int strokes;
-    private int cuts;
-    /** Толщина мездры на участках (индекс x + z * GRID, в осях мира), 0 — чисто. */
-    private int[] flesh = new int[GRID * GRID];
+    @Nullable
+    private UUID worker;
+    private ScrapeJob workJob = ScrapeJob.FLESH;
+    private InteractionHand workHand = InteractionHand.MAIN_HAND;
+    private long workSince;
 
     public FleshingBeamBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FLESHING_BEAM.get(), pos, state);
@@ -63,17 +60,6 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
         return hide;
     }
 
-    /** Толщина мездры на участке — для отрисовки. */
-    public int flesh(int cell) {
-        return flesh[cell];
-    }
-
-    /** Центр участка по x или z относительно центра блока. */
-    public static float cellCenter(int i) {
-        float size = HIDE_HALF * 2 / GRID;
-        return -HIDE_HALF + size * (i + 0.5F);
-    }
-
     @Override
     public List<ItemStack> contents() {
         return hide.isEmpty() ? List.of() : List.of(hide.copy());
@@ -81,18 +67,17 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
 
     @Override
     public boolean use(Player player, InteractionHand hand, ItemStack stack) {
-        return use(player, hand, stack, worldPosition.getCenter());
-    }
-
-    @Override
-    public boolean use(Player player, InteractionHand hand, ItemStack stack, Vec3 hit) {
         if (hide.isEmpty()) {
             return place(player, stack);
+        }
+        if (busy(player)) {
+            say(player, "beam_busy");
+            return true;
         }
         if (stack.isEmpty()) {
             give(player, hide);
             hide = ItemStack.EMPTY;
-            reset();
+            worker = null;
             sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 0.8F, 1.0F);
             changed();
             return true;
@@ -124,24 +109,12 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
                 say(player, "already_fleshed");
                 return true;
             }
-            flesh(player, hand, stack, info, cellAt(hit));
-            changed();
+            startWork(player, hand, stack, ScrapeJob.FLESH, info);
             return true;
         }
         if (stack.is(ModItems.SCRAPER.get())) {
             if (hide.is(ModItems.LIMED_HIDE.get()) && info != null) {
-                work(player, hand, stack, HAIR_STROKES);
-                crumbs(new ItemStack(Items.WHITE_WOOL), 1.1, 3);
-                if (strokes >= HAIR_STROKES) {
-                    hide = LeatherQuality.carry(hide, new ItemStack(ModItems.PELT.get()));
-                    hide.set(ModComponents.HIDE.get(), info.withoutFur());
-                    if ("sheep".equals(info.animal())) {
-                        give(player, new ItemStack(Items.WHITE_WOOL, 1 + level.random.nextInt(2)));
-                    }
-                    say(player, "dehaired");
-                    finish();
-                }
-                changed();
+                startWork(player, hand, stack, ScrapeJob.HAIR, info);
                 return true;
             }
             if (hide.is(ModItems.RAWHIDE.get())) {
@@ -149,14 +122,7 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
                     say(player, "parchment_small_only");
                     return true;
                 }
-                work(player, hand, stack, PARCHMENT_STROKES);
-                crumbs(hide, 1.1, 4);
-                if (strokes >= PARCHMENT_STROKES) {
-                    hide = LeatherQuality.carry(hide, new ItemStack(ModItems.PARCHMENT.get()));
-                    say(player, "parchment");
-                    finish();
-                }
-                changed();
+                startWork(player, hand, stack, ScrapeJob.PARCHMENT, info);
                 return true;
             }
             say(player, "scraper_wrong");
@@ -165,88 +131,91 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
         return false;
     }
 
-    // ---------------------------------------------------------------- мездрение
+    // ---------------------------------------------------------------- мини-игра
 
-    /** Удар мездряком по участку cell. */
-    private void flesh(Player player, InteractionHand hand, ItemStack knife, Hide info, int cell) {
-        if (fleshLeft() == 0) {
-            spreadFlesh(info); // шкура, положенная до этой версии
+    private boolean busy(Player player) {
+        return worker != null && !worker.equals(player.getUUID()) && level != null
+                && level.getGameTime() - workSince < WORK_TIMEOUT;
+    }
+
+    private void startWork(Player player, InteractionHand hand, ItemStack tool, ScrapeJob job, Hide info) {
+        if (!(player instanceof ServerPlayer serverPlayer) || level == null) {
+            return;
         }
-        boolean steady = strike(player, hand, knife);
-        if (flesh[cell] == 0) {
-            // Мимо мездры: нож скребёт голую шкуру
-            float chance = steady ? CLEAN_SPOT_CUT_CHANCE : CUT_CHANCE;
-            if (cuts < MAX_CUTS && level.random.nextFloat() < chance) {
-                cutHide(player);
-            } else {
-                sound(SoundEvents.WOOL_HIT, 0.8F, 1.4F);
-                say(player, "flesh_miss", fleshLeft());
+        if (Stamina.exhausted(player)) {
+            say(player, "beam_tired");
+            return;
+        }
+        worker = player.getUUID();
+        workJob = job;
+        workHand = hand;
+        workSince = level.getGameTime();
+        PacketDistributor.sendToPlayer(serverPlayer, new ScrapeOpenPayload(worldPosition, job.ordinal(),
+                tool.copyWithCount(1), info.pieces(), level.random.nextInt()));
+    }
+
+    /**
+     * Итог мини-игры (ScrapeResultPayload). Сервер заново проверяет работника, расстояние, инструмент, шкуру
+     * и время; порезы и прорехи считает клиент, как промахи шитья.
+     */
+    public void scraped(ServerPlayer player, boolean finished, int cuts, int tears) {
+        if (worker == null || !worker.equals(player.getUUID()) || level == null) {
+            return;
+        }
+        worker = null;
+        ItemStack tool = player.getItemInHand(workHand);
+        Hide info = hide.get(ModComponents.HIDE.get());
+        if (!finished || info == null || !workJob.usesTool(tool)
+                || player.distanceToSqr(worldPosition.getCenter()) > REACH * REACH
+                || level.getGameTime() - workSince < workJob.minTicks() || !jobFits(workJob, info)) {
+            return;
+        }
+        int madeCuts = Mth.clamp(cuts, 0, MAX_CUTS);
+        int madeTears = workJob == ScrapeJob.PARCHMENT ? Mth.clamp(tears, 0, MAX_TEARS) : 0;
+        LeatherQuality.change(hide, -(madeCuts + madeTears * TEAR_PENALTY));
+        damage(player, workHand, tool, workJob.wear());
+        Stamina.spend(player, workJob.stamina());
+        player.swing(workHand, true);
+        switch (workJob) {
+            case FLESH -> {
+                hide.set(ModComponents.HIDE.get(), info.withFleshed());
+                give(player, new ItemStack(ModItems.FLESH.get(), 1 + Math.max(0, info.pieces() / 3)));
+                crumbs(new ItemStack(ModItems.FLESH.get()), 1.1, 8);
             }
-            return;
+            case HAIR -> {
+                hide = LeatherQuality.carry(hide, new ItemStack(ModItems.PELT.get()));
+                hide.set(ModComponents.HIDE.get(), info.withoutFur());
+                if ("sheep".equals(info.animal())) {
+                    give(player, new ItemStack(Items.WHITE_WOOL, 1 + level.random.nextInt(2)));
+                }
+                crumbs(new ItemStack(Items.WHITE_WOOL), 1.1, 8);
+            }
+            case PARCHMENT -> {
+                crumbs(hide, 1.1, 8);
+                hide = LeatherQuality.carry(hide, new ItemStack(ModItems.PARCHMENT.get()));
+            }
         }
-        if (!steady && cuts < MAX_CUTS && level.random.nextFloat() < CUT_CHANCE) {
-            cutHide(player);
-            return;
-        }
-        flesh[cell]--;
-        sound(SoundEvents.SLIME_SQUISH_SMALL, 0.9F, 0.7F + 0.4F * level.random.nextFloat());
-        crumbsAt(cell);
-        if (flesh[cell] > 0) {
-            say(player, "flesh_layer", flesh[cell]);
-        } else if (fleshLeft() > 0) {
-            say(player, "flesh_left", fleshLeft());
+        sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.2F);
+        String done = switch (workJob) {
+            case FLESH -> "fleshed";
+            case HAIR -> "dehaired";
+            case PARCHMENT -> "parchment";
+        };
+        if (madeCuts + madeTears > 0) {
+            say(player, done + "_damaged", madeCuts, madeTears);
         } else {
-            hide.set(ModComponents.HIDE.get(), info.withFleshed());
-            give(player, new ItemStack(ModItems.FLESH.get(), 1 + Math.max(0, info.pieces() / 3)));
-            say(player, "fleshed");
-            finish();
+            say(player, done);
         }
+        changed();
     }
 
-    private int cellAt(Vec3 hit) {
-        float size = HIDE_HALF * 2 / GRID;
-        int x = Mth.clamp((int) Math.floor((hit.x - worldPosition.getX() - 0.5 + HIDE_HALF) / size), 0, GRID - 1);
-        int z = Mth.clamp((int) Math.floor((hit.z - worldPosition.getZ() - 0.5 + HIDE_HALF) / size), 0, GRID - 1);
-        return x + z * GRID;
-    }
-
-    private int fleshLeft() {
-        int left = 0;
-        for (int layer : flesh) {
-            if (layer > 0) {
-                left++;
-            }
-        }
-        return left;
-    }
-
-    /** Разбросать клочья мездры по шкуре: на большой — больше. */
-    private void spreadFlesh(Hide info) {
-        flesh = new int[GRID * GRID];
-        int patches = Mth.clamp(MIN_PATCHES + info.pieces() / 2, MIN_PATCHES, MAX_PATCHES);
-        for (int placed = 0; placed < patches; ) {
-            int cell = level.random.nextInt(flesh.length);
-            if (flesh[cell] == 0) {
-                flesh[cell] = 1 + level.random.nextInt(MAX_THICKNESS);
-                placed++;
-            }
-        }
-    }
-
-    private void cutHide(Player player) {
-        cuts++;
-        LeatherQuality.change(hide, -1);
-        sound(SoundEvents.SHEEP_SHEAR, 1.0F, 0.6F);
-        say(player, "cut");
-    }
-
-    /** Клочья мездры отлетают от участка. */
-    private void crumbsAt(int cell) {
-        if (level instanceof ServerLevel server) {
-            server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(ModItems.FLESH.get())),
-                    worldPosition.getX() + 0.5 + cellCenter(cell % GRID), worldPosition.getY() + 1.1,
-                    worldPosition.getZ() + 0.5 + cellCenter(cell / GRID), 6, 0.05, 0.02, 0.05, 0.08);
-        }
+    /** На колоде всё ещё то, для чего начата работа. */
+    private boolean jobFits(ScrapeJob job, Hide info) {
+        return switch (job) {
+            case FLESH -> (hide.is(ModItems.RAW_HIDE.get()) || hide.is(ModItems.SALTED_HIDE.get())) && !info.fleshed();
+            case HAIR -> hide.is(ModItems.LIMED_HIDE.get());
+            case PARCHMENT -> hide.is(ModItems.RAWHIDE.get()) && info.parchmentGrade();
+        };
     }
 
     // ---------------------------------------------------------------- прочее
@@ -263,37 +232,10 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
         }
         hide = stack.copyWithCount(1);
         consumeOne(player, stack);
-        reset();
-        Hide info = hide.get(ModComponents.HIDE.get());
-        if (info != null && !info.fleshed() && !hide.is(ModItems.LIMED_HIDE.get()) && !hide.is(ModItems.RAWHIDE.get())) {
-            spreadFlesh(info);
-        }
+        worker = null;
         sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 0.8F, 0.8F);
         changed();
         return true;
-    }
-
-    /** Один удар стругом: ритм, порез, звук. */
-    private void work(Player player, InteractionHand hand, ItemStack tool, int total) {
-        boolean steady = strike(player, hand, tool);
-        strokes++;
-        if (!steady && cuts < MAX_CUTS && level.random.nextFloat() < CUT_CHANCE) {
-            cutHide(player);
-        } else {
-            sound(SoundEvents.SLIME_SQUISH_SMALL, 0.8F, 0.8F + 0.4F * level.random.nextFloat());
-            say(player, "stroke", strokes, total);
-        }
-    }
-
-    private void reset() {
-        strokes = 0;
-        cuts = 0;
-        flesh = new int[GRID * GRID];
-    }
-
-    private void finish() {
-        reset();
-        sound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.2F);
     }
 
     public static boolean isLeatherTool(ItemStack stack) {
@@ -307,18 +249,11 @@ public class FleshingBeamBlockEntity extends StationBlockEntity {
         if (!hide.isEmpty()) {
             tag.put("Hide", hide.save(registries));
         }
-        tag.putInt("Strokes", strokes);
-        tag.putInt("Cuts", cuts);
-        tag.putIntArray("Flesh", flesh);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         hide = tag.contains("Hide") ? ItemStack.parseOptional(registries, tag.getCompound("Hide")) : ItemStack.EMPTY;
-        strokes = tag.getInt("Strokes");
-        cuts = tag.getInt("Cuts");
-        int[] saved = tag.getIntArray("Flesh");
-        flesh = saved.length == GRID * GRID ? saved : new int[GRID * GRID];
     }
 }

@@ -1343,6 +1343,20 @@ public class ModLanguageProvider extends LanguageProvider {
                 russian ? "ЛКМ или Пробел — проколоть, когда игла над отметкой" : "Click or Space to pierce when the needle is over the mark");
         add("gui.halgventmod.sewing.done", russian ? "Сшито!" : "Sewn!");
 
+        add("gui.halgventmod.scrape.title.flesh", russian ? "Снять мездру" : "Flesh the hide");
+        add("gui.halgventmod.scrape.title.hair", russian ? "Снять волос" : "Scrape off the hair");
+        add("gui.halgventmod.scrape.title.parchment", russian ? "Выскоблить пергамент" : "Scrape parchment");
+        add("gui.halgventmod.scrape.progress", russian ? "Готово: %s%% · порезы: %s · прорехи: %s" : "Done: %s%% · cuts: %s · tears: %s");
+        add("gui.halgventmod.scrape.done", russian ? "Готово!" : "Done!");
+        add("gui.halgventmod.scrape.hint",
+                russian ? "Зажмите ЛКМ и ведите от хребта к краю. Светлые места — тоньше. Esc — бросить" : "Hold the button, stroke from spine to edge. Pale spots are thin. Esc to quit");
+        add("gui.halgventmod.scrape.hint.flesh",
+                russian ? "Счистите тёмные клочья; по чистому месту нажим растёт быстрее" : "Clear the dark patches; bare hide raises pressure faster");
+        add("gui.halgventmod.scrape.hint.hair",
+                russian ? "Счистите волос почти со всей шкуры" : "Clear the hair from nearly all of the hide");
+        add("gui.halgventmod.scrape.hint.parchment",
+                russian ? "Доведите до ровного светлого тона; синеватое вот-вот порвётся" : "Bring it to an even pale tone; bluish spots are about to tear");
+
         add("gui.halgventmod.pattern.title", russian ? "Выкройки" : "Patterns");
         add("gui.halgventmod.sewing_table.on_table", russian ? "На столе" : "On the table");
         add("gui.halgventmod.sewing_table.cut", russian ? "Раскроить" : "Cut");
@@ -1371,14 +1385,15 @@ public class ModLanguageProvider extends LanguageProvider {
         leather("knife_wrong", "Мездряком работают по парной или солёной шкуре", "The fleshing knife is for a raw or salted hide");
         leather("already_fleshed", "Мездра уже снята. Дальше — чан: щёлок (зола) или жир для меха", "Already fleshed. Next: the vat — lye (ash) or fat for fur");
         leather("fleshed", "Мездра снята", "Fleshed");
-        leather("flesh_layer", "Слой снят, на этом клочке ещё: %s", "A layer off, this patch has %s more");
-        leather("flesh_left", "Клочок счищен. Осталось клочков мездры: %s", "Patch cleared. Flesh patches left: %s");
-        leather("flesh_miss", "Здесь чисто — бейте по клочкам мездры (осталось: %s)", "Clean here: strike the flesh patches (%s left)");
+        leather("fleshed_damaged", "Мездра снята. Порезы: %s, прорехи: %s — шкура стала хуже", "Fleshed. Cuts: %s, tears: %s: the hide is worse");
+        leather("dehaired_damaged", "Голье готово. Порезы: %s, прорехи: %s — оно стало хуже", "Pelt done. Cuts: %s, tears: %s: it is worse");
+        leather("parchment_damaged", "Пергамент готов. Порезы: %s, прорехи: %s — он стал хуже", "Parchment done. Cuts: %s, tears: %s: it is worse");
+        leather("beam_busy", "За колодой уже работают", "Someone is already working at the beam");
+        leather("beam_tired", "Нет сил: отдышитесь", "Too tired: catch your breath");
         leather("dehaired", "Волос снят — получилось голье", "Hair scraped off — you have a pelt");
         leather("parchment_small_only", "Пергамент выходит только из мелкой шкуры: козы, овцы, кролика", "Parchment comes only from a small hide: goat, sheep, rabbit");
         leather("parchment", "Выскоблен пергамент", "Parchment scraped");
         leather("scraper_wrong", "Стругом снимают волос с золёной шкуры или скоблят сыромять", "The scraper is for a limed hide or rawhide");
-        leather("cut", "Спешка! Нож прорезал шкуру — она стала хуже", "Too hasty! The blade cut the hide — it is worse now");
         leather("stroke", "%s / %s", "%s / %s");
 
         leather("vat_busy", "В чане уже что-то есть", "Something is already in the vat");

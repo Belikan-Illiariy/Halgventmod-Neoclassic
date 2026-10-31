@@ -1246,6 +1246,15 @@ public final class ModItems {
             .stacksTo(16)
             .grams(50)
             .register();
+    // Чернила: тратятся на книгу с пером, бутылка остаётся в сетке
+    public static final DeferredItem<Item> INK = item("ink", "Чернила", "Ink", Gender.PL)
+            .traits(ModTraits.COMMON)
+            .category(Category.MATERIALS)
+            .lore("Толчёный уголь в склянке. С книгой и пером — книга для записей; бутылка остаётся.",
+                    "Ground charcoal in a bottle. With a book and a feather makes a book to write in; the bottle is kept.")
+            .stacksTo(16)
+            .grams(150)
+            .register(properties -> new Item(properties.craftRemainder(Items.GLASS_BOTTLE)));
     public static final DeferredItem<Item> LEATHER_SCRAPS = item("leather_scraps", "Обрезки кожи", "Leather scraps", Gender.PL)
             .traits(ModTraits.COMMON)
             .category(Category.MATERIALS)
@@ -1321,8 +1330,8 @@ public final class ModItems {
     public static final DeferredItem<Item> THREADS = item("threads", "Нитки", "Thread", Gender.PL)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
-            .lore("Для шитья на шитейном столе. Подойдёт и простая нить; из мотка льняной пряжи — две пачки.",
-                    "For sewing at the sewing table. Plain string will do; a skein of linen yarn makes two.")
+            .lore("Для шитья на шитейном столе и переплёта книг. Подойдёт и простая нить; из мотка льняной или шерстяной пряжи — две пачки.",
+                    "For sewing at the sewing table and binding books. Plain string will do; a skein of linen or wool yarn makes two.")
             .grams(30)
             .register();
 
@@ -1330,10 +1339,8 @@ public final class ModItems {
     public static final DeferredItem<Item> FLESHING_KNIFE = item("fleshing_knife", "Мездряк", "Fleshing knife", Gender.M)
             .traits(ModTraits.COMMON)
             .category(Category.TOOLS)
-            .lore("E по клочкам мездры на шкуре (колода) — счищать их слой за слоем. Цельтесь в клочки и бейте ровно, "
-                            + "дожидаясь замаха: по чистому месту и в спешке нож режет шкуру.",
-                    "E at the flesh patches of a hide on the beam scrapes them layer by layer. Aim at the patches and strike "
-                            + "evenly, waiting for the swing: a clean spot or haste cuts the hide.")
+            .lore("E по шкуре на колоде — счистить мездру мазками от хребта к краю. Слишком сильный нажим режет шкуру.",
+                    "E at a hide on the beam: clear the flesh with strokes from spine to edge. Too much pressure cuts the hide.")
             .durability(300)
             .grams(400)
             .draw(DrawType.TOOL)
